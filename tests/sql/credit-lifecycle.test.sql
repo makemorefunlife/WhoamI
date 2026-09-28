@@ -67,3 +67,19 @@ begin
   assert pg_temp.remaining('t_user', 'relationship') = 1, 'failed generation must release its reservation';
   raise notice 'ok - failed generation releases its credit';
 end $$;
+
+-- Paddle quantity guard: a held transaction is recorded once, grants nothing.
+do $$
+begin
+  insert into payment_manual_reviews (provider_transaction_id, plan_id, quantity, clerk_user_id, reason, source)
+    values ('t_txn_qty2', 'us_relationship_premium', 2, 't_qty', 'quantity_not_one', 'checkout_complete')
+    on conflict (provider, provider_transaction_id) do nothing;
+  insert into payment_manual_reviews (provider_transaction_id, plan_id, quantity, clerk_user_id, reason, source)
+    values ('t_txn_qty2', 'us_relationship_premium', 2, 't_qty', 'quantity_not_one', 'webhook')
+    on conflict (provider, provider_transaction_id) do nothing;
+  assert (select count(*) from payment_manual_reviews where provider_transaction_id = 't_txn_qty2') = 1,
+    'webhook + /complete must produce exactly one review row';
+  assert pg_temp.remaining('t_qty', 'relationship') = 0, 'a held transaction grants nothing';
+  assert (select count(*) from us_purchase_grants where paddle_transaction_id = 't_txn_qty2') = 0, 'no grant row either';
+  raise notice 'ok - quantity-held transaction: one review row, zero credits granted';
+end $$;

@@ -38,3 +38,37 @@ export function resolveAnalysisEntry(
 ): AnalysisEntryDecision {
   return remainingCreditsFor(summary, creditType) > 0 ? "open_analysis" : "open_checkout";
 }
+
+export type RelationshipEntryState =
+  /** A generated report for this kind exists -> show it; no checkout, no credit. */
+  | "saved_report"
+  /** No report yet and a credit (or unenforced env) -> the one CTA generates. */
+  | "generate"
+  /** No report and no usable credit -> the one CTA opens the purchase selector. */
+  | "purchase"
+  /** This kind's saved report is still loading -> show no CTA yet. */
+  | "loading";
+
+/**
+ * Single source for which ONE state/CTA the Relationship deep section shows.
+ * `remaining` is the canonical balance from /api/account/entitlements
+ * (null = not known yet). `creditExhausted` is set when the generation route
+ * itself answered 402 (reserve_credit refused) -- the server's word always
+ * wins over a stale or unknown balance. Only generation (reserve_credit at
+ * the canonical point) ever spends a credit; this never does.
+ */
+export function resolveRelationshipEntryState(params: {
+  hasSavedReport: boolean;
+  kindLoaded: boolean;
+  creditExhausted: boolean;
+  remaining: number | null;
+  creditEnforced: boolean;
+}): RelationshipEntryState {
+  if (params.hasSavedReport) return "saved_report";
+  if (!params.kindLoaded) return "loading";
+  if (params.creditExhausted) return "purchase";
+  if (params.creditEnforced && params.remaining !== null && params.remaining <= 0) {
+    return "purchase";
+  }
+  return "generate";
+}

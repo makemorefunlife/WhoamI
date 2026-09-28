@@ -365,6 +365,7 @@ export const messagesEnUS = {
     premiumEmptyFamily: "You don't have a Child DNA analysis yet.",
     premiumEmptyFriendship: "You don't have a Social DNA analysis yet.",
     premiumEmptyGenerateHint: "You can generate it with the button below.",
+    premiumEmptyBuyHint: "You have no Relationship analyses left. Buy one below to create this report.",
     premiumEmptyFamilyHint: "Choose Mom or Dad above, then generate.",
     premiumGenerateCta: (kindLabel: string) => `Generate ${kindLabel} deep analysis`,
     premiumGenerating: "Generating deep analysis…",
@@ -377,7 +378,7 @@ export const messagesEnUS = {
       "The request didn't complete. Please try again in a moment.",
     premiumCreditExhausted:
       "You've used your available Relationship credits for now.",
-    premiumBuyCta: "Buy another analysis",
+    premiumBuyCta: "Buy a Relationship analysis",
     premiumEyebrow: "Premium · Deep relationship",
     premiumEmptyGeneric: "You don't have a deep analysis yet.",
     viewerQueryRequired: "A viewer query (my report id) is required.",
@@ -1388,6 +1389,8 @@ export const messagesEnUS = {
     paddleNotice: "Payments are processed by Paddle, our Merchant of Record.",
     betaSandboxSuccess: "Sandbox checkout complete — that item is unlocked now.",
     betaSandboxError: "Something went wrong processing the test checkout. Please try again.",
+    checkoutNeedsReview:
+      "Your payment went through, but the quantity was changed in checkout, so we're reviewing it manually before adding your analyses. Please don't pay again — we'll sort it out shortly.",
   },
   birthForm: {
     heading: "Birth date, time & place",
@@ -2295,6 +2298,7 @@ export type MessageCatalog = {
     premiumEmptyFamily: string;
     premiumEmptyFriendship: string;
     premiumEmptyGenerateHint: string;
+    premiumEmptyBuyHint: string;
     premiumEmptyFamilyHint: string;
     premiumGenerateCta: (kindLabel: string) => string;
     premiumGenerating: string;
@@ -3048,6 +3052,7 @@ export type MessageCatalog = {
     processing: string;
     betaSandboxSuccess: string;
     betaSandboxError: string;
+    checkoutNeedsReview: string;
   };
   birthForm: {
     heading: string;

@@ -15,6 +15,11 @@ import {
 import { resolveRegionalPlan, regionalPlanHasPriceId } from "@/lib/payment/resolveRegionalPlan";
 import { grantUsPurchase } from "@/lib/payment/grantUsPurchase";
 import { grantKrPurchase } from "@/lib/payment/grantKrPurchase";
+import {
+  flagPaymentForManualReview,
+  paddleQuantityRequiresReview,
+  paddleTransactionTotalQuantity,
+} from "@/lib/payment/paddleQuantityGuard";
 
 export const runtime = "nodejs";
 
@@ -98,6 +103,31 @@ export async function POST(req: Request) {
     if (!matchedPriceId) {
       logServerError("pricing/checkout/complete", null, "transaction_price_mismatch");
       return NextResponse.json({ error: messages.errors.invalidRequest }, { status: 409 });
+    }
+
+    // Fixed-product catalog: the final Paddle quantity must be exactly 1.
+    // Anything else is held for manual review -- nothing is granted here,
+    // and the buyer is told the payment is received and under review so
+    // they do not pay again. (Same guard as the webhook backstop.)
+    if (paddleQuantityRequiresReview(txn.items)) {
+      const quantity = paddleTransactionTotalQuantity(txn.items);
+      logServerError("pricing/checkout/complete", null, `quantity_${quantity}_held_for_manual_review`);
+      const flagged = await flagPaymentForManualReview(supabase, {
+        transactionId,
+        quantity,
+        source: "checkout_complete",
+        region: match.region,
+        planId,
+        priceId: matchedPriceId,
+        clerkUserId: userId,
+      });
+      if (!flagged.ok) {
+        return NextResponse.json({ error: messages.errors.generic }, { status: 500 });
+      }
+      return NextResponse.json(
+        { error: messages.paymentRefund.checkoutNeedsReview, needsReview: true },
+        { status: 409 },
+      );
     }
 
     if (match.region === "us") {

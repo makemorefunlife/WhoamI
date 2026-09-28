@@ -98,7 +98,7 @@ export default function PurchaseSelectorContent({
   const { isSignedIn } = useUser();
   const copy = messages.pricing.regionalPlans;
   const { busy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
-  const [result, setResult] = useState<Record<string, "success" | "error">>({});
+  const [result, setResult] = useState<Record<string, "success" | "error" | "review">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
 
@@ -182,6 +182,8 @@ export default function PurchaseSelectorContent({
     if (outcome === "success" || outcome === "already_processed") {
       setResult((prev) => ({ ...prev, [planId]: "success" }));
       onSuccess?.(planId);
+    } else if (outcome === "needs_review") {
+      setResult((prev) => ({ ...prev, [planId]: "review" }));
     } else if (outcome === "error" || outcome === "ineligible") {
       setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
@@ -299,6 +301,10 @@ export default function PurchaseSelectorContent({
         {result[planId] === "success" ? (
           <p className="mt-4 text-[12px] font-medium text-emerald-700">
             {messages.paymentRefund.betaSandboxSuccess}
+          </p>
+        ) : result[planId] === "review" ? (
+          <p className="mt-4 text-[12px] font-medium text-amber-700">
+            {messages.paymentRefund.checkoutNeedsReview}
           </p>
         ) : result[planId] === "error" ? (
           <p className="mt-4 text-[12px] font-medium text-rose-700">

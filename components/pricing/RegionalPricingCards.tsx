@@ -22,7 +22,7 @@ export default function RegionalPricingCards() {
   const messages = useMessages();
   const copy = messages.pricing.regionalPlans;
   const { busy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
-  const [result, setResult] = useState<Record<string, "success" | "error">>({});
+  const [result, setResult] = useState<Record<string, "success" | "error" | "review">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
 
   const isUs = locale === "en-US";
@@ -57,6 +57,8 @@ export default function RegionalPricingCards() {
     const outcome = await openCheckout(planId, locale);
     if (outcome === "success" || outcome === "already_processed") {
       setResult((prev) => ({ ...prev, [planId]: "success" }));
+    } else if (outcome === "needs_review") {
+      setResult((prev) => ({ ...prev, [planId]: "review" }));
     } else if (outcome === "error" || outcome === "ineligible") {
       setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
@@ -117,6 +119,10 @@ export default function RegionalPricingCards() {
               {result[planId] === "success" ? (
                 <p className="mt-4 text-[12px] font-medium text-emerald-700">
                   {messages.paymentRefund.betaSandboxSuccess}
+                </p>
+              ) : result[planId] === "review" ? (
+                <p className="mt-4 text-[12px] font-medium text-amber-700">
+                  {messages.paymentRefund.checkoutNeedsReview}
                 </p>
               ) : result[planId] === "error" ? (
                 <p className="mt-4 text-[12px] font-medium text-rose-700">

@@ -350,6 +350,7 @@ export const messagesKoKR: MessageCatalog = {
     premiumEmptyFamily: "아직 가족 Child DNA 분석이 없어요.",
     premiumEmptyFriendship: "아직 친구 Social DNA 분석이 없어요.",
     premiumEmptyGenerateHint: "아래 버튼으로 생성할 수 있어요.",
+    premiumEmptyBuyHint: "남은 관계 분석이 없어요. 아래에서 1회 구매하면 바로 이 리포트를 만들 수 있어요.",
     premiumEmptyFamilyHint: "위에서 엄마/아빠를 고른 뒤 생성하세요.",
     premiumGenerateCta: (kindLabel: string) => `${kindLabel} 관계 심화 분석 생성하기`,
     premiumGenerating: "심화 분석 생성 중…",
@@ -359,7 +360,7 @@ export const messagesKoKR: MessageCatalog = {
       "새 프롬프트로 다시 생성해요. 이전 결과는 아래 분석 기록에서 볼 수 있어요.",
     premiumGenerateFailed: "생성 요청이 완료되지 않았어요. 잠시 후 다시 시도해 주세요.",
     premiumCreditExhausted: "지금 사용할 수 있는 Relationship 크레딧을 모두 사용했어요.",
-    premiumBuyCta: "추가로 구매하기",
+    premiumBuyCta: "관계 분석 구매하기",
     premiumEyebrow: "Premium · 관계 심화",
     premiumEmptyGeneric: "아직 심화 관계 분석이 없어요.",
     viewerQueryRequired: "viewer 쿼리(내 리포트 id)가 필요합니다.",
@@ -1344,6 +1345,8 @@ export const messagesKoKR: MessageCatalog = {
     paddleNotice: "결제는 Merchant of Record인 Paddle을 통해 처리됩니다.",
     betaSandboxSuccess: "테스트 결제가 완료됐어요. 해당 상품이 바로 열렸습니다.",
     betaSandboxError: "테스트 결제 처리 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요.",
+    checkoutNeedsReview:
+      "결제는 완료됐지만 결제창에서 수량이 변경되어, 분석 이용권을 넣기 전에 직접 확인하고 있어요. 다시 결제하지 마세요. 곧 처리해 드릴게요.",
   },
   birthForm: {
     heading: "생년월일시 · 태어난 장소",

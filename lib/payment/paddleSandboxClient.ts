@@ -7,7 +7,7 @@ export type PaddleTransaction = {
   status: string;
   currency_code: string;
   custom_data: Record<string, unknown> | null;
-  items: { price?: { id?: string } | null; price_id?: string }[];
+  items: { price?: { id?: string } | null; price_id?: string; quantity?: number }[];
   /**
    * Present when this transaction belongs to a subscription (e.g. the US
    * Annual membership's initial purchase or a later renewal transaction) --

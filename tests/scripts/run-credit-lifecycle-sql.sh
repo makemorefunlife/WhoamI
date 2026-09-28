@@ -20,6 +20,7 @@ MIGRATIONS=(
   20260922060000_kr_purchase_grants_provider_agnostic.sql
   20260926080000_fix_grant_credit_lot_ambiguous_balance.sql
   20260926090000_single_purchase_and_triple_one_year_expiry.sql
+  20260928120000_payment_manual_reviews.sql
 )
 
 cleanup() { "${P[@]}" -d postgres -c "drop database if exists $DB;" >/dev/null 2>&1 || true; }

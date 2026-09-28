@@ -6,6 +6,7 @@ import {
 } from "@/lib/supabase/serverClient";
 import { logServerError } from "@/lib/security/safeLog";
 import { getCreditLotSummary } from "@/lib/credits/creditEngine";
+import { isCreditEnforcementEnabled } from "@/lib/credits/creditEnforcementPolicy";
 import { getDecisionJournalAccess } from "@/lib/entitlements/decisionJournalAccess";
 import { listOwnPersonalGifts } from "@/lib/credits/personalGifts";
 
@@ -62,6 +63,10 @@ export async function GET() {
       // belongs to this inventory until claimed, and only then does the
       // recipient (a different clerk_user_id) receive an ordinary Personal
       // credit lot. Empty for non-Annual members (no rows issued to them).
+      // Whether reserve_credit actually blocks at 0 in this environment.
+      // UI entry points use it so a 0 balance only routes to checkout when
+      // generation would really be refused (beta/dev keep "generate").
+      creditEnforced: isCreditEnforcementEnabled(),
       personalGifts: personalGifts.map((g) => ({
         code: g.code,
         status: g.status,

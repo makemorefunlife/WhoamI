@@ -10,6 +10,11 @@ import { processPaddleAdjustmentOnce } from "@/lib/payment/paddleAdjustmentClaim
 import { grantUsAnnualRenewal, grantUsPurchase } from "@/lib/payment/grantUsPurchase";
 import { grantKrPurchase } from "@/lib/payment/grantKrPurchase";
 import { resolveRegionalPlan, regionalPlanHasPriceId } from "@/lib/payment/resolveRegionalPlan";
+import {
+  flagPaymentForManualReview,
+  paddleQuantityRequiresReview,
+  paddleTransactionTotalQuantity,
+} from "@/lib/payment/paddleQuantityGuard";
 
 export const runtime = "nodejs";
 
@@ -213,6 +218,17 @@ async function handleTransactionCompleted(
     }
 
     const priceId = priceIds[0] ?? "";
+    if (
+      await holdForQuantityReview(supabase, data, {
+        transactionId,
+        region: "us",
+        planId: "us_annual_membership",
+        priceId,
+        clerkUserId: membership.clerk_user_id as string,
+      })
+    ) {
+      return;
+    }
     const result = await grantUsAnnualRenewal(supabase, {
       clerkUserId: membership.clerk_user_id as string,
       paddleTransactionId: transactionId,
@@ -260,6 +276,18 @@ async function handleTransactionCompleted(
   const matchedPriceId = priceIds.find((id) => regionalPlanHasPriceId(match, id));
   if (!matchedPriceId) {
     logServerError("webhooks.paddle.transaction", null, "price_mismatch");
+    return;
+  }
+
+  if (
+    await holdForQuantityReview(supabase, data, {
+      transactionId,
+      region: match.region,
+      planId,
+      priceId: matchedPriceId,
+      clerkUserId,
+    })
+  ) {
     return;
   }
 
@@ -414,6 +442,37 @@ async function findPurchaseGrantByTransactionId(
 // input even after signature verification (the signature proves it came
 // from Paddle, not that every field is shaped the way we expect).
 // ---------------------------------------------------------------------------
+
+/**
+ * Quantity guard (see lib/payment/paddleQuantityGuard.ts): a completed
+ * transaction whose final Paddle quantity is not exactly 1 is NOT
+ * fulfilled -- it is recorded in payment_manual_reviews and nothing is
+ * granted. Returns true when the caller must stop (flagged). Throws when
+ * the flag cannot be persisted, so processWebhookEventOnce marks the event
+ * failed and Paddle retries it instead of it being silently lost.
+ */
+async function holdForQuantityReview(
+  supabase: NonNullable<SupabaseLike>,
+  data: Record<string, unknown>,
+  params: {
+    transactionId: string;
+    region: string;
+    planId: string;
+    priceId: string;
+    clerkUserId: string;
+  },
+): Promise<boolean> {
+  if (!paddleQuantityRequiresReview(data.items)) return false;
+  const quantity = paddleTransactionTotalQuantity(data.items);
+  logServerError("webhooks.paddle.transaction", null, `quantity_${quantity}_held_for_manual_review`);
+  const flagged = await flagPaymentForManualReview(supabase, {
+    ...params,
+    quantity,
+    source: "webhook",
+  });
+  if (!flagged.ok) throw new Error("manual_review_flag_failed");
+  return true;
+}
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (value && typeof value === "object" && !Array.isArray(value)) {

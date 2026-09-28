@@ -23,6 +23,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { relationshipDeepFeedbackContext } from "@/lib/feedback/feedbackContext";
+import { resolveRelationshipEntryState } from "@/lib/credits/analysisEntryGate";
 
 type RelationshipPremiumSectionProps = {
   busy: boolean;
@@ -50,8 +51,14 @@ type RelationshipPremiumSectionProps = {
   onReportReadyRef?: RefObject<HTMLDivElement | null>;
   /** True right after a generation attempt failed specifically for lack of a relationship credit (see useRelationshipDetail's premiumCreditExhausted). */
   creditExhausted?: boolean;
-  /** Opens the purchase selector (context="relationship") -- only used when creditExhausted is true. */
+  /** Opens the purchase selector (context="relationship") -- the single CTA of the "purchase" state. */
   onOpenPurchase?: () => void;
+  /** Canonical Relationship credits remaining (null = unknown). */
+  relationshipCreditsRemaining?: number | null;
+  /** False only when CREDIT_ENFORCEMENT is off (generation never blocks at 0). */
+  creditEnforced?: boolean;
+  /** True once this kind's saved report (if any) has been loaded. */
+  premiumKindLoaded?: boolean;
   /**
    * True while an explicit-intent autostart attempt (the user just picked
    * this Deep kind -- see ?autostart=1 in useRelationshipDetail.ts) is
@@ -95,6 +102,9 @@ export default function RelationshipPremiumSection({
   onOpenPurchase,
   autostartPending = false,
   relationshipReportId,
+  relationshipCreditsRemaining = null,
+  creditEnforced = true,
+  premiumKindLoaded = true,
 }: RelationshipPremiumSectionProps) {
   const { messages } = useLocale();
   const [requesting, setRequesting] = useState(false);
@@ -142,6 +152,20 @@ export default function RelationshipPremiumSection({
   // "Preparing your analysis..." message instead of stacking them
   // underneath RelationshipView's own RelationshipGeneratingPanel.
   const showAutostartPreparing = autostartPending && !hasDeepContent;
+
+  // ONE state, ONE primary CTA (see resolveRelationshipEntryState):
+  // saved report -> show it; no report + credit -> Generate; no report +
+  // no credit (known balance, or the server already answered 402) -> Buy,
+  // which opens the purchase selector directly. Never both at once.
+  const entryState = resolveRelationshipEntryState({
+    hasSavedReport: premiumReady || hasSnapshotView,
+    kindLoaded: premiumKindLoaded,
+    creditExhausted,
+    remaining: relationshipCreditsRemaining,
+    creditEnforced,
+  });
+  const emptyHint = (defaultHint: string) =>
+    entryState === "purchase" ? messages.report.premiumEmptyBuyHint : defaultHint;
 
   return (
     <ReportSurfaceProvider
@@ -219,9 +243,15 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "romantic" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            {messages.report.premiumEmptyRomantic}
-            <br />
-            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
+            {entryState === "loading" ? (
+              messages.common.preparing
+            ) : (
+              <>
+                {messages.report.premiumEmptyRomantic}
+                <br />
+                <span className="text-xs">{emptyHint(messages.report.premiumEmptyGenerateHint)}</span>
+              </>
+            )}
           </p>
         </div>
       ) : premiumKind === "work" && displayWorkDeep ? (
@@ -236,9 +266,15 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "work" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            {messages.report.premiumEmptyWork}
-            <br />
-            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
+            {entryState === "loading" ? (
+              messages.common.preparing
+            ) : (
+              <>
+                {messages.report.premiumEmptyWork}
+                <br />
+                <span className="text-xs">{emptyHint(messages.report.premiumEmptyGenerateHint)}</span>
+              </>
+            )}
           </p>
         </div>
       ) : premiumKind === "cohabitation" && displayCohabitationDeep ? (
@@ -253,9 +289,15 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "cohabitation" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            {messages.report.premiumEmptyCohabitation}
-            <br />
-            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
+            {entryState === "loading" ? (
+              messages.common.preparing
+            ) : (
+              <>
+                {messages.report.premiumEmptyCohabitation}
+                <br />
+                <span className="text-xs">{emptyHint(messages.report.premiumEmptyGenerateHint)}</span>
+              </>
+            )}
           </p>
         </div>
       ) : premiumKind === "family" && displayFamilyDeep ? (
@@ -265,9 +307,15 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "family" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            {messages.report.premiumEmptyFamily}
-            <br />
-            <span className="text-xs">{messages.report.premiumEmptyFamilyHint}</span>
+            {entryState === "loading" ? (
+              messages.common.preparing
+            ) : (
+              <>
+                {messages.report.premiumEmptyFamily}
+                <br />
+                <span className="text-xs">{emptyHint(messages.report.premiumEmptyFamilyHint)}</span>
+              </>
+            )}
           </p>
         </div>
       ) : premiumKind === "friendship" && displayFriendshipDeep ? (
@@ -282,9 +330,15 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "friendship" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            {messages.report.premiumEmptyFriendship}
-            <br />
-            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
+            {entryState === "loading" ? (
+              messages.common.preparing
+            ) : (
+              <>
+                {messages.report.premiumEmptyFriendship}
+                <br />
+                <span className="text-xs">{emptyHint(messages.report.premiumEmptyGenerateHint)}</span>
+              </>
+            )}
           </p>
         </div>
       ) : (
@@ -308,16 +362,13 @@ export default function RelationshipPremiumSection({
         </>
       ) : null}
       {!showAutostartPreparing && (
-      !premiumReady && !hasSnapshotView && creditExhausted && onOpenPurchase ? (
+      entryState === "purchase" && onOpenPurchase ? (
         <div className="mt-4 space-y-2 text-center">
-          <p className="text-sm text-[var(--space-text-muted)]">
-            {messages.report.premiumCreditExhausted}
-          </p>
           <GlowButton type="button" className="w-full" onClick={onOpenPurchase}>
             {messages.report.premiumBuyCta}
           </GlowButton>
         </div>
-      ) : !premiumReady && !hasSnapshotView ? (
+      ) : entryState === "generate" ? (
         <div className="mt-4 space-y-2 text-center">
           <GlowButton
             type="button"

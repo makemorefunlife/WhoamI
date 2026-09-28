@@ -110,6 +110,13 @@ export type UseRelationshipDetailReturn = {
    * revisit/recovery surface (see RelationshipView.tsx's effect).
    */
   autostartCreditExhausted: boolean;
+  /** Canonical Relationship credits remaining (null = not loaded yet). */
+  relationshipCreditsRemaining: number | null;
+  /** False only when CREDIT_ENFORCEMENT is off (generation never blocks at 0). */
+  creditEnforced: boolean;
+  /** True once the selected kind's saved report (if any) has been loaded. */
+  premiumKindLoaded: boolean;
+  refreshRelationshipCredits: () => Promise<void>;
   toggleFavorite: () => Promise<void>;
   retryAnalysis: () => void;
   onAnalysisSurfaceChange: (surface: AnalysisSurface) => void;
@@ -130,10 +137,21 @@ export type UseRelationshipDetailReturn = {
 
 export function useRelationshipDetail({
   relationshipReportId,
+  onCreditExhausted,
 }: {
   relationshipReportId: string;
+  /**
+   * Called from the generation request's own 402 branch (reserve_credit
+   * refused: no usable Relationship credit), so the caller can open the
+   * purchase selector on that same click -- never on page entry.
+   */
+  onCreditExhausted?: () => void;
 }): UseRelationshipDetailReturn {
   const router = useRouter();
+  const onCreditExhaustedRef = useRef(onCreditExhausted);
+  useEffect(() => {
+    onCreditExhaustedRef.current = onCreditExhausted;
+  }, [onCreditExhausted]);
   const routeParams = useParams();
   const searchParams = useSearchParams();
   const urlViewerHint = searchParams.get("viewer")?.trim() ?? "";
@@ -175,6 +193,16 @@ export function useRelationshipDetail({
    */
   const [premiumCreditExhausted, setPremiumCreditExhausted] = useState(false);
   const [autostartCreditExhausted, setAutostartCreditExhausted] = useState(false);
+  // Canonical Relationship balance (credit_lots via /api/account/entitlements)
+  // so the deep section can show ONE correct CTA before any click: Generate
+  // when a credit exists, Buy when it does not. Read-only -- the credit is
+  // still only spent by reserve_credit inside the generation route.
+  const [relationshipCreditsRemaining, setRelationshipCreditsRemaining] = useState<number | null>(null);
+  const [creditEnforced, setCreditEnforced] = useState(true);
+  // Which kind the last completed detail load was for -- until the selected
+  // kind's saved report (if any) has loaded, no Generate/Buy CTA is shown,
+  // so a user who already has a report never sees a purchase prompt flash.
+  const [loadedPremiumKind, setLoadedPremiumKind] = useState<RelationshipKind | null>(null);
   /** Mirrors the 402 branch inside runPremium synchronously (no stale-closure
    *  risk from reading React state right after an await) so
    *  runAutostartPremium can tell "credit exhausted" apart from any other
@@ -410,7 +438,10 @@ export function useRelationshipDetail({
         setFavorited(Boolean(data.is_favorite));
         void fetchLogs(seq);
       } finally {
-        if (seq === loadSeqRef.current) setLoading(false);
+        if (seq === loadSeqRef.current) {
+          setLoading(false);
+          setLoadedPremiumKind(kindForRequest);
+        }
       }
     },
     [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, urlKindHint, messages],
@@ -576,6 +607,27 @@ export function useRelationshipDetail({
     ensureBasic,
   ]);
 
+  const refreshRelationshipCredits = useCallback(async () => {
+    try {
+      const res = await fetch("/api/account/entitlements", { cache: "no-store" });
+      if (!res.ok) return;
+      const body = (await res.json()) as {
+        relationship?: { remaining?: number };
+        creditEnforced?: boolean;
+      };
+      const n = body.relationship?.remaining;
+      setRelationshipCreditsRemaining(typeof n === "number" && Number.isFinite(n) ? Math.max(0, n) : null);
+      setCreditEnforced(body.creditEnforced !== false);
+    } catch {
+      // Unknown balance -> section falls back to "generate"; the server's
+      // 402 still routes to checkout on that first click.
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshRelationshipCredits();
+  }, [refreshRelationshipCredits]);
+
   const retryAnalysis = useCallback(() => {
     if (basicInFlight.current) return;
     basicAttempted.current = false;
@@ -668,6 +720,7 @@ export function useRelationshipDetail({
             // creditExhausted -> Purchase Selector CTA below.
             setPremiumCreditExhausted(true);
             setErr(null);
+            onCreditExhaustedRef.current?.();
             return false;
           }
           setErr(data?.error ?? messages.report.premiumAnalysisFailedGeneric);
@@ -732,6 +785,7 @@ export function useRelationshipDetail({
         }
         setServerPremiumReady(true);
         await load(kind, { silent: true });
+        void refreshRelationshipCredits();
         return true;
       } catch (e) {
         if (
@@ -760,6 +814,7 @@ export function useRelationshipDetail({
       familyParentType,
       familyChildIsViewer,
       messages,
+      refreshRelationshipCredits,
     ],
   );
 
@@ -1000,6 +1055,10 @@ export function useRelationshipDetail({
     premiumInProgress,
     premiumCreditExhausted,
     autostartCreditExhausted,
+    relationshipCreditsRemaining,
+    creditEnforced,
+    premiumKindLoaded: loadedPremiumKind === premiumKind,
+    refreshRelationshipCredits,
     toggleFavorite,
     retryAnalysis,
     onAnalysisSurfaceChange,

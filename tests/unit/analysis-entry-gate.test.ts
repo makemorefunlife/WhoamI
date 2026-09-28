@@ -45,11 +45,14 @@ async function main() {
 
   const view = readFileSync("app/relationship/[id]/RelationshipView.tsx", "utf8");
   const purchaseOpeners = view.match(/setPurchaseOpen\(true\)/g) ?? [];
-  assert.equal(purchaseOpeners.length, 2, "RelationshipView opens checkout in exactly two places");
+  // Three openers, all behind "no usable credit": autostart 402, the 402
+  // callback of any generation click, and the section's Buy CTA.
+  assert.equal(purchaseOpeners.length, 3, "RelationshipView opens checkout in exactly three places");
   assert.match(view, /if \(autostartCreditExhausted\) \{\s*setPurchaseOpen\(true\);/);
+  assert.match(view, /useCallback\(\(\) => setPurchaseOpen\(true\), \[\]\)/);
   assert.match(view, /onOpenPurchase=\{\(\) => setPurchaseOpen\(true\)\}/);
   const section = readFileSync("components/relationship/detail/RelationshipPremiumSection.tsx", "utf8");
-  assert.match(section, /creditExhausted && onOpenPurchase \?/);
+  assert.match(section, /entryState === "purchase" && onOpenPurchase \?/);
   const detail = readFileSync("app/relationship/[id]/useRelationshipDetail.ts", "utf8");
   assert.match(detail, /res\.status === 402[\s\S]{0,600}setPremiumCreditExhausted\(true\)/);
   const premiumRoute = readFileSync("app/api/relationship/analyze/premium/route.ts", "utf8");

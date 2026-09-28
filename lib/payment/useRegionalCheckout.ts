@@ -92,7 +92,9 @@ export type RegionalCheckoutOutcome =
   | "cancelled"
   | "error"
   | "ineligible"
-  | "not_ready";
+  | "not_ready"
+  /** Paid, but the final Paddle quantity was not 1 -- held for manual review (nothing granted). */
+  | "needs_review";
 
 /**
  * Opens a Paddle SANDBOX checkout for one US or KR regional-catalog plan.
@@ -170,7 +172,10 @@ export function useRegionalCheckout() {
               })
                 .then(async (res) => {
                   if (!res.ok) {
-                    resolve("error");
+                    const errBody = (await res.json().catch(() => ({}))) as {
+                      needsReview?: boolean;
+                    };
+                    resolve(res.status === 409 && errBody.needsReview ? "needs_review" : "error");
                     return;
                   }
                   const resBody = (await res.json().catch(() => ({}))) as {

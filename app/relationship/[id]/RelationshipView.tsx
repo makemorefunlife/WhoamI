@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
@@ -33,7 +33,14 @@ export default function RelationshipView({
   const reportAnchorRef = useRef<HTMLDivElement>(null);
   const { messages, href: localize } = useLocale();
 
-  const detail = useRelationshipDetail({ relationshipReportId });
+  // Declared before the detail hook so its 402 callback can open the
+  // purchase selector on the same click that tried to generate.
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const openPurchaseOnCreditExhausted = useCallback(() => setPurchaseOpen(true), []);
+  const detail = useRelationshipDetail({
+    relationshipReportId,
+    onCreditExhausted: openPurchaseOnCreditExhausted,
+  });
   const {
     router,
     viewerReportId,
@@ -75,6 +82,10 @@ export default function RelationshipView({
     premiumInProgress,
     premiumCreditExhausted,
     autostartCreditExhausted,
+    relationshipCreditsRemaining,
+    creditEnforced,
+    premiumKindLoaded,
+    refreshRelationshipCredits,
     retryAnalysis,
     onAnalysisSurfaceChange,
     viewAnalysisLog,
@@ -112,13 +123,13 @@ export default function RelationshipView({
     }),
   );
 
-  const [purchaseOpen, setPurchaseOpen] = useState(false);
   function handlePurchaseSuccess() {
     setPurchaseOpen(false);
     // Entitlement is granted server-side by the checkout complete route
     // before this fires -- re-running the same generation call the
     // credit-exhausted CTA replaced now succeeds against the fresh credit,
     // so the report appears immediately with no second click.
+    void refreshRelationshipCredits();
     void runPremium(premiumKind);
   }
 
@@ -388,6 +399,9 @@ export default function RelationshipView({
               onReportReadyRef={reportAnchorRef}
               creditExhausted={premiumCreditExhausted}
               onOpenPurchase={() => setPurchaseOpen(true)}
+              relationshipCreditsRemaining={relationshipCreditsRemaining}
+              creditEnforced={creditEnforced}
+              premiumKindLoaded={premiumKindLoaded}
               autostartPending={autostartPending}
             />
           ) : null}
