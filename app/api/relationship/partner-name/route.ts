@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
+import { invalidateRelationshipMapCache } from "@/lib/relationship/map/computeRelationshipMap";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { fetchRelationshipReportRowsForReportId } from "@/lib/relationship/fetchReportsWhereParticipant";
 
@@ -19,7 +20,9 @@ export async function PATCH(req: Request) {
     const body = (await req.json()) as Body;
     const partnerReportId = body.partnerReportId?.trim();
     const viewerReportId = body.viewerReportId?.trim();
-    const name = body.name?.trim().slice(0, 10);
+    // Cap by code point, not UTF-16 unit, so an emoji at the limit is never
+    // split into a broken half (nicknames are stored exactly as typed).
+    const name = Array.from(body.name?.trim() ?? "").slice(0, 10).join("");
 
     if (!partnerReportId || !viewerReportId || !name) {
       return NextResponse.json(
@@ -81,6 +84,10 @@ export async function PATCH(req: Request) {
     if (error) {
       return NextResponse.json({ error: "request failed" }, { status: 500 });
     }
+
+    // Rename is display-only: no credit, no regeneration. Drop the viewer's
+    // short-lived map cache so the map shows the new name right away too.
+    invalidateRelationshipMapCache(viewerReportId);
 
     return NextResponse.json({ ok: true, name });
   } catch (e) {

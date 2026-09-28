@@ -126,8 +126,8 @@ function buildCompareTableSection(
       typedRow.band_child,
       locale,
     );
-    const parentNickname = report.family?.section_household_roles?.partner_name || row.personParent?.nickname || report.meta?.nickname_b || "부모";
-    const childNickname = report.family?.section_household_roles?.self_name || row.personChild?.nickname || report.meta?.nickname_a || "자녀";
+    const parentNickname = report.family?.section_household_roles?.partner_name || row.personParent?.nickname || report.meta?.nickname_b || pick(locale, "the parent", "부모");
+    const childNickname = report.family?.section_household_roles?.self_name || row.personChild?.nickname || report.meta?.nickname_a || pick(locale, "the child", "자녀");
     const freshMeaning = formatFamilyCompareCanonicalMeaning({
       rowId: row.id,
       bandParent: typedRow.band_parent,

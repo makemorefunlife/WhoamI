@@ -26,10 +26,12 @@ import {
 } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
-import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
-import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
-import { getMessages } from "@/lib/i18n/messages";
+import {
+  resolveMeDisplayName,
+  resolveOtherDisplayName,
+  slotDisplayNames,
+} from "@/lib/relationship/relationshipPersonNames";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import { omitWorkContextOutputFromReport } from "@/lib/relationship/workColleague/stripWorkContextOutputForClient";
@@ -165,23 +167,33 @@ export async function GET(req: Request) {
     // and resolvePartnerDisplayName default to the hardcoded Korean "나"/
     // "상대", which would leak into an English-locale report whenever neither
     // a real name nor a Clerk name is available.
-    const fallbackMessages = getMessages(locale);
-    const viewerName = resolveViewerDisplayName({
+    // Canonical names (lib/relationship/relationshipPersonNames.ts): the
+    // same rule every Relationship surface and generation prompt uses.
+    const viewerName = resolveMeDisplayName({
+      accountDisplayName: (clerkUser?.publicMetadata as Record<string, unknown> | undefined)?.displayName,
       reportName: viewer?.name,
-      clerkFirstName: clerkUser?.firstName,
       clerkFullName: clerkUser?.fullName,
-      fallback: fallbackMessages.report.meFallbackLabel,
+      clerkFirstName: clerkUser?.firstName,
+      locale,
     });
     const partnerIsManual = partner?.report_type === "partner_manual";
     const partnerClerkNameById = partnerIsManual
       ? {}
       : await resolveClerkDisplayNamesByUserId([partner?.clerk_user_id]);
-    const partnerName = resolvePartnerDisplayName(
-      partner?.name,
-      partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,
-      undefined,
-      fallbackMessages.report.partnerFallbackLabel,
-    );
+    const partnerName = resolveOtherDisplayName({
+      isManualPartner: partnerIsManual,
+      reportName: partner?.name,
+      accountDisplayName: partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,
+      locale,
+    });
+    // Current canonical name per report slot -- for surfaces that re-render a
+    // stored report's name fields (Family). person_a_name/person_b_name below
+    // keep their existing meaning (they seed the Romantic legacy substitution).
+    const displayNames = slotDisplayNames({
+      viewerIsReportA: viewerReportId === rr.report_id_a,
+      meDisplayName: viewerName,
+      otherDisplayName: partnerName,
+    });
     const personAName = repA?.name?.trim() || (viewerIsReportA ? viewerName : partnerName) || "Person A";
     const personBName = repB?.name?.trim() || (!viewerIsReportA ? viewerName : partnerName) || "Person B";
 
@@ -400,6 +412,8 @@ export async function GET(req: Request) {
       viewer_birth_place_unknown: isBirthPlaceFallback(viewer?.birth_place),
       partner_birth_place_unknown: isBirthPlaceFallback(partner?.birth_place),
       person_a_name: personAName,
+      display_name_a: displayNames.a,
+      display_name_b: displayNames.b,
       person_b_name: personBName,
       perspective_basic: perspectiveBasic,
       perspective_premium: perspectivePremium,

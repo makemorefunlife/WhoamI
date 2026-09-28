@@ -26,7 +26,7 @@ import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
 import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
-import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import { resolveRelationshipPairLabels } from "@/lib/relationship/resolveRelationshipPairLabels";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
   enforceRateLimit,
@@ -121,37 +121,28 @@ export async function POST(req: Request) {
     const [{ data: repA }, { data: repB }] = await Promise.all([
       supabase
         .from("reports")
-        .select("id, name")
+        .select("id, name, report_type, clerk_user_id")
         .eq("id", rr.report_id_a)
         .maybeSingle(),
       supabase
         .from("reports")
-        .select("id, name")
+        .select("id, name, report_type, clerk_user_id")
         .eq("id", rr.report_id_b)
         .maybeSingle(),
     ]);
 
-    const labelA = resolveViewerDisplayName({
-      reportName: repA?.name,
-      clerkFirstName:
-        viewerReportId === rr.report_id_a ? clerkUser?.firstName : undefined,
-      clerkFullName:
-        viewerReportId === rr.report_id_a ? clerkUser?.fullName : undefined,
-      fallback:
-        viewerReportId === rr.report_id_a
-          ? messages.report.meFallbackLabel
-          : messages.report.partnerFallbackLabel,
-    });
-    const labelB = resolveViewerDisplayName({
-      reportName: repB?.name,
-      clerkFirstName:
-        viewerReportId === rr.report_id_b ? clerkUser?.firstName : undefined,
-      clerkFullName:
-        viewerReportId === rr.report_id_b ? clerkUser?.fullName : undefined,
-      fallback:
-        viewerReportId === rr.report_id_b
-          ? messages.report.meFallbackLabel
-          : messages.report.partnerFallbackLabel,
+    // Canonical names (same rule as the report page): the other person's
+    // own account nickname is used for a connected partner -- previously
+    // only reports.name was read, so every connected partner reached the
+    // prompt (and the stored nicknames) as the fallback "Partner".
+    const { labelA, labelB } = await resolveRelationshipPairLabels({
+      viewerReportId,
+      reportIdA: rr.report_id_a,
+      reportIdB: rr.report_id_b,
+      repA,
+      repB,
+      viewerClerkUser: clerkUser,
+      locale,
     });
 
     const basicComplete = hasCompletePerspectives(

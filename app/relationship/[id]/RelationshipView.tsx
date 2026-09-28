@@ -69,6 +69,8 @@ export default function RelationshipView({
     reportIdB,
     nameA,
     nameB,
+    displayNameA,
+    displayNameB,
     viewerIsReportA,
     displayBasic,
     displayPremium,
@@ -416,6 +418,8 @@ export default function RelationshipView({
               viewerName={viewerName}
               nameA={nameA}
               nameB={nameB}
+              displayNameA={displayNameA}
+              displayNameB={displayNameB}
               viewerIsReportA={viewerIsReportA}
               displayPremium={displayPremium}
               displayRomanticDeep={displayRomanticDeep}

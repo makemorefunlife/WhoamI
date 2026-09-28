@@ -98,8 +98,11 @@ assert.doesNotMatch(code, /error: "[^"]*"/, "no hardcoded error string literals"
 assert.doesNotMatch(code, /error:[^\n]*LLM/);
 assert.match(code, /\{ error: messages\.errors\.analysisFailed \},\s*\{ status: 502 \}/);
 assert.match(code, /messages = getMessages\(locale\)/);
-assert.match(code, /messages\.report\.meFallbackLabel/);
-assert.match(code, /messages\.report\.partnerFallbackLabel/);
+// Fallback names come from the canonical resolver (request locale), which
+// reads the localized labels (lib/relationship/relationshipPersonNames.ts).
+assert.match(code, /await resolveRelationshipPairLabels\(\{[\s\S]{0,200}locale,/);
+const personNames = readFileSync("lib/relationship/relationshipPersonNames.ts", "utf8");
+assert.match(personNames, /me: m\.meFallbackLabel, other: m\.partnerFallbackLabel/);
 ok("every user-facing error comes from i18n for the request locale; fallback names are localized");
 
 assert.match(code, /catch \{\s*parsed = null;\s*\}/);

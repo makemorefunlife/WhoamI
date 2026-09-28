@@ -10,8 +10,7 @@ import { getMessages } from "@/lib/i18n/messages";
 import { logServerError } from "@/lib/security/safeLog";
 import { getOrBuildPersonCorePair } from "@/lib/personCore/services/getOrBuildPersonCore";
 import { composeFreeRelationshipPreview } from "@/lib/relationship/map/composeFreeRelationshipPreview";
-import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
-import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveMeDisplayName, resolveOtherDisplayName } from "@/lib/relationship/relationshipPersonNames";
 import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 
 export const runtime = "nodejs";
@@ -103,27 +102,26 @@ export async function GET(req: Request) {
         .maybeSingle(),
     ]);
 
-    const viewerName = resolveViewerDisplayName({
+    // Canonical names (lib/relationship/relationshipPersonNames.ts).
+    const viewerName = resolveMeDisplayName({
+      accountDisplayName: clerkUser?.publicMetadata?.displayName,
       reportName: repViewer?.name,
-      clerkFirstName: clerkUser?.firstName,
       clerkFullName: clerkUser?.fullName,
-      fallback: locale === "ko-KR" ? "나" : "Me",
+      clerkFirstName: clerkUser?.firstName,
+      locale,
     });
-    // repOther?.name (reports.name) is only ever populated for
-    // partner_manual contacts (manually-typed people with no Clerk
-    // account) -- for any real Clerk-connected friend it is null, so it
-    // must never be the only source checked here. Mirrors
-    // app/api/relationship/detail/route.ts's partnerName resolution.
+    // A partner_manual row's clerk_user_id is the creator's own id -- never
+    // look it up; its reports.name is my override for that person.
     const otherIsManual = repOther?.report_type === "partner_manual";
     const otherClerkNameById = otherIsManual
       ? {}
       : await resolveClerkDisplayNamesByUserId([repOther?.clerk_user_id]);
-    const otherName = resolvePartnerDisplayName(
-      repOther?.name,
-      repOther?.clerk_user_id ? otherClerkNameById[repOther.clerk_user_id] : undefined,
-      undefined,
-      messages.report.partnerFallbackLabel,
-    );
+    const otherName = resolveOtherDisplayName({
+      isManualPartner: otherIsManual,
+      reportName: repOther?.name,
+      accountDisplayName: repOther?.clerk_user_id ? otherClerkNameById[repOther.clerk_user_id] : undefined,
+      locale,
+    });
 
     const viewerDayMaster = personViewer.saju_master_json.stem_focus.day_stem_code;
     const otherDayMaster = personOther.saju_master_json.stem_focus.day_stem_code;

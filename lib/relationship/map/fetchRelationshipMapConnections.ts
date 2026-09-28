@@ -1,10 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchRelationshipReportRowsForHub } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
-import {
-  partnerNameFromLogSnapshot,
-  resolvePartnerDisplayName,
-} from "@/lib/relationship/resolvePartnerDisplayName";
+import { partnerNameFromLogSnapshot } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveOtherNameOrEmpty } from "@/lib/relationship/relationshipPersonNames";
 import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import {
   compareStringTieBreakDesc,
@@ -154,12 +152,15 @@ export async function fetchRelationshipMapConnections(
   type Candidate = RelationshipMapConnection & { isManual: boolean };
   const candidates: Candidate[] = visibleRows.map((r) => {
     const partnerId = r.report_id_a === viewerReportId ? r.report_id_b : r.report_id_a;
-    const partnerName = resolvePartnerDisplayName(
-      nameById[partnerId],
-      clerkNameByReportId[partnerId],
-      logNameByRrId.get(r.id),
-      typeById[partnerId] === "partner_manual" ? "친구" : "탐사자",
-    );
+    // Canonical precedence (relationshipPersonNames.ts). The map result is
+    // cached without a locale, so an unnamed person stays "" here and the
+    // map route fills the active locale's fallback ("Partner" / "상대").
+    const partnerName = resolveOtherNameOrEmpty({
+      isManualPartner: typeById[partnerId] === "partner_manual",
+      reportName: nameById[partnerId],
+      accountDisplayName: clerkNameByReportId[partnerId],
+      logName: logNameByRrId.get(r.id),
+    });
     const at = r.analysis_type as string;
     const analysisType: "basic" | "premium" | null =
       at === "premium" || at === "basic" ? at : null;

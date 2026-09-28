@@ -11,8 +11,11 @@ import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { cleanupStaleOpenInvites } from "@/lib/relationship/cleanupStaleOpenInvites";
 import {
   partnerNameFromLogSnapshot,
-  resolvePartnerDisplayName,
 } from "@/lib/relationship/resolvePartnerDisplayName";
+import {
+  relationshipFallbackNames,
+  resolveOtherNameOrEmpty,
+} from "@/lib/relationship/relationshipPersonNames";
 import { resolveClerkProfilesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
@@ -254,12 +257,17 @@ export async function GET(req: Request) {
     for (const r of rows) {
       const partnerId =
         r.report_id_a === reportId ? r.report_id_b : r.report_id_a;
-      const partnerName = resolvePartnerDisplayName(
-        nameById[partnerId],
-        clerkNameByReportId[partnerId],
-        logNameByRrId.get(r.id),
-        typeById[partnerId] === "partner_manual" ? "친구" : "탐사자",
-      );
+      // Canonical rule (lib/relationship/relationshipPersonNames.ts), same as
+      // the report page; localized fallback instead of hard-coded Korean.
+      // A name recorded in the latest analysis log is only a last resort
+      // before the fallback (never over a live override/account nickname).
+      const partnerName =
+        resolveOtherNameOrEmpty({
+          isManualPartner: typeById[partnerId] === "partner_manual",
+          reportName: nameById[partnerId],
+          accountDisplayName: clerkNameByReportId[partnerId],
+          logName: logNameByRrId.get(r.id),
+        }) || relationshipFallbackNames(locale).other;
       const at = r.analysis_type as string;
       const analysisType: "basic" | "premium" | null =
         at === "premium" || at === "basic" ? at : null;

@@ -42,9 +42,7 @@ import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChart
 import {
   UNKNOWN_BIRTH_FALLBACK,
 } from "@/lib/v2/onboarding/birthFallbackPolicy";
-import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
-import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
-import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
+import { resolveRelationshipPairLabels } from "@/lib/relationship/resolveRelationshipPairLabels";
 import {
   getOrBuildPersonCorePair,
   bundlePersonCorePairForPremium,
@@ -326,57 +324,25 @@ export async function POST(req: Request) {
       );
     }
 
-    const messages = getMessages(locale);
-    const meFallback = messages.report.meFallbackLabel;
-    const partnerFallback = messages.report.partnerFallbackLabel;
-
-    // The non-viewer side never has a live Clerk session to read from, so its
-    // display name must come from a batched publicMetadata.displayName lookup
-    // (the canonical source for any real connected account — see
-    // resolveClerkDisplayNamesByUserId's doc comment) rather than being left
-    // to fall straight through to a generic placeholder, which is what
-    // previously baked "나"/"상대" permanently into generated prose whenever
-    // the partner had no manually-set reports.name.
-    const partnerReport = viewerReportId === rr.report_id_a ? repB : repA;
-    const partnerIsManual = reportType(partnerReport) === "partner_manual";
-    const partnerClerkNameById = partnerIsManual
-      ? {}
-      : await resolveClerkDisplayNamesByUserId([reportClerkUserId(partnerReport)]);
-
-    const labelA =
-      viewerReportId === rr.report_id_a
-        ? resolveViewerDisplayName({
-            reportName: reportName(repA),
-            clerkFirstName: clerkUser?.firstName,
-            clerkFullName: clerkUser?.fullName,
-            fallback: meFallback,
-          })
-        : resolvePartnerDisplayName(
-            reportName(repA),
-            (() => {
-              const id = reportClerkUserId(repA);
-              return id ? partnerClerkNameById[id] : undefined;
-            })(),
-            undefined,
-            partnerFallback,
-          );
-    const labelB =
-      viewerReportId === rr.report_id_b
-        ? resolveViewerDisplayName({
-            reportName: reportName(repB),
-            clerkFirstName: clerkUser?.firstName,
-            clerkFullName: clerkUser?.fullName,
-            fallback: meFallback,
-          })
-        : resolvePartnerDisplayName(
-            reportName(repB),
-            (() => {
-              const id = reportClerkUserId(repB);
-              return id ? partnerClerkNameById[id] : undefined;
-            })(),
-            undefined,
-            partnerFallback,
-          );
+    // Canonical names -- identical rule to the report page and the Basic
+    // prompt (lib/relationship/relationshipPersonNames.ts): my account
+    // nickname for me; my override (manual person) or their own account
+    // nickname for them; localized fallback only when neither exists. The
+    // prompt receives exactly the names the page shows.
+    const toRow = (r: Record<string, unknown>) => ({
+      name: reportName(r),
+      report_type: reportType(r),
+      clerk_user_id: reportClerkUserId(r),
+    });
+    const { labelA, labelB } = await resolveRelationshipPairLabels({
+      viewerReportId,
+      reportIdA: rr.report_id_a,
+      reportIdB: rr.report_id_b,
+      repA: toRow(repA),
+      repB: toRow(repB),
+      viewerClerkUser: clerkUser,
+      locale,
+    });
     const userCustomMyName =
       viewerReportId === rr.report_id_a ? labelA : labelB;
     const userCustomTargetName =

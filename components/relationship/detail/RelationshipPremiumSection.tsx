@@ -1,4 +1,4 @@
-import { useState, type RefObject } from "react";
+import { useMemo, useState, type RefObject } from "react";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
@@ -25,6 +25,7 @@ import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { relationshipDeepFeedbackContext } from "@/lib/feedback/feedbackContext";
 import { resolveRelationshipEntryState } from "@/lib/credits/analysisEntryGate";
 import FamilySetupPanel from "@/components/relationship/detail/FamilySetupPanel";
+import { applyCurrentReportNames } from "@/lib/relationship/applyCurrentReportNames";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 
 type RelationshipPremiumSectionProps = {
@@ -61,6 +62,9 @@ type RelationshipPremiumSectionProps = {
   creditEnforced?: boolean;
   /** True once this kind's saved report (if any) has been loaded. */
   premiumKindLoaded?: boolean;
+  /** Current canonical names for report slots A / B (saved reports' name fields are shown with them). */
+  displayNameA?: string;
+  displayNameB?: string;
   /** Canonical Family context (sent as parent_type / child_is_viewer). */
   familyParentType?: FamilyParentRole;
   familyChildIsViewer?: boolean;
@@ -114,6 +118,8 @@ export default function RelationshipPremiumSection({
   relationshipCreditsRemaining = null,
   creditEnforced = true,
   premiumKindLoaded = true,
+  displayNameA = "",
+  displayNameB = "",
   familyParentType = "mother",
   familyChildIsViewer = false,
   onFamilyParentTypeChange,
@@ -128,6 +134,20 @@ export default function RelationshipPremiumSection({
   // switching tabs can never carry it into another relationship kind.
   const [familyNewAnalysisKind, setFamilyNewAnalysisKind] = useState<RelationshipKind | null>(null);
   const submitting = busy || requesting;
+  // Saved reports keep their generation-time names in dedicated name fields
+  // (headers, mid-report headings, role cards). Show those with the CURRENT
+  // canonical names -- display only: the stored report is not rewritten, not
+  // regenerated, and no credit is involved. Romantic renders names from the
+  // live myName/partnerName props already.
+  const named = useMemo(() => {
+    const slots = { a: displayNameA, b: displayNameB };
+    return {
+      work: applyCurrentReportNames(displayWorkDeep, slots),
+      cohabitation: applyCurrentReportNames(displayCohabitationDeep, slots),
+      family: applyCurrentReportNames(displayFamilyDeep, slots),
+      friendship: applyCurrentReportNames(displayFriendshipDeep, slots),
+    };
+  }, [displayNameA, displayNameB, displayWorkDeep, displayCohabitationDeep, displayFamilyDeep, displayFriendshipDeep]);
   const hideSection = analysisType === "none" && !forceVisible;
   if (hideSection) return null;
 
@@ -308,7 +328,7 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "work" && displayWorkDeep ? (
         <div className="w-full">
           <WorkColleagueReportView
-            report={displayWorkDeep}
+            report={named.work ?? displayWorkDeep}
             myName={viewerName}
             partnerName={partnerName}
             viewerIsReportA={viewerIsReportA}
@@ -331,7 +351,7 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "cohabitation" && displayCohabitationDeep ? (
         <div className="w-full">
           <MarriageReportView
-            report={displayCohabitationDeep}
+            report={named.cohabitation ?? displayCohabitationDeep}
             myName={viewerName}
             partnerName={partnerName}
             viewerIsReportA={viewerIsReportA}
@@ -353,7 +373,7 @@ export default function RelationshipPremiumSection({
         </div>
       ) : premiumKind === "family" && displayFamilyDeep ? (
         <div className="w-full">
-          <FamilyParentReportView report={displayFamilyDeep} />
+          <FamilyParentReportView report={named.family ?? displayFamilyDeep} />
         </div>
       ) : premiumKind === "family" ? (
         familyNeedsSetup ? (
@@ -368,7 +388,7 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "friendship" && displayFriendshipDeep ? (
         <div className="w-full">
           <FriendReportView
-            report={displayFriendshipDeep}
+            report={named.friendship ?? displayFriendshipDeep}
             myName={viewerName}
             partnerName={partnerName}
             viewerIsReportA={viewerIsReportA}

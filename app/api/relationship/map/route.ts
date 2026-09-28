@@ -4,6 +4,7 @@ import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/su
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
+import { relationshipFallbackNames } from "@/lib/relationship/relationshipPersonNames";
 import { logServerError } from "@/lib/security/safeLog";
 import { computeRelationshipMap } from "@/lib/relationship/map/computeRelationshipMap";
 import { RELATIONSHIP_ROLES, isRelationshipRoleId, type RelationshipRoleId } from "@/lib/relationship/map/relationshipRoleSsot";
@@ -80,7 +81,9 @@ export async function GET(req: Request) {
     };
     const toPayload = (p: { key: string; name: string; relationshipReportId: string; partnerReportId: string }): PersonPayload => ({
       key: p.key,
-      name: p.name,
+      // Names are resolved canonically upstream; an unnamed person is "" in
+      // the (locale-agnostic) cached map and gets this request's fallback.
+      name: p.name?.trim() ? p.name : relationshipFallbackNames(locale).other,
       relationshipReportId: p.relationshipReportId,
       partnerReportId: p.partnerReportId,
     });

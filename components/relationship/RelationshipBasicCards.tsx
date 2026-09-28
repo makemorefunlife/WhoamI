@@ -2,10 +2,6 @@
 
 import { MessageCircle, Sparkles, Zap, Battery } from "lucide-react";
 import type { RelationshipAxisKey } from "@/lib/relationship/normalizeRelationshipPerspectives";
-import {
-  resolveAxisPartnerNickname,
-  resolveAxisViewerNickname,
-} from "@/lib/relationship/viewerFirstDisplay";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import type { MessageCatalog } from "@/lib/i18n/messages";
 
@@ -130,11 +126,13 @@ export default function RelationshipBasicCards({
               messages,
             );
 
-        const myNick = resolveAxisViewerNickname(v2.my_nickname, myDisplay);
-        const partnerNick = resolveAxisPartnerNickname(
-          v2.partner_nickname,
-          partnerDisplay,
-        );
+        // Labels always show the CURRENT canonical names from the page
+        // (server-resolved, lib/relationship/relationshipPersonNames.ts).
+        // The nicknames stored in this axis block are generation-time
+        // copies -- e.g. a fallback "Partner" baked in for a connected
+        // partner -- and must not override the live name.
+        const myNick = myDisplay;
+        const partnerNick = partnerDisplay;
         const insights = (v2.insights ?? []).filter(Boolean).slice(0, 2);
         const actions = (v2.actions ?? []).filter(Boolean).slice(0, 2);
         const myLineDisplay = stripRolePreface(v2.my_line?.trim() ?? "");

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { AnalysisLogListItem } from "@/components/relationship/RelationshipAnalysisHistory";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
@@ -29,8 +28,6 @@ import {
   type AnalysisLogSnapshot,
 } from "@/lib/relationship/detail/parseAnalysisLogSnapshot";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
-import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
-import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import {
   parseRomanticDeepViewModel,
   type RomanticDeepMetaViewModel,
@@ -81,6 +78,9 @@ export type UseRelationshipDetailReturn = {
   snapshotView: AnalysisLogSnapshot | null;
   logs: AnalysisLogListItem[];
   logsLoading: boolean;
+  /** Current canonical names for report slots A / B (see relationshipPersonNames). */
+  displayNameA: string;
+  displayNameB: string;
   familyParentType: FamilyParentRole;
   familyChildIsViewer: boolean;
   /** True when parentType + childIsViewer came explicitly in the URL. */
@@ -170,7 +170,6 @@ export function useRelationshipDetail({
     (urlParentType === "mother" || urlParentType === "father") &&
     (urlChildIsViewer === "true" || urlChildIsViewer === "false");
   const urlAutostart = searchParams.get("autostart") === "1";
-  const { user } = useUser();
   const { locale, messages, href } = useLocale();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
@@ -222,6 +221,10 @@ export function useRelationshipDetail({
   const [detailOk, setDetailOk] = useState(false);
   const [partnerName, setPartnerName] = useState(messages.report.partnerFallbackLabel);
   const [viewerName, setViewerName] = useState("");
+  // Current canonical name per report slot (report_id_a / report_id_b), for
+  // surfaces that re-render a stored report's name fields (Family).
+  const [displayNameA, setDisplayNameA] = useState("");
+  const [displayNameB, setDisplayNameB] = useState("");
   const [analysisType, setAnalysisType] = useState<string>("basic");
   const [viewerBirthTimeUnknown, setViewerBirthTimeUnknown] = useState(false);
   const [partnerBirthTimeUnknown, setPartnerBirthTimeUnknown] = useState(false);
@@ -287,11 +290,6 @@ export function useRelationshipDetail({
   const loadSeqRef = useRef(0);
   const premiumSeqRef = useRef(0);
   const detailOkRef = useRef(false);
-  const viewerReportNameRef = useRef<string | null>(null);
-  const clerkFirstNameRef = useRef(user?.firstName);
-  const clerkFullNameRef = useRef(user?.fullName);
-  clerkFirstNameRef.current = user?.firstName;
-  clerkFullNameRef.current = user?.fullName;
   const REQUEST_TIMEOUT_MS = 300_000;
 
   async function fetchJsonWithTimeout(
@@ -388,20 +386,16 @@ export function useRelationshipDetail({
         const reportViewerName = (data.viewer_name ?? data.my_name ?? null) as
           | string
           | null;
-        viewerReportNameRef.current = reportViewerName;
-        const resolvedViewer = resolveViewerDisplayName({
-          reportName: reportViewerName,
-          clerkFirstName: clerkFirstNameRef.current,
-          clerkFullName: clerkFullNameRef.current,
-        });
-        const resolvedPartner = resolvePartnerDisplayName(
-          data.partner_name ?? data.display_partner_name,
-          undefined,
-          undefined,
-          messages.report.partnerFallbackLabel,
-        );
-        setPartnerName(resolvedPartner);
+        // The server already resolved both names with the canonical rule
+        // (lib/relationship/relationshipPersonNames.ts, request locale) --
+        // use them as-is; only an empty value falls back, in this locale.
+        const serverPartnerName = (data.partner_name ?? data.display_partner_name ?? "") as string;
+        const resolvedViewer = reportViewerName?.trim() || messages.report.meFallbackLabel;
+        const resolvedPartner = serverPartnerName.trim() || messages.report.partnerFallbackLabel;
         setViewerName(resolvedViewer);
+        setPartnerName(resolvedPartner);
+        setDisplayNameA(typeof data.display_name_a === "string" ? data.display_name_a : "");
+        setDisplayNameB(typeof data.display_name_b === "string" ? data.display_name_b : "");
         setViewerBirthTimeUnknown(data.viewer_birth_time_unknown === true);
         setPartnerBirthTimeUnknown(data.partner_birth_time_unknown === true);
         setViewerBirthPlaceUnknown(data.viewer_birth_place_unknown === true);
@@ -462,17 +456,6 @@ export function useRelationshipDetail({
     void load();
   }, [load]);
 
-  // Clerk hydrate → display name only (do not re-fetch detail).
-  useEffect(() => {
-    if (!detailOkRef.current) return;
-    setViewerName(
-      resolveViewerDisplayName({
-        reportName: viewerReportNameRef.current,
-        clerkFirstName: user?.firstName,
-        clerkFullName: user?.fullName,
-      }),
-    );
-  }, [user?.firstName, user?.fullName]);
 
   /** Same-route soft navigations: sync ?kind= and reload (state otherwise sticks). */
   useEffect(() => {
@@ -1059,6 +1042,8 @@ export function useRelationshipDetail({
     reportIdB,
     nameA,
     nameB,
+    displayNameA,
+    displayNameB,
     viewerIsReportA,
     displayBasic,
     displayPremium,
