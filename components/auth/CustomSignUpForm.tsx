@@ -125,45 +125,106 @@ export default function CustomSignUpForm({
     }
 
     setLoading(true);
+    console.log("[SignUp] create started", { email: emailAddress.trim() });
     try {
-      const res = await signUp.create({
-        emailAddress: emailAddress.trim(),
-        password: password,
-      });
+      const res = await Promise.race([
+        signUp.create({
+          emailAddress: emailAddress.trim(),
+          password: password,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("SIGNUP_TIMEOUT")), 8000)
+        ),
+      ]);
 
-      if (res.status === "missing_requirements") {
-        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      console.log("[SignUp] create result status:", res.status);
+
+      if (
+        res.status === "missing_requirements" ||
+        res.status === "unverified" ||
+        res.unverifiedFields?.includes("email_address") ||
+        signUp.verifications.emailAddress.status === "unverified"
+      ) {
+        try {
+          await Promise.race([
+            signUp.prepareEmailAddressVerification({ strategy: "email_code" }),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("PREPARE_TIMEOUT")), 5000)
+            ),
+          ]);
+        } catch (prepErr: unknown) {
+          console.warn("[SignUp] prepareEmailAddressVerification info:", prepErr);
+          // If code was already sent or active, we still proceed to verification UI step
+        }
         setVerifying(true);
       } else if (res.status === "complete") {
-        await setActive({ session: res.createdSessionId });
-        if (onSuccess) {
-          onSuccess();
+        if (res.createdSessionId) {
+          await setActive({ session: res.createdSessionId });
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            router.push(href(fallbackRedirectPath));
+          }
         } else {
-          router.push(href(fallbackRedirectPath));
+          setErrorMessage(
+            isKr
+              ? "회원가입 세션 생성에 실패했습니다. 다시 시도해 주세요."
+              : "Failed to create session. Please try again."
+          );
         }
+      } else {
+        // Fallback for any other unexpected status
+        try {
+          await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        } catch {
+          // ignore
+        }
+        setVerifying(true);
       }
     } catch (err: unknown) {
-      console.error("Sign up error:", err);
-      const clerkErr = err as { errors?: Array<{ code?: string; message?: string; longMessage?: string }> };
-      if (clerkErr?.errors?.[0]) {
-        const first = clerkErr.errors[0];
+      console.error("[SignUp] error:", err);
+      const errObj = err as {
+        message?: string;
+        errors?: Array<{ code?: string; message?: string; longMessage?: string }>;
+      };
+
+      if (errObj?.message === "SIGNUP_TIMEOUT" || errObj?.message === "PREPARE_TIMEOUT") {
+        setErrorMessage(
+          isKr
+            ? "회원가입 응답 시간이 초과되었습니다. 봇 방지 또는 네트워크 연결을 확인하고 다시 시도해 주세요."
+            : "Sign up request timed out. Please refresh or check your connection and try again."
+        );
+      } else if (errObj?.errors?.[0]) {
+        const first = errObj.errors[0];
         if (first.code === "form_identifier_exists") {
           setErrorMessage(
             isKr
               ? "이미 가입된 이메일 주소입니다. 로그인해 주세요."
               : "That email is already registered. Please sign in."
           );
-        } else if (first.code === "password_pwned" || first.code === "password_too_weak") {
+        } else if (
+          first.code === "password_pwned" ||
+          first.code === "password_too_weak" ||
+          first.code === "form_password_length_too_short"
+        ) {
           setErrorMessage(
             isKr
-              ? "비밀번호가 보안에 취약합니다. 다른 비밀번호를 설정해 주세요."
-              : "Password is too weak. Please choose a stronger password."
+              ? "비밀번호가 보안 조건에 맞지 않거나 취약합니다. 다른 비밀번호를 설정해 주세요."
+              : "Password is too weak or does not meet security requirements."
+          );
+        } else if (first.code === "captcha_invalid" || first.code === "captcha_failed") {
+          setErrorMessage(
+            isKr
+              ? "보안 검증(봇 방지) 실패. 페이지를 새로고침한 후 다시 시도해 주세요."
+              : "Bot protection check failed. Please refresh the page and try again."
           );
         } else {
-          setErrorMessage(first.longMessage || first.message || "Sign up failed.");
+          setErrorMessage(first.longMessage || first.message || (isKr ? "회원가입에 실패했습니다." : "Sign up failed."));
         }
       } else {
-        setErrorMessage(isKr ? "회원가입 중 오류가 발생했습니다." : "An error occurred during sign up.");
+        setErrorMessage(
+          isKr ? "회원가입 중 오류가 발생했습니다. 네트워크 상태를 확인해 주세요." : "An error occurred during sign up. Please check your connection."
+        );
       }
     } finally {
       setLoading(false);
@@ -177,9 +238,14 @@ export default function CustomSignUpForm({
     setLoading(true);
 
     try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
-        code: code.trim(),
-      });
+      const completeSignUp = await Promise.race([
+        signUp.attemptEmailAddressVerification({
+          code: code.trim(),
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("VERIFY_TIMEOUT")), 8000)
+        ),
+      ]);
 
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
@@ -196,13 +262,24 @@ export default function CustomSignUpForm({
         );
       }
     } catch (err: unknown) {
-      console.error("Verification error:", err);
-      const clerkErr = err as { errors?: Array<{ message?: string; longMessage?: string }> };
-      setErrorMessage(
-        clerkErr?.errors?.[0]?.longMessage ||
-          clerkErr?.errors?.[0]?.message ||
-          (isKr ? "잘못된 인증 코드입니다. 다시 확인해 주세요." : "Invalid verification code.")
-      );
+      console.error("[SignUp] Verification error:", err);
+      const errObj = err as {
+        message?: string;
+        errors?: Array<{ message?: string; longMessage?: string }>;
+      };
+      if (errObj?.message === "VERIFY_TIMEOUT") {
+        setErrorMessage(
+          isKr
+            ? "인증 확인 시간이 초과되었습니다. 코드를 재전송하거나 다시 시도해 주세요."
+            : "Verification request timed out. Please try again."
+        );
+      } else {
+        setErrorMessage(
+          errObj?.errors?.[0]?.longMessage ||
+            errObj?.errors?.[0]?.message ||
+            (isKr ? "잘못된 인증 코드입니다. 다시 확인해 주세요." : "Invalid verification code.")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -506,13 +583,23 @@ export default function CustomSignUpForm({
           )}
         </div>
 
+        {/* Clerk Smart Captcha / Turnstile Container */}
+        <div id="clerk-captcha" className="my-2" />
+
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading || !isValidPassword || !passwordsMatch}
-          className="w-full cursor-pointer rounded-full bg-gradient-to-b from-[#234A38] to-[#1A3328] py-3.5 text-sm font-bold text-[#FFFDF8] shadow-md transition hover:opacity-95 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!isLoaded || loading || !isValidPassword || !passwordsMatch}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#234A38] to-[#1A3328] py-3.5 text-sm font-bold text-[#FFFDF8] shadow-md transition hover:opacity-95 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "..." : labels.submit}
+          {loading ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span>{isKr ? "가입 처리 중..." : "Creating Account..."}</span>
+            </>
+          ) : (
+            labels.submit
+          )}
         </button>
       </form>
 
