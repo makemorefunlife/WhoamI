@@ -5,6 +5,7 @@
  */
 
 import { partnerNameFromReportRow } from "@/lib/relationship/resolvePartnerDisplayName";
+import type { Locale } from "@/lib/i18n/locale";
 
 export const RELATIONSHIP_AXIS_KEYS = [
   "emotional_sensitivity",
@@ -58,7 +59,7 @@ function padToTwo(arr: unknown[], filler: [string, string]): string[] {
 }
 
 /** LLM이 insights/actions를 비우면 축마다 다른 문장을 채워 UI 반복을 막음 */
-const AXIS_INSIGHT_FALLBACK: Record<
+const AXIS_INSIGHT_FALLBACK_KO: Record<
   RelationshipAxisKey,
   [string, string]
 > = {
@@ -80,7 +81,7 @@ const AXIS_INSIGHT_FALLBACK: Record<
   ],
 };
 
-const AXIS_ACTION_FALLBACK: Record<RelationshipAxisKey, [string, string]> = {
+const AXIS_ACTION_FALLBACK_KO: Record<RelationshipAxisKey, [string, string]> = {
   emotional_sensitivity: [
     "눈 마주치고 ‘지금 피곤해?’만 물어봐.",
     "문자 한 통은 이모지 없이 짧게, 사실 위주로만 보내 봐.",
@@ -99,6 +100,61 @@ const AXIS_ACTION_FALLBACK: Record<RelationshipAxisKey, [string, string]> = {
   ],
 };
 
+/**
+ * en-US counterparts of the fallback lines above -- same axis, same slot.
+ * Without these, an English report whose LLM output had only one
+ * insight/action for an axis got a Korean sentence padded into slot two.
+ */
+const AXIS_INSIGHT_FALLBACK_EN: Record<RelationshipAxisKey, [string, string]> = {
+  emotional_sensitivity: [
+    "When one of you shows moods openly and the other keeps them inside, your signals can land a beat apart.",
+    "Instead of saying less today, try lowering your tone one notch and say just one sentence.",
+  ],
+  communication_style: [
+    "One of you wants the conversation to keep flowing, the other needs pauses between words, so your pace can drift apart.",
+    "Before you reply, ask just once: 'Can you sum up what you heard in one line?'",
+  ],
+  conflict_response: [
+    "One of you wants to talk it through right away, the other wants some distance first, so you may react at different moments to the same thing.",
+    "Before words get sharp, agree to say 'hold on' first and take a breath together.",
+  ],
+  energy_pattern: [
+    "If one of you recharges around people and the other recharges alone, matching how long and how often you meet can be tricky.",
+    "At the end of today's meetup, set the next plan as either 'short' or 'relaxed' -- just one.",
+  ],
+};
+
+const AXIS_ACTION_FALLBACK_EN: Record<RelationshipAxisKey, [string, string]> = {
+  emotional_sensitivity: [
+    "Make eye contact and simply ask, 'Are you tired right now?'",
+    "Send one text that's short and factual, with no emojis.",
+  ],
+  communication_style: [
+    "Let them finish completely, then ask just one question.",
+    "Before a long talk, set the frame with one line: 'Let me give you the short version.'",
+  ],
+  conflict_response: [
+    "On the night of an argument you don't have to solve it -- just say, 'Let's talk about one thing tomorrow.'",
+    "When you step out of the room, don't shut the door -- agree to match your breathing first.",
+  ],
+  energy_pattern: [
+    "For this weekend's plan, set only the start time, and agree to head home and rest when you part.",
+    "Before you meet, agree on one mode: 'keep it light today' or 'let's talk it through today.'",
+  ],
+};
+
+function isEnglishLocale(locale: Locale | string | null | undefined): boolean {
+  return locale === "en-US";
+}
+
+function insightFallback(axisKey: RelationshipAxisKey, locale?: Locale | string | null): [string, string] {
+  return (isEnglishLocale(locale) ? AXIS_INSIGHT_FALLBACK_EN : AXIS_INSIGHT_FALLBACK_KO)[axisKey];
+}
+
+function actionFallback(axisKey: RelationshipAxisKey, locale?: Locale | string | null): [string, string] {
+  return (isEnglishLocale(locale) ? AXIS_ACTION_FALLBACK_EN : AXIS_ACTION_FALLBACK_KO)[axisKey];
+}
+
 function upgradeLegacyAxis(
   legacy: {
     me: string;
@@ -106,6 +162,7 @@ function upgradeLegacyAxis(
     insight: string;
   },
   axisKey: RelationshipAxisKey,
+  locale?: Locale | string | null,
 ): Record<string, unknown> {
   const ins = stripInsightPrefix(legacy.insight);
   return {
@@ -113,8 +170,8 @@ function upgradeLegacyAxis(
     partner_nickname: "",
     my_line: legacy.me.trim(),
     partner_line: legacy.partner.trim(),
-    insights: padToTwo(ins ? [ins] : [], AXIS_INSIGHT_FALLBACK[axisKey]),
-    actions: [...AXIS_ACTION_FALLBACK[axisKey]],
+    insights: padToTwo(ins ? [ins] : [], insightFallback(axisKey, locale)),
+    actions: [...actionFallback(axisKey, locale)],
   };
 }
 
@@ -124,6 +181,7 @@ function normalizeOneAxis(
   myNickname: string,
   partnerNickname: string,
   axisKey: RelationshipAxisKey,
+  locale?: Locale | string | null,
 ): Record<string, unknown> | null {
   let base: Record<string, unknown>;
   if (isNewAxisBlock(raw)) {
@@ -132,6 +190,7 @@ function normalizeOneAxis(
     base = upgradeLegacyAxis(
       raw as { me: string; partner: string; insight: string },
       axisKey,
+      locale,
     );
   } else {
     return null;
@@ -143,11 +202,11 @@ function normalizeOneAxis(
   base.partner_line = String(base.partner_line ?? "").trim();
   base.insights = padToTwo(
     Array.isArray(base.insights) ? base.insights : [],
-    AXIS_INSIGHT_FALLBACK[axisKey],
+    insightFallback(axisKey, locale),
   );
   base.actions = padToTwo(
     Array.isArray(base.actions) ? base.actions : [],
-    AXIS_ACTION_FALLBACK[axisKey],
+    actionFallback(axisKey, locale),
   );
 
   return base;
@@ -158,11 +217,12 @@ function normalizePerspectiveObject(
   raw: unknown,
   myNickname: string,
   partnerNickname: string,
+  locale?: Locale | string | null,
 ): Record<string, unknown> | null {
   if (!isRecord(raw)) return null;
   const out: Record<string, unknown> = {};
   for (const k of RELATIONSHIP_AXIS_KEYS) {
-    const axis = normalizeOneAxis(raw[k], myNickname, partnerNickname, k);
+    const axis = normalizeOneAxis(raw[k], myNickname, partnerNickname, k, locale);
     if (!axis) return null;
     out[k] = axis;
   }
@@ -203,17 +263,19 @@ export function normalizeRelationshipPerspectives(
   reportIdB: string,
   nicknameA: string,
   nicknameB: string,
+  locale?: Locale | string | null,
 ): { perspectives: Record<string, unknown> } | null {
   const raw = parsed.perspectives;
   if (!raw || typeof raw !== "object") return null;
 
-  const nameA = nicknameA.trim() || "첫 번째";
-  const nameB = nicknameB.trim() || "두 번째";
+  const en = isEnglishLocale(locale);
+  const nameA = nicknameA.trim() || (en ? "First" : "첫 번째");
+  const nameB = nicknameB.trim() || (en ? "Second" : "두 번째");
 
   const tryBuild = (sliceA: unknown, sliceB: unknown) => {
     if (!isPerspectiveBlock(sliceA) || !isPerspectiveBlock(sliceB)) return null;
-    const canonA = normalizePerspectiveObject(sliceA, nameA, nameB);
-    const canonB = normalizePerspectiveObject(sliceB, nameB, nameA);
+    const canonA = normalizePerspectiveObject(sliceA, nameA, nameB, locale);
+    const canonB = normalizePerspectiveObject(sliceB, nameB, nameA, locale);
     if (!canonA || !canonB) return null;
     return {
       perspectives: {
@@ -330,4 +392,44 @@ export function getViewerPerspectiveSlice(
   }
 
   return null;
+}
+
+/**
+ * Swaps any stored insight/action line that is EXACTLY one of the built-in
+ * fallback sentences into the viewer's locale (same axis, same slot).
+ * Reports generated before the fallbacks were locale-aware have the Korean
+ * filler persisted in result_basic; this fixes what is shown without
+ * rewriting the DB. LLM-written lines never match exactly, so they are
+ * left untouched. Returns a new object; the input is not mutated.
+ */
+export function localizeAxisFallbackLines(
+  slice: Record<string, unknown> | null,
+  locale: Locale | string | null | undefined,
+): Record<string, unknown> | null {
+  if (!slice) return slice;
+  const out: Record<string, unknown> = { ...slice };
+  for (const k of RELATIONSHIP_AXIS_KEYS) {
+    const axis = slice[k];
+    if (!isRecord(axis)) continue;
+    const swap = (
+      lines: unknown,
+      ko: [string, string],
+      en: [string, string],
+    ): unknown => {
+      if (!Array.isArray(lines)) return lines;
+      const target = isEnglishLocale(locale) ? en : ko;
+      const other = isEnglishLocale(locale) ? ko : en;
+      return lines.map((line) => {
+        if (typeof line !== "string") return line;
+        const i = other.indexOf(line.trim());
+        return i === -1 ? line : target[i];
+      });
+    };
+    out[k] = {
+      ...axis,
+      insights: swap(axis.insights, AXIS_INSIGHT_FALLBACK_KO[k], AXIS_INSIGHT_FALLBACK_EN[k]),
+      actions: swap(axis.actions, AXIS_ACTION_FALLBACK_KO[k], AXIS_ACTION_FALLBACK_EN[k]),
+    };
+  }
+  return out;
 }

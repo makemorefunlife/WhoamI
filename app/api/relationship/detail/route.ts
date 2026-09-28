@@ -20,7 +20,10 @@ import {
 } from "@/lib/relationship/relationshipKind";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getResultBasicLocale } from "@/lib/relationship/resultBasicLocale";
-import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
+import {
+  getViewerPerspectiveSlice,
+  localizeAxisFallbackLines,
+} from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
@@ -123,12 +126,17 @@ export async function GET(req: Request) {
       perspectives?: Record<string, Record<string, unknown>>;
     } | null;
 
-    const perspectiveBasic = getViewerPerspectiveSlice(
-      basic?.perspectives ?? null,
-      viewerReportId,
-      rr.report_id_a,
-      rr.report_id_b,
-      { partnerReportName: partner?.name },
+    // Stored reports can carry built-in filler lines in the other language
+    // (pre-fix padding); show those in the viewer's locale.
+    const perspectiveBasic = localizeAxisFallbackLines(
+      getViewerPerspectiveSlice(
+        basic?.perspectives ?? null,
+        viewerReportId,
+        rr.report_id_a,
+        rr.report_id_b,
+        { partnerReportName: partner?.name },
+      ),
+      locale,
     );
     const storedKind = parseRelationshipKind(rr.relationship_kind);
     const activeKind = kindParam ? relationshipKind : storedKind;

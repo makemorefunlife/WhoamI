@@ -167,6 +167,7 @@ export async function POST(req: Request) {
           rr.report_id_b,
           labelA,
           labelB,
+          locale,
         );
         if (migrated) {
           const migratedWithLocale = { ...migrated, locale };
@@ -199,6 +200,7 @@ export async function POST(req: Request) {
         rr.report_id_b,
         labelA,
         labelB,
+        locale,
       );
       if (patched) {
         const patchedWithLocale = { ...patched, locale };
@@ -306,6 +308,7 @@ export async function POST(req: Request) {
       rr.report_id_b,
       labelA,
       labelB,
+      locale,
     );
     if (!normalized) {
       await releaseRateLimitSlot("relationship_basic", userId);

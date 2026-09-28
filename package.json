@@ -12,6 +12,7 @@
     "test:relationship-map-direction": "npx tsx tests/unit/relationship-map-direction.test.mjs",
     "test:relationship-discovery-flow": "npx tsx tests/unit/relationship-discovery-flow.test.mjs",
     "test:free-relationship-preview": "npx tsx tests/unit/free-relationship-preview.test.mjs",
+    "test:basic-relationship-locale": "npx tsx tests/unit/basic-relationship-locale-fallback.test.ts",
     "test:feedback-context": "npx tsx tests/unit/feedback-context.test.ts",
     "test:analysis-entry-gate": "npx tsx tests/unit/analysis-entry-gate.test.ts",
     "test:credit-lifecycle-sql": "bash tests/scripts/run-credit-lifecycle-sql.sh",
