@@ -534,6 +534,7 @@ export default function RelationHubDashboard() {
       if (data?.own_birth_date_collision_warning) {
         alert(messages.hub.ownBirthDateCollisionWarning);
       }
+      setConnectedFriendName(payload.partnerName);
       await load("full", reportIdForCreate);
     } catch {
       alert(messages.hub.relationshipCreateNetworkError);

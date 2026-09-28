@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+import { ROUTES } from "@/constants/routes";
+
 export default function InviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +55,13 @@ export default function InviteContent() {
     router.push(localize(`/?token=${encodeURIComponent(token)}`));
   };
 
+  const handleSignIn = () => {
+    if (token) {
+      localStorage.setItem("inviteToken", token);
+    }
+    router.push(localize(ROUTES.signIn));
+  };
+
   return (
     <main className="min-h-screen bg-surface px-6 py-16 sm:py-24">
       <div className="mx-auto flex max-w-md flex-col items-center gap-6 text-center">
@@ -88,6 +97,17 @@ export default function InviteContent() {
               →
             </span>
           </button>
+
+          <div className="mt-2 flex items-center justify-center gap-2 text-sm text-on-surface-variant">
+            <span>{messages.invite.signInPrompt}</span>
+            <button
+              type="button"
+              onClick={handleSignIn}
+              className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              {messages.invite.signInCta}
+            </button>
+          </div>
         </div>
       </div>
     </main>

@@ -1051,6 +1051,8 @@ export const messagesKoKR: MessageCatalog = {
     title: "친구 초대",
     startBody: "여기서 시작하면 네 정보로 새 리포트를 만들고, 친구와의 관계 분석으로 연결돼.",
     startCta: "시작하기",
+    signInPrompt: "이미 계정이 있으신가요?",
+    signInCta: "로그인",
     loadingFallback: "로딩중...",
   },
   howItWorks: {

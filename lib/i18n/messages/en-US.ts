@@ -1092,6 +1092,8 @@ export const messagesEnUS = {
     startBody:
       "Starting here creates a new report with your info and connects it to a relationship analysis with your friend.",
     startCta: "Get started",
+    signInPrompt: "Already have an account?",
+    signInCta: "Sign in",
     loadingFallback: "Loading...",
   },
   howItWorks: {
@@ -2801,6 +2803,8 @@ export type MessageCatalog = {
     title: string;
     startBody: string;
     startCta: string;
+    signInPrompt: string;
+    signInCta: string;
     loadingFallback: string;
   };
   howItWorks: {

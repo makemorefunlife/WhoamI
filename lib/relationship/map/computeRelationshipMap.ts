@@ -111,9 +111,9 @@ async function computeRelationshipMapUncached(
 
   let totalPeople = 0;
   connections.forEach((c) => {
-    const otherDayMaster = batchedPartnerCores.get(c.partnerReportId)?.saju_master_json.stem_focus
-      .day_stem_code;
-    if (!otherDayMaster) return;
+    const otherDayMaster =
+      batchedPartnerCores.get(c.partnerReportId)?.saju_master_json?.stem_focus
+        ?.day_stem_code || "jia";
 
     const { tenGod, roleId } = resolveDayMasterRelationshipRole({
       viewerDayMaster,
