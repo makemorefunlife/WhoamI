@@ -8,7 +8,12 @@ import {
   getPatternSummaryForReport,
   getSurveyAnswersForReport,
 } from "@/lib/relationship/surveyPatterns";
-import { buildRelationshipBasicPrompt } from "@/lib/prompts/relationshipAnalysis";
+import {
+  buildRelationshipBasicPrompt,
+  buildRelationshipBasicResponseSchema,
+} from "@/lib/prompts/relationshipAnalysis";
+import { describePerspectivesShape } from "@/lib/relationship/describePerspectivesShape";
+import { getMessages } from "@/lib/i18n/messages";
 import { parseJsonObject } from "@/lib/relationship/parseLlmJson";
 import { formatResultBasicForIntegratedContext } from "@/lib/relationship/formatResultBasicForIntegratedContext";
 import {
@@ -35,10 +40,19 @@ export const maxDuration = 120;
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 export async function POST(req: Request) {
+  // Header-based until the body is read; every user-facing error below comes
+  // from the i18n message files for the request locale (never hardcoded copy,
+  // never internal terms such as "LLM").
+  let messages = getMessages(
+    resolveRequestLocale({
+      bodyLanguage: null,
+      headerLanguage: req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    }),
+  );
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: messages.errors.unauthorized }, { status: 401 });
     }
 
     const body = await req.json();
@@ -60,10 +74,11 @@ export async function POST(req: Request) {
       headerLanguage:
         req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
     });
+    messages = getMessages(locale);
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
-        { error: "relationship_report_id와 viewer_report_id가 필요합니다." },
+        { error: messages.errors.relationshipIdsRequired },
         { status: 400 },
       );
     }
@@ -80,13 +95,13 @@ export async function POST(req: Request) {
     if (rrErr) {
       console.info("[relationship/analyze/basic] relationship_lookup_failed");
       return NextResponse.json(
-        { error: "관계 기본 분석을 처리할 수 없습니다." },
+        { error: messages.errors.serviceUnavailable },
         { status: 503 },
       );
     }
     if (!rr?.id) {
       return NextResponse.json(
-        { error: "관계 분석을 찾을 수 없습니다." },
+        { error: messages.errors.notFound },
         { status: 404 },
       );
     }
@@ -123,7 +138,9 @@ export async function POST(req: Request) {
       clerkFullName:
         viewerReportId === rr.report_id_a ? clerkUser?.fullName : undefined,
       fallback:
-        viewerReportId === rr.report_id_a ? "나" : "첫 번째 사람",
+        viewerReportId === rr.report_id_a
+          ? messages.report.meFallbackLabel
+          : messages.report.partnerFallbackLabel,
     });
     const labelB = resolveViewerDisplayName({
       reportName: repB?.name,
@@ -132,7 +149,9 @@ export async function POST(req: Request) {
       clerkFullName:
         viewerReportId === rr.report_id_b ? clerkUser?.fullName : undefined,
       fallback:
-        viewerReportId === rr.report_id_b ? "나" : "두 번째 사람",
+        viewerReportId === rr.report_id_b
+          ? messages.report.meFallbackLabel
+          : messages.report.partnerFallbackLabel,
     });
 
     const basicComplete = hasCompletePerspectives(
@@ -232,12 +251,6 @@ export async function POST(req: Request) {
     }
 
     if (!blockA || !blockB) {
-      const missing =
-        !blockA && !blockB
-          ? `${labelA}, ${labelB} 양쪽`
-          : !blockA
-            ? `${labelA} 쪽`
-            : `${labelB} 쪽`;
       // code is purely additive -- the human-readable `error` message is
       // unchanged for any existing caller that only reads that field. It
       // lets a caller (useRelationshipDetail's auto-generation effect)
@@ -246,7 +259,7 @@ export async function POST(req: Request) {
       // made on this path either way.
       return NextResponse.json(
         {
-          error: `${missing} 설문 데이터를 찾지 못했어요. 각자 이 리포트로 설문을 마쳤는지 확인해 주세요.`,
+          error: messages.errors.relationshipSurveyIncomplete,
           code: "survey_incomplete",
         },
         { status: 400 },
@@ -283,21 +296,41 @@ export async function POST(req: Request) {
         ],
         temperature: 0.55,
         max_tokens: 4096,
-        response_format: { type: "json_object" },
+        // Structured Outputs: the model must return exactly this shape --
+        // both perspective keys, all four axes, every field and type. With
+        // plain json_object the model could return valid JSON of the wrong
+        // shape, which normalizeRelationshipPerspectives rightly rejects.
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "relationship_basic_perspectives",
+            strict: true,
+            schema: buildRelationshipBasicResponseSchema(rr.report_id_a, rr.report_id_b),
+          },
+        },
       });
     } catch (e) {
       await releaseRateLimitSlot("relationship_basic", userId);
       throw e;
     }
 
-    const raw = completion.choices[0]?.message.content?.trim() ?? "";
-    const parsed = parseJsonObject<{ perspectives?: Record<string, unknown> }>(
-      raw,
-    );
-    if (!parsed.perspectives) {
+    const choice = completion.choices[0];
+    const raw = choice?.message.content?.trim() ?? "";
+    // Content-free diagnostics for any generation failure below, so the
+    // cause is visible in server logs (finish reason, output size, refusal,
+    // and which field/axis was wrong) without logging generated text.
+    const genMeta = `finish=${choice?.finish_reason ?? "none"} out_tokens=${completion.usage?.completion_tokens ?? "?"} refusal=${choice?.message.refusal ? "yes" : "no"} locale=${locale}`;
+    let parsed: { perspectives?: Record<string, unknown> } | null = null;
+    try {
+      parsed = raw ? parseJsonObject<{ perspectives?: Record<string, unknown> }>(raw) : null;
+    } catch {
+      parsed = null;
+    }
+    if (!parsed?.perspectives) {
       await releaseRateLimitSlot("relationship_basic", userId);
+      logServerError("relationship/analyze/basic", null, `generation_unparseable ${genMeta}`);
       return NextResponse.json(
-        { error: "LLM 응답 형식이 올바르지 않습니다." },
+        { error: messages.errors.analysisFailed },
         { status: 502 },
       );
     }
@@ -312,8 +345,13 @@ export async function POST(req: Request) {
     );
     if (!normalized) {
       await releaseRateLimitSlot("relationship_basic", userId);
+      logServerError(
+        "relationship/analyze/basic",
+        null,
+        `generation_shape_invalid ${genMeta} ${describePerspectivesShape(parsed, rr.report_id_a, rr.report_id_b)}`,
+      );
       return NextResponse.json(
-        { error: "LLM이 두 사람 시점 데이터를 만들지 못했습니다." },
+        { error: messages.errors.analysisFailed },
         { status: 502 },
       );
     }
@@ -336,7 +374,7 @@ export async function POST(req: Request) {
       await releaseRateLimitSlot("relationship_basic", userId);
       console.error("relationship/analyze/basic update failed");
       return NextResponse.json(
-        { error: "관계 기본 분석을 처리할 수 없습니다." },
+        { error: messages.errors.relationshipSaveFailed },
         { status: 503 },
       );
     }
@@ -354,7 +392,7 @@ export async function POST(req: Request) {
   } catch (e) {
     logServerError("relationship/analyze/basic:", e, "internal_error");
     return NextResponse.json(
-      { error: "관계 기본 분석 실패" },
+      { error: messages.errors.analysisFailed },
       { status: 500 },
     );
   }

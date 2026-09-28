@@ -313,6 +313,61 @@ ${buildLlmOutputLocaleInstruction(outputLocale)}
 `.trim();
 }
 
+/**
+ * Strict JSON Schema for the Basic (free) analysis response, used with
+ * OpenAI Structured Outputs (`response_format: { type: "json_schema",
+ * strict: true }`). Plain `json_object` mode only guarantees *some* valid
+ * JSON, so the model could drop a perspective, an axis, a field, or emit a
+ * string where an array belongs -- normalizeRelationshipPerspectives then
+ * (correctly) rejects it and the user sees a failed report. This schema
+ * makes that exact shape -- both perspective keys, all four axes, every
+ * field and type -- a generation-time guarantee. It mirrors the "Output
+ * JSON" block of buildRelationshipBasicPrompt above; validation downstream
+ * is unchanged.
+ */
+export function buildRelationshipBasicResponseSchema(
+  reportIdA: string,
+  reportIdB: string,
+): Record<string, unknown> {
+  const stringList = { type: "array", items: { type: "string" } };
+  const axis = {
+    type: "object",
+    additionalProperties: false,
+    required: ["my_nickname", "partner_nickname", "my_line", "partner_line", "insights", "actions"],
+    properties: {
+      my_nickname: { type: "string" },
+      partner_nickname: { type: "string" },
+      my_line: { type: "string" },
+      partner_line: { type: "string" },
+      insights: stringList,
+      actions: stringList,
+    },
+  };
+  const axisKeys = ["emotional_sensitivity", "communication_style", "conflict_response", "energy_pattern"];
+  const perspective = {
+    type: "object",
+    additionalProperties: false,
+    required: axisKeys,
+    properties: Object.fromEntries(axisKeys.map((k) => [k, axis])),
+  };
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["perspectives"],
+    properties: {
+      perspectives: {
+        type: "object",
+        additionalProperties: false,
+        required: [reportIdA, reportIdB],
+        properties: {
+          [reportIdA]: perspective,
+          [reportIdB]: perspective,
+        },
+      },
+    },
+  };
+}
+
 export function buildRelationshipPremiumExtraBlock(
   mySaju: string,
   partnerSaju: string,

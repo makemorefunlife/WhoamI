@@ -451,7 +451,7 @@ export const messagesEnUS = {
     relationshipAnalysisFailed: "The deep relationship analysis failed. Please try again in a moment.",
     generationInProgress: "This analysis is already being generated. Please try again in a moment.",
     insufficientCredit: "You're out of credits. Please top up and try again.",
-    relationshipIdsRequired: "A relationship report ID and viewer report ID are required.",
+    relationshipIdsRequired: "We couldn't load this relationship analysis. Please refresh the page and try again.",
     personCoreLoadFailed: "We couldn't load this person's core profile.",
     relationshipDataMissing: "We couldn't load both people's report details.",
     invalidRequest: "This request is invalid.",
@@ -459,6 +459,8 @@ export const messagesEnUS = {
     relationshipManualFieldsRequired:
       "A report ID, partner name, and birth date are required.",
     friendSurveyIncomplete: "10 survey answers are required.",
+    relationshipSurveyIncomplete:
+      "We don't have both people's survey answers yet. Please make sure each of you has finished the survey.",
     partnerReportCreateFailed: "We couldn't create the friend's report.",
     twoReportIdsRequired: "Both report IDs are required.",
     reportsMustDiffer: "The two reports must be different.",
@@ -2380,6 +2382,7 @@ export type MessageCatalog = {
     serviceUnavailable: string;
     relationshipManualFieldsRequired: string;
     friendSurveyIncomplete: string;
+    relationshipSurveyIncomplete: string;
     partnerReportCreateFailed: string;
     twoReportIdsRequired: string;
     reportsMustDiffer: string;
