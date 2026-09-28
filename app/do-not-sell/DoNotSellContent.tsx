@@ -53,10 +53,10 @@ export default function DoNotSellContent() {
           <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
             {copy.emailLabel}:{" "}
             <a
-              href="mailto:contact@ahaitsme.com"
+              href="mailto:support@ahaitsme.com"
               className="font-medium text-secondary underline decoration-secondary/35 underline-offset-2 transition hover:text-accent-emerald hover:decoration-accent-emerald/50"
             >
-              contact@ahaitsme.com
+              support@ahaitsme.com
             </a>
           </p>
           <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">

@@ -1327,7 +1327,7 @@ export const messagesEnUS = {
       phone: "+1 626-381-8420",
       phoneNote: "We don't offer phone support. Please contact us by email.",
       emailLabel: "Email",
-      email: "contact@ahaitsme.com",
+      email: "support@ahaitsme.com",
       bizVerifyLabel: "Verify Business Registration",
     },
   },

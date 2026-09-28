@@ -64,10 +64,10 @@ export default async function ContactPage() {
             </dt>
             <dd>
               <a
-                href="mailto:contact@ahaitsme.com"
+                href="mailto:support@ahaitsme.com"
                 className="text-[15px] font-medium text-secondary underline decoration-secondary/35 underline-offset-2 transition hover:text-accent-emerald hover:decoration-accent-emerald/50"
               >
-                contact@ahaitsme.com
+                support@ahaitsme.com
               </a>
             </dd>
           </div>

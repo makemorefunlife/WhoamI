@@ -46,7 +46,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
           "Since Paddle.com is the Merchant of Record for our global orders, all billing inquiries, disputes, and refund requests are processed through Paddle in accordance with reseller terms and statutory consumer regulations.",
         ],
         listItems: [
-          "You can submit a refund request directly to Paddle support via your email receipt link, or contact us at contact@ahaitsme.com with your transaction ID, and we will assist in escalating the request to Paddle.",
+          "You can submit a refund request directly to Paddle support via your email receipt link, or contact us at support@ahaitsme.com with your transaction ID, and we will assist in escalating the request to Paddle.",
           "As the Merchant of Record, Paddle retains full authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and reseller terms.",
         ],
       },
@@ -94,7 +94,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
           "글로벌 주문 건의 결제 대행사(Merchant of Record)는 Paddle.com이므로, 모든 결제 문의, 분쟁, 환불 요청은 관련 법령 및 리셀러 약관에 따라 Paddle을 통해 처리됩니다.",
         ],
         listItems: [
-          "이메일 영수증에 포함된 링크로 Paddle 고객지원에 직접 환불을 요청하시거나, 거래 번호와 함께 contact@ahaitsme.com으로 문의해 주시면 Paddle에 요청이 전달되도록 안내해 드립니다.",
+          "이메일 영수증에 포함된 링크로 Paddle 고객지원에 직접 환불을 요청하시거나, 거래 번호와 함께 support@ahaitsme.com으로 문의해 주시면 Paddle에 요청이 전달되도록 안내해 드립니다.",
           "Merchant of Record인 Paddle은 법정 소비자 권리, 리셀러 정책 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
         ],
       },

@@ -192,7 +192,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         title: "10. California Privacy Rights",
         paragraphs: [
           "Aha It's me does not currently sell your personal information for monetary consideration or knowingly share your personal information with third parties for cross-context behavioral advertising. If our practices change in a way that creates an applicable right to opt out under the California Consumer Privacy Act (CCPA), we will update this Policy and our Do Not Sell or Share My Personal Information page and provide the required opt-out mechanism.",
-          "California residents have the right, under the CCPA and CalOPPA, to request details about the personal information we have collected about them, to request deletion of that information, and to exercise the rights described in Section 7. To exercise these rights, contact us at contact@ahaitsme.com.",
+          "California residents have the right, under the CCPA and CalOPPA, to request details about the personal information we have collected about them, to request deletion of that information, and to exercise the rights described in Section 7. To exercise these rights, contact us at support@ahaitsme.com.",
         ],
       },
       {
@@ -227,7 +227,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         paragraphs: [
           "Company Name: Aha It's me",
           "Address: 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea",
-          "Email: contact@ahaitsme.com",
+          "Email: support@ahaitsme.com",
         ],
       },
     ],
