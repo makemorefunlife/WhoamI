@@ -69,6 +69,7 @@ function CurrentDetailContent() {
         ) : null}
         {report ? (
           <StitchFreeReportView
+            reportId={reportId}
             title={messages.blueprint.surveyResultLabel}
             oneLineSummary={report.one_line_summary}
             axesScores={profile.primary_axes}

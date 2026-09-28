@@ -22,6 +22,7 @@ import { resolveRomanticRenderMode } from "@/lib/relationship/romantic/prototype
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
+import { relationshipDeepFeedbackContext } from "@/lib/feedback/feedbackContext";
 
 type RelationshipPremiumSectionProps = {
   busy: boolean;
@@ -63,6 +64,8 @@ type RelationshipPremiumSectionProps = {
    * CTA fallback unchanged.
    */
   autostartPending?: boolean;
+  /** Relationship report id — recorded with feedback. */
+  relationshipReportId?: string;
 };
 
 export default function RelationshipPremiumSection({
@@ -91,6 +94,7 @@ export default function RelationshipPremiumSection({
   creditExhausted = false,
   onOpenPurchase,
   autostartPending = false,
+  relationshipReportId,
 }: RelationshipPremiumSectionProps) {
   const { messages } = useLocale();
   const [requesting, setRequesting] = useState(false);
@@ -293,7 +297,14 @@ export default function RelationshipPremiumSection({
       {hasDeepContent && (premiumReady || hasSnapshotView) && !submitting ? (
         <>
           <AiAnalysisDisclaimer className="mt-6 px-1" />
-          <ReportFeedbackSection displayName={viewerName} />
+          <ReportFeedbackSection
+            displayName={viewerName}
+            reportContext={relationshipDeepFeedbackContext({
+              kind: premiumKind,
+              relationshipReportId,
+              romanticV4: romanticRenderMode === "v4",
+            })}
+          />
         </>
       ) : null}
       {!showAutostartPreparing && (

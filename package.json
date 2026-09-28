@@ -12,6 +12,7 @@
     "test:relationship-map-direction": "npx tsx tests/unit/relationship-map-direction.test.mjs",
     "test:relationship-discovery-flow": "npx tsx tests/unit/relationship-discovery-flow.test.mjs",
     "test:free-relationship-preview": "npx tsx tests/unit/free-relationship-preview.test.mjs",
+    "test:feedback-context": "npx tsx tests/unit/feedback-context.test.ts",
     "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
     "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",
     "test:parse-report": "npx tsx tests/scripts/parse-report-structure-smoke.mjs",

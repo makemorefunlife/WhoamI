@@ -2,22 +2,19 @@ import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase/serverClient";
 import { logServerError } from "@/lib/security/safeLog";
+import { buildFeedbackSheetPayload } from "@/lib/feedback/feedbackContext";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { email, rating, feedback, founder_applied, marketing_agreed, created_at } = body;
-
-    const payload = {
-      email: email ? String(email).trim() : "",
-      rating: rating ? String(rating).trim() : "good",
-      feedback: feedback ? String(feedback).trim() : "",
-      founder_applied: Boolean(founder_applied),
-      marketing_agreed: marketing_agreed !== undefined ? Boolean(marketing_agreed) : true,
-      created_at: created_at || new Date().toISOString(),
-    };
+    // Existing fields + report context (analysis_category, relationship_type,
+    // report_type, report_id, locale). Context is optional so older clients
+    // still submit; missing values are written as blank cells.
+    const payload = buildFeedbackSheetPayload(
+      body && typeof body === "object" ? (body as Record<string, unknown>) : {},
+    );
 
     // 1. Post to Google Sheet Webhook if configured
     const webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;

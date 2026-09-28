@@ -5,6 +5,7 @@ import { getFreeReportUiStrings } from "@/components/results/free/freeReportUiSt
 import type { LiteSection } from "@/lib/v2/lite/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
 import type { Locale } from "@/lib/i18n/locale";
+import { freeFeedbackContext } from "@/lib/feedback/feedbackContext";
 
 const serifStyle = { fontFamily: "var(--font-stitch-serif)" } as const;
 
@@ -22,6 +23,8 @@ export function StitchFreeReportView({
   sections,
   locale,
   onUpsellClick,
+  reportId,
+  reportType = "current_self_lite",
 }: {
   title: string;
   oneLineSummary: string;
@@ -35,6 +38,10 @@ export function StitchFreeReportView({
   };
   locale: Locale;
   onUpsellClick: () => void;
+  /** Owning report id — recorded with feedback. */
+  reportId?: string;
+  /** LiteReport.report_type of the rendered report. */
+  reportType?: string;
 }) {
   const t = getFreeReportUiStrings(locale);
 
@@ -53,6 +60,7 @@ export function StitchFreeReportView({
 
         <div className="mt-6">
           <FreeReportBody
+            feedbackContext={freeFeedbackContext({ reportType, reportId })}
             oneLineSummary={oneLineSummary}
             axesScores={axesScores}
             sections={[

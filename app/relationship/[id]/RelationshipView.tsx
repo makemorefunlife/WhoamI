@@ -14,6 +14,7 @@ import RelationshipGeneratingPanel from "@/components/relationship/detail/Relati
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
 import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
+import { relationshipBasicFeedbackContext } from "@/lib/feedback/feedbackContext";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
 import { ROUTES, relationshipDetailRoute } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -320,7 +321,12 @@ export default function RelationshipView({
                 partnerName={partnerName}
                 viewerName={viewerName}
               />
-              <ReportFeedbackSection displayName={viewerName} />
+              <ReportFeedbackSection
+                displayName={viewerName}
+                reportContext={relationshipBasicFeedbackContext({
+                  relationshipReportId: resolvedRelationshipId,
+                })}
+              />
             </>
           ) : null}
 
@@ -357,6 +363,7 @@ export default function RelationshipView({
 
           {!viewingBasicSurface ? (
             <RelationshipPremiumSection
+              relationshipReportId={resolvedRelationshipId}
               busy={generating}
               premiumKind={premiumKind}
               analysisType={analysisType}

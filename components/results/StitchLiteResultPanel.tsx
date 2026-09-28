@@ -10,6 +10,7 @@ import type { EssenceSelfLiteProfile } from "@/lib/v2/saju/essenceLite";
 import StitchFreeSticker from "@/components/results/StitchFreeSticker";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
+import { freeFeedbackContext } from "@/lib/feedback/feedbackContext";
 
 type LiteTab = "current" | "essence";
 
@@ -106,6 +107,10 @@ export default function StitchLiteResultPanel({
           {currentReport ? (
             <FreeReportBody
               oneLineSummary={currentReport.one_line_summary}
+              feedbackContext={freeFeedbackContext({
+                reportType: currentReport.report_type,
+                reportId,
+              })}
               axesScores={profile.primary_axes}
               sections={[
                 {
@@ -161,6 +166,10 @@ export default function StitchLiteResultPanel({
           {essenceReport ? (
             <FreeReportBody
               oneLineSummary={essenceReport.one_line_summary}
+              feedbackContext={freeFeedbackContext({
+                reportType: essenceReport.report_type,
+                reportId,
+              })}
               axesScores={essence.primary_axes}
               sections={essenceSections}
               locale={locale}

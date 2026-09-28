@@ -7,6 +7,7 @@ import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
+import { personalFeedbackContext } from "@/lib/feedback/feedbackContext";
 
 /**
  * essence/deep 페이지 본문. 로버블(Lovable) "Inner Compass" 디자인 이식 — Phase 3.
@@ -23,6 +24,7 @@ export default function StitchDeepEssenceView({
   error,
   onRetry,
   onRegenerateFresh,
+  reportId,
 }: {
   data: EssenceDeepPreviewResponse | null;
   loading: boolean;
@@ -30,6 +32,8 @@ export default function StitchDeepEssenceView({
   error: string | null;
   onRetry?: () => void;
   onRegenerateFresh?: () => void;
+  /** Owning report id — recorded with feedback. */
+  reportId?: string;
 }) {
   const { locale, messages } = useLocale();
 
@@ -136,7 +140,12 @@ export default function StitchDeepEssenceView({
             </div>
           )}
           <AiAnalysisDisclaimer className="mt-8 border-t border-outline-variant/20 pt-4" />
-          <ReportFeedbackSection />
+          <ReportFeedbackSection
+            reportContext={personalFeedbackContext({
+              reportType: data.slim_v1.source,
+              reportId,
+            })}
+          />
         </div>
       </div>
     </div>

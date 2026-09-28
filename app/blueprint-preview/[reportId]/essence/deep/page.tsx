@@ -161,6 +161,7 @@ function EssenceDeepContent() {
         </div>
 
         <StitchDeepEssenceView
+          reportId={reportId}
           data={data}
           loading={loading}
           inProgress={inProgress}

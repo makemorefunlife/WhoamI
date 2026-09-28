@@ -4,12 +4,19 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Check, Sparkles } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import type { FeedbackReportContext } from "@/lib/feedback/feedbackContext";
 
 export type FeedbackRating = "great" | "good" | "needs_improvement";
 
 type ReportFeedbackSectionProps = {
   dayMasterStem?: string;
   displayName?: string;
+  /**
+   * Which report this feedback is about. Written to the shared feedback
+   * Sheet next to the answer (see lib/feedback/feedbackContext.ts). Build it
+   * with the helpers there; UI is unaffected.
+   */
+  reportContext?: FeedbackReportContext;
 };
 
 function getSecretInnerTendency(
@@ -110,6 +117,7 @@ function getSecretInnerTendency(
 export default function ReportFeedbackSection({
   dayMasterStem,
   displayName,
+  reportContext,
 }: ReportFeedbackSectionProps) {
   const { user } = useUser();
   const { locale } = useLocale();
@@ -156,6 +164,11 @@ export default function ReportFeedbackSection({
           founder_applied: founderApplied,
           marketing_agreed: marketingAgreed,
           created_at: new Date().toISOString(),
+          analysis_category: reportContext?.analysis_category ?? "",
+          relationship_type: reportContext?.relationship_type ?? "",
+          report_type: reportContext?.report_type ?? "",
+          report_id: reportContext?.report_id ?? "",
+          locale,
         }),
       });
 

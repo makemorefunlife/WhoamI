@@ -8,6 +8,7 @@ import type { FreeReportUiStrings } from "@/components/results/free/freeReportUi
 import type { LiteSection } from "@/lib/v2/lite/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
 import type { Locale } from "@/lib/i18n/locale";
+import type { FeedbackReportContext } from "@/lib/feedback/feedbackContext";
 
 const serifStyle = { fontFamily: "var(--font-stitch-serif)" } as const;
 const GOLD = "#c4a482";
@@ -78,6 +79,7 @@ export function FreeReportBody({
   onUpsellClick,
   showIndicator = true,
   showUpsell = true,
+  feedbackContext,
 }: {
   oneLineSummary?: string;
   axesScores: PrimaryAxesScores;
@@ -87,6 +89,8 @@ export function FreeReportBody({
   onUpsellClick: () => void;
   showIndicator?: boolean;
   showUpsell?: boolean;
+  /** Which free report this is — forwarded to the shared feedback form. */
+  feedbackContext?: FeedbackReportContext;
 }) {
   return (
     <div>
@@ -119,7 +123,7 @@ export function FreeReportBody({
 
       <div className="mt-10 border-t border-outline-variant/30 pt-6">
         <AiAnalysisDisclaimer />
-        <ReportFeedbackSection />
+        <ReportFeedbackSection reportContext={feedbackContext} />
       </div>
 
       {showUpsell ? (
