@@ -24,6 +24,8 @@ import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { relationshipDeepFeedbackContext } from "@/lib/feedback/feedbackContext";
 import { resolveRelationshipEntryState } from "@/lib/credits/analysisEntryGate";
+import FamilySetupPanel from "@/components/relationship/detail/FamilySetupPanel";
+import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 
 type RelationshipPremiumSectionProps = {
   busy: boolean;
@@ -59,6 +61,13 @@ type RelationshipPremiumSectionProps = {
   creditEnforced?: boolean;
   /** True once this kind's saved report (if any) has been loaded. */
   premiumKindLoaded?: boolean;
+  /** Canonical Family context (sent as parent_type / child_is_viewer). */
+  familyParentType?: FamilyParentRole;
+  familyChildIsViewer?: boolean;
+  onFamilyParentTypeChange?: (role: FamilyParentRole) => void;
+  onFamilyChildIsViewerChange?: (childIsViewer: boolean) => void;
+  /** Family context was explicitly chosen before arriving (hub / purchase return). */
+  familyContextFromUrl?: boolean;
   /**
    * True while an explicit-intent autostart attempt (the user just picked
    * this Deep kind -- see ?autostart=1 in useRelationshipDetail.ts) is
@@ -105,10 +114,19 @@ export default function RelationshipPremiumSection({
   relationshipCreditsRemaining = null,
   creditEnforced = true,
   premiumKindLoaded = true,
+  familyParentType = "mother",
+  familyChildIsViewer = false,
+  onFamilyParentTypeChange,
+  onFamilyChildIsViewerChange,
+  familyContextFromUrl = false,
 }: RelationshipPremiumSectionProps) {
   const { messages } = useLocale();
   const [requesting, setRequesting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  // "Create a new Family analysis" on top of an existing report: shows the
+  // Family setup again before the (confirmed) regeneration. Keyed by kind so
+  // switching tabs can never carry it into another relationship kind.
+  const [familyNewAnalysisKind, setFamilyNewAnalysisKind] = useState<RelationshipKind | null>(null);
   const submitting = busy || requesting;
   const hideSection = analysisType === "none" && !forceVisible;
   if (hideSection) return null;
@@ -166,6 +184,39 @@ export default function RelationshipPremiumSection({
   });
   const emptyHint = (defaultHint: string) =>
     entryState === "purchase" ? messages.report.premiumEmptyBuyHint : defaultHint;
+
+  // Family: a NEW analysis always starts with the Family setup step (role /
+  // mom-or-dad), whose "Start analysis" is the single CTA: it generates when
+  // a credit is available and opens the purchase selector when not.
+  const isFamily = premiumKind === "family";
+  const familyNeedsSetup =
+    isFamily && (entryState === "generate" || entryState === "purchase");
+  const familyNewAnalysisOpen = isFamily && familyNewAnalysisKind === "family";
+  const familySetup = (mode: "first" | "new") => (
+    <FamilySetupPanel
+      key={`family-setup-${mode}`}
+      familyParentType={familyParentType}
+      familyChildIsViewer={familyChildIsViewer}
+      onFamilyParentTypeChange={(r) => onFamilyParentTypeChange?.(r)}
+      onFamilyChildIsViewerChange={(v) => onFamilyChildIsViewerChange?.(v)}
+      partnerName={partnerName}
+      initiallyComplete={mode === "new" || familyContextFromUrl}
+      busy={submitting}
+      hint={mode === "first" && entryState === "purchase" ? messages.report.premiumEmptyBuyHint : null}
+      onStart={() => {
+        if (mode === "new") {
+          setFamilyNewAnalysisKind(null);
+          onRegeneratePremium();
+          return;
+        }
+        if (entryState === "purchase" && onOpenPurchase) {
+          onOpenPurchase();
+          return;
+        }
+        void handleGenerateClick();
+      }}
+    />
+  );
 
   return (
     <ReportSurfaceProvider
@@ -305,19 +356,15 @@ export default function RelationshipPremiumSection({
           <FamilyParentReportView report={displayFamilyDeep} />
         </div>
       ) : premiumKind === "family" ? (
-        <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
-          <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            {entryState === "loading" ? (
-              messages.common.preparing
-            ) : (
-              <>
-                {messages.report.premiumEmptyFamily}
-                <br />
-                <span className="text-xs">{emptyHint(messages.report.premiumEmptyFamilyHint)}</span>
-              </>
-            )}
-          </p>
-        </div>
+        familyNeedsSetup ? (
+          familySetup("first")
+        ) : (
+          <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
+            <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
+              {messages.common.preparing}
+            </p>
+          </div>
+        )
       ) : premiumKind === "friendship" && displayFriendshipDeep ? (
         <div className="w-full">
           <FriendReportView
@@ -362,7 +409,7 @@ export default function RelationshipPremiumSection({
         </>
       ) : null}
       {!showAutostartPreparing && (
-      entryState === "purchase" && onOpenPurchase ? (
+      familyNeedsSetup ? null : entryState === "purchase" && onOpenPurchase ? (
         <div className="mt-4 space-y-2 text-center">
           <GlowButton type="button" className="w-full" onClick={onOpenPurchase}>
             {messages.report.premiumBuyCta}
@@ -381,13 +428,15 @@ export default function RelationshipPremiumSection({
               : messages.report.premiumGenerateCta(kindLabel)}
           </GlowButton>
         </div>
+      ) : premiumReady && !hasSnapshotView && familyNewAnalysisOpen ? (
+        <div className="mt-4">{familySetup("new")}</div>
       ) : premiumReady && !hasSnapshotView ? (
         <div className="mt-4 space-y-2 text-center">
           <button
             type="button"
             disabled={submitting}
             className="w-full rounded-xl border border-[#ffd6a5]/35 bg-[#ffd6a5]/8 py-2.5 text-sm font-medium text-[#ffd6a5] transition hover:bg-[#ffd6a5]/12 disabled:opacity-50"
-            onClick={onRegeneratePremium}
+            onClick={isFamily ? () => setFamilyNewAnalysisKind("family") : onRegeneratePremium}
           >
             {submitting
               ? messages.report.premiumRegenerating

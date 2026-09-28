@@ -354,6 +354,12 @@ export const messagesKoKR: MessageCatalog = {
     premiumEmptyGenerateHint: "아래 버튼으로 생성할 수 있어요.",
     premiumEmptyBuyHint: "남은 관계 분석이 없어요. 아래에서 1회 구매하면 바로 이 리포트를 만들 수 있어요.",
     premiumEmptyFamilyHint: "위에서 엄마/아빠를 고른 뒤 생성하세요.",
+    familySetupTitle: "가족 분석 준비",
+    familySetupSubtitle: "먼저 누구의 입장인지 알려주시면, 그 관점에서 가족 리포트를 만들어 드려요.",
+    familySetupParentQuestionSelf: "나는 엄마인가요, 아빠인가요?",
+    familySetupParentQuestionPartner: (partnerName: string) =>
+      `${partnerName || "부모님"}은(는) 엄마인가요, 아빠인가요?`,
+    familyStartAnalysisCta: "분석 시작하기",
     premiumGenerateCta: (kindLabel: string) => `${kindLabel} 관계 심화 분석 생성하기`,
     premiumGenerating: "심화 분석 생성 중…",
     premiumRegenerateCta: (kindLabel: string) => `${kindLabel} 심화 분석 다시 만들기`,

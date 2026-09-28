@@ -64,6 +64,7 @@ export default function RelationshipView({
     logsLoading,
     familyParentType,
     familyChildIsViewer,
+    familyContextFromUrl,
     reportIdA,
     reportIdB,
     nameA,
@@ -114,7 +115,7 @@ export default function RelationshipView({
   // resume generation. This reuses the existing ?autostart=1 -> 
   // runAutostartPremium() -> runPremium(premiumKind) wiring already used
   // by the survey-to-report handoff (see useRelationshipDetail.ts).
-  const href = localize(
+  const baseHref = localize(
     relationshipDetailRoute({
       relationshipReportId,
       viewerReportId,
@@ -122,6 +123,16 @@ export default function RelationshipView({
       autostart: true,
     }),
   );
+  // Family: carry the role/context the user already chose in the setup step,
+  // so a Paddle successUrl reload resumes the same Family analysis (autostart
+  // with that context) instead of asking the role questions again.
+  const href =
+    premiumKind === "family"
+      ? `${baseHref}${baseHref.includes("?") ? "&" : "?"}${new URLSearchParams({
+          parentType: familyParentType,
+          childIsViewer: familyChildIsViewer ? "true" : "false",
+        }).toString()}`
+      : baseHref;
 
   function handlePurchaseSuccess() {
     setPurchaseOpen(false);
@@ -159,7 +170,12 @@ export default function RelationshipView({
   // clearAutostartParam in useRelationshipDetail.ts), at which point the
   // normal recovery UI (error+retry, or credit-exhausted+Buy) takes over
   // for revisits/fallback cases -- exactly as before this change.
-  const autostartPending = urlAutostart && !premiumReady && !viewingPremiumSnapshot;
+  const autostartPending =
+    urlAutostart &&
+    !premiumReady &&
+    !viewingPremiumSnapshot &&
+    // Family without an explicit context shows its setup step, not a spinner.
+    !(analysisSurface === "family" && !familyContextFromUrl);
 
   useEffect(() => {
     if (!premiumReady || !urlAutostart) return;
@@ -416,6 +432,11 @@ export default function RelationshipView({
               creditExhausted={premiumCreditExhausted}
               onOpenPurchase={() => setPurchaseOpen(true)}
               relationshipCreditsRemaining={relationshipCreditsRemaining}
+              familyParentType={familyParentType}
+              familyChildIsViewer={familyChildIsViewer}
+              onFamilyParentTypeChange={setFamilyParentType}
+              onFamilyChildIsViewerChange={setFamilyChildIsViewer}
+              familyContextFromUrl={familyContextFromUrl}
               creditEnforced={creditEnforced}
               premiumKindLoaded={premiumKindLoaded}
               autostartPending={autostartPending}

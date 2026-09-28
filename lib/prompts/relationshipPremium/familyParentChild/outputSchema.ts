@@ -1,4 +1,5 @@
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
+import { hasFamilyPersonContrastLead } from "@/lib/relationship/familyParent/familyPersonContrastLead";
 
 export const FAMILY_PARENT_CHILD_DEEP_FORMAT =
   "family_parent_child_deep_v2" as const;
@@ -19,8 +20,9 @@ export function isFamilyParentChildDeepReport(
     Array.isArray(compareTable) && compareTable[0]
       ? String((compareTable[0] as { meaning?: string }).meaning ?? "")
       : "";
-  const hasPersonContrastLead =
-    /쪽은 ‘|모두 ‘|share the same person signal|”: “/.test(firstMeaning);
+  // Shared with the writer (familyPersonContrastLead.ts) so the accepted
+  // wording can never drift from what is actually generated.
+  const hasPersonContrastLead = hasFamilyPersonContrastLead(firstMeaning);
   return (
     p.format === FAMILY_PARENT_CHILD_DEEP_FORMAT &&
     Boolean(p.report?.family?.section_child_dna?.genius_title) &&

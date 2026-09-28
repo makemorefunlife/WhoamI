@@ -15,6 +15,7 @@
     "test:basic-relationship-locale": "npx tsx tests/unit/basic-relationship-locale-fallback.test.ts",
     "test:relationship-entry-paddle-qty": "npx tsx tests/unit/relationship-entry-and-paddle-quantity.test.ts",
     "test:relationship-basic-generation": "npx tsx tests/unit/relationship-basic-generation.test.ts",
+    "test:family-relationship-flow": "npx tsx tests/unit/family-relationship-flow.test.ts",
     "test:feedback-context": "npx tsx tests/unit/feedback-context.test.ts",
     "test:analysis-entry-gate": "npx tsx tests/unit/analysis-entry-gate.test.ts",
     "test:credit-lifecycle-sql": "bash tests/scripts/run-credit-lifecycle-sql.sh",

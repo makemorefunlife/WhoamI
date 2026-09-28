@@ -127,7 +127,7 @@ function resolveRoleLensKey(parentRole: FamilyParentRole | undefined): FamilyRol
   return "neutral";
 }
 
-import { josaGwaWa } from "./familyParentLanguage";
+import { buildFamilyPersonContrastLead } from "./familyPersonContrastLead";
 
 /**
  * meaning이 pair 밴드만 쓰면 person shortLabel 차이가 최종 문장에 안 남음.
@@ -140,19 +140,7 @@ function personAxisLead(
   nameChild: string,
   labelChild: string,
 ): string {
-  if (labelParent === labelChild) {
-    const parentWithJosa = josaGwaWa(nameParent);
-    return pick(
-      locale,
-      `${nameParent} and ${nameChild} share the same signal (“${labelParent}”). `,
-      `${parentWithJosa} ${nameChild} 모두 ‘${labelParent}’이에요. `,
-    );
-  }
-  return pick(
-    locale,
-    `${nameParent}: “${labelParent}.” ${nameChild}: “${labelChild}.” `,
-    `${nameParent} 쪽은 ‘${labelParent}’, ${nameChild} 쪽은 ‘${labelChild}’이에요. `,
-  );
+  return buildFamilyPersonContrastLead(locale, nameParent, labelParent, nameChild, labelChild);
 }
 
 /** pairFamily 없으면 counts로 seal/bond 합성 → 기존 buildPairFamilySignals SSOT 재사용 (medium 강제 금지). */

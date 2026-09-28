@@ -369,6 +369,12 @@ export const messagesEnUS = {
     premiumEmptyGenerateHint: "You can generate it with the button below.",
     premiumEmptyBuyHint: "You have no Relationship analyses left. Buy one below to create this report.",
     premiumEmptyFamilyHint: "Choose Mom or Dad above, then generate.",
+    familySetupTitle: "Set up your Family analysis",
+    familySetupSubtitle: "Tell us your role first, so the report reads from the right side of your family.",
+    familySetupParentQuestionSelf: "Are you the mom or the dad?",
+    familySetupParentQuestionPartner: (partnerName: string) =>
+      `Is ${partnerName || "your parent"} your mom or your dad?`,
+    familyStartAnalysisCta: "Start analysis",
     premiumGenerateCta: (kindLabel: string) => `Generate ${kindLabel} deep analysis`,
     premiumGenerating: "Generating deep analysis…",
     premiumRegenerateCta: (kindLabel: string) =>
@@ -2306,6 +2312,11 @@ export type MessageCatalog = {
     premiumEmptyGenerateHint: string;
     premiumEmptyBuyHint: string;
     premiumEmptyFamilyHint: string;
+    familySetupTitle: string;
+    familySetupSubtitle: string;
+    familySetupParentQuestionSelf: string;
+    familySetupParentQuestionPartner: (partnerName: string) => string;
+    familyStartAnalysisCta: string;
     premiumGenerateCta: (kindLabel: string) => string;
     premiumGenerating: string;
     premiumRegenerateCta: (kindLabel: string) => string;

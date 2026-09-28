@@ -83,6 +83,8 @@ export type UseRelationshipDetailReturn = {
   logsLoading: boolean;
   familyParentType: FamilyParentRole;
   familyChildIsViewer: boolean;
+  /** True when parentType + childIsViewer came explicitly in the URL. */
+  familyContextFromUrl: boolean;
   reportIdA: string;
   reportIdB: string;
   nameA: string;
@@ -158,6 +160,15 @@ export function useRelationshipDetail({
   const urlKindHint = searchParams.get("kind")?.trim() ?? "";
   const urlChildIsViewer = searchParams.get("childIsViewer")?.trim() ?? "";
   const urlParentType = searchParams.get("parentType")?.trim() ?? "";
+  /**
+   * Family context (child_is_viewer + parent_type) was explicitly chosen
+   * before arriving -- the hub kind picker, or the purchase return URL of an
+   * in-page setup. Without it, a Family analysis must go through the Family
+   * setup step first; it is never generated on silent defaults.
+   */
+  const familyContextFromUrl =
+    (urlParentType === "mother" || urlParentType === "father") &&
+    (urlChildIsViewer === "true" || urlChildIsViewer === "false");
   const urlAutostart = searchParams.get("autostart") === "1";
   const { user } = useUser();
   const { locale, messages, href } = useLocale();
@@ -995,12 +1006,19 @@ export function useRelationshipDetail({
       autostartTriggered.current = true;
       return;
     }
+    // Family needs its role/context setup before any generation: without an
+    // explicitly chosen context, show the setup step instead of autostarting.
+    if (analysisSurface === "family" && !familyContextFromUrl) {
+      autostartTriggered.current = true;
+      return;
+    }
     if (busy || autostartActive) return;
     autostartTriggered.current = true;
     void runAutostartPremium();
   }, [
     urlAutostart,
     analysisSurface,
+    familyContextFromUrl,
     loading,
     detailOk,
     effectiveViewerReportId,
@@ -1036,6 +1054,7 @@ export function useRelationshipDetail({
     logsLoading,
     familyParentType,
     familyChildIsViewer,
+    familyContextFromUrl,
     reportIdA,
     reportIdB,
     nameA,
