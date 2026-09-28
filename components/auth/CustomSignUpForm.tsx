@@ -35,15 +35,27 @@ export default function CustomSignUpForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Validation rules
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim());
   const hasMinLength = password.length >= 8;
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-  const isValidPassword = hasMinLength && hasUpper && hasLower && hasNumber && hasSpecial;
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  const isValidPassword = hasMinLength;
 
   const isConfirmTyped = confirmPassword.length > 0;
   const passwordsMatch = isConfirmTyped && password === confirmPassword;
+
+  // Unmet reason helper for clear visual feedback
+  const getUnmetReason = (): string | null => {
+    if (!emailAddress.trim()) return isKr ? "이메일 주소를 입력해 주세요." : "Please enter your email address.";
+    if (!isValidEmail) return isKr ? "올바른 이메일 형식이 아닙니다." : "Please enter a valid email address.";
+    if (!password) return isKr ? "비밀번호를 입력해 주세요." : "Please enter a password.";
+    if (!hasMinLength) return isKr ? "비밀번호는 8자 이상이어야 합니다." : "Password must be at least 8 characters.";
+    if (!isConfirmTyped) return isKr ? "비밀번호 확인을 입력해 주세요." : "Please confirm your password.";
+    if (!passwordsMatch) return isKr ? "비밀번호 확인이 일치하지 않습니다." : "Passwords do not match.";
+    return null;
+  };
 
   // Text translations
   const labels = isKr
@@ -108,19 +120,21 @@ export default function CustomSignUpForm({
 
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded || loading) return;
+    if (loading) return;
     setErrorMessage(null);
 
-    if (!emailAddress.trim() || !password || !confirmPassword) {
-      setErrorMessage(labels.errFillAll);
+    if (!isLoaded) {
+      setErrorMessage(
+        isKr
+          ? "인증 시스템을 준비 중입니다. 1~2초 후 다시 시도해 주세요."
+          : "Initializing authentication module. Please try again in a moment."
+      );
       return;
     }
-    if (!isValidPassword) {
-      setErrorMessage(labels.errRules);
-      return;
-    }
-    if (!passwordsMatch) {
-      setErrorMessage(labels.errMismatch);
+
+    const unmetReason = getUnmetReason();
+    if (unmetReason) {
+      setErrorMessage(unmetReason);
       return;
     }
 
@@ -586,10 +600,18 @@ export default function CustomSignUpForm({
         {/* Clerk Smart Captcha / Turnstile Container */}
         <div id="clerk-captcha" className="my-2" />
 
+        {/* Unmet Reason Warning / Visual Feedback */}
+        {getUnmetReason() && (
+          <div className="mb-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#F5F0E8] py-2 px-3 text-xs font-medium text-[#4A5C52] border border-[#D4CFC4]/50">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#6A7D73]" />
+            <span>{getUnmetReason()}</span>
+          </div>
+        )}
+
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={!isLoaded || loading || !isValidPassword || !passwordsMatch}
+          disabled={loading}
           className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#234A38] to-[#1A3328] py-3.5 text-sm font-bold text-[#FFFDF8] shadow-md transition hover:opacity-95 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
