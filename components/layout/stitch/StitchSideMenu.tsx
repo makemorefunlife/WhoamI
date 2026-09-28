@@ -128,6 +128,7 @@ export default function StitchSideMenu({
       id: "support",
       label: messages.footer.support,
       links: [
+        { href: "/#how-it-works", label: messages.nav.howItWorks },
         { href: ROUTES.about, label: messages.nav.about },
         { href: ROUTES.pricing, label: messages.nav.pricing },
         { href: ROUTES.faq, label: messages.nav.faq },

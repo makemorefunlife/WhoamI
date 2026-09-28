@@ -185,14 +185,15 @@ export default function StitchLandingPage({
           </div>
         </section>
 
-        {/* PRINCIPLES Section (4-Step Process Flow with Icon Images & Connecting Arrows) */}
+        {/* HOW IT WORKS Section (4-Step Process Flow Cards) */}
         <section
+          id="how-it-works"
           data-stitch-reveal
-          className="mt-stack-lg md:mt-section-gap text-left"
+          className="scroll-mt-20 mt-stack-lg md:mt-section-gap text-left"
         >
           <div className="mb-6 text-left">
             <span className={EYEBROW_CLASS}>
-              {messages.landing.frameworkEyebrow || "PRINCIPLES"}
+              {messages.landing.frameworkEyebrow || "HOW IT WORKS"}
             </span>
             <h2 className="stitch-headline text-3xl font-bold leading-tight text-primary md:text-4xl text-left">
               {messages.landing.journeyTitle}
@@ -613,8 +614,8 @@ export default function StitchLandingPage({
             <div className="max-w-xl space-y-0.5 text-[11px] leading-relaxed text-on-primary/55">
               <p>
                 {messages.footer.business.companyLabel}:{" "}
-                {messages.footer.business.companyName} ({messages.footer.business.ceoLabel}:{" "}
-                {messages.footer.business.ceoName})
+                {messages.footer.business.companyName} | {messages.footer.business.ceoLabel}:{" "}
+                {messages.footer.business.ceoName}
               </p>
               <p>
                 {messages.footer.business.bizNumberLabel}:{" "}

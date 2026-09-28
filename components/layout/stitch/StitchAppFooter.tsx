@@ -36,6 +36,7 @@ export default function StitchAppFooter() {
       id: "support",
       label: messages.footer.support,
       links: [
+        { href: "/#how-it-works", label: messages.nav.howItWorks },
         { href: ROUTES.about, label: messages.nav.about },
         { href: ROUTES.pricing, label: messages.nav.pricing },
         { href: ROUTES.faq, label: messages.nav.faq },
@@ -82,7 +83,7 @@ export default function StitchAppFooter() {
 
         <div className="border-t border-on-primary/15 pt-5 text-[11px] leading-relaxed text-on-primary/60">
           <p>
-            {biz.companyLabel}: {biz.companyName} ({biz.ceoLabel}: {biz.ceoName})
+            {biz.companyLabel}: {biz.companyName} | {biz.ceoLabel}: {biz.ceoName}
           </p>
           <p>
             {biz.bizNumberLabel}: {biz.bizNumber}

@@ -1222,15 +1222,20 @@ export const messagesEnUS = {
     reportsStartTitle: "Get Started",
     reportsStartDesc: "Pick a relationship, and lay both of your natures side by side.",
     reportsStartCta: "Start Relationship Analysis",
-    frameworkEyebrow: "PRINCIPLES",
-    journeyTitle: "Your Journey to Better Choices",
-    frameworkStep1Text: "Understand yourself first",
-    frameworkStep1Cta: "Personal Analysis",
-    frameworkStep2Text: "Understand how you communicate with others",
-    frameworkStep2Cta: "Relationship Analysis",
-    frameworkStep3Text: "Use what you understand to make better choices",
-    frameworkStep4Text: "Reflect on your choices and become a better you",
-    frameworkStep4Cta: "Decision Diary",
+    frameworkEyebrow: "HOW IT WORKS",
+    journeyTitle: "How Aha It's Me! Works",
+    frameworkStep1Title: "Step 1. Rapid Self-Assessment",
+    frameworkStep1Text: "Complete a concise 10-question behavioral survey and profile inputs in under 2 minutes.",
+    frameworkStep1Cta: "Start Survey",
+    frameworkStep2Title: "Step 2. 6-Axis Blueprint Dashboard",
+    frameworkStep2Text: "Explore your innate cognitive style, communication tendencies, and stress response archetypes.",
+    frameworkStep2Cta: "Personal Blueprint",
+    frameworkStep3Title: "Step 3. Connect Peers & Partners",
+    frameworkStep3Text: "Add friends, colleagues, or partners to your Relationship Hub to analyze interpersonal synergies.",
+    frameworkStep3Cta: "Relationship Hub",
+    frameworkStep4Title: "Step 4. Actionable 7-Scene Report",
+    frameworkStep4Text: "Unlock comprehensive digital reports delivering concrete communication strategies and friction-resolution insights.",
+    frameworkStep4Cta: "Unlock Full Report",
     journalEyebrow: "DECISION JOURNAL",
     journalHeadline: "As your choices accumulate,\nyou come to know yourself better.",
     journalBody:
@@ -1296,7 +1301,7 @@ export const messagesEnUS = {
     // satisfied for both locales.
     business: {
       companyLabel: "Company",
-      companyName: "Ahaitsme",
+      companyName: "Aha Its me",
       ceoLabel: "CEO",
       ceoName: "Hong Sunghyun",
       bizNumberLabel: "Business registration no.",
@@ -2901,11 +2906,16 @@ export type MessageCatalog = {
     reportsStartCta: string;
     frameworkEyebrow: string;
     journeyTitle: string;
+    frameworkStep1Title: string;
     frameworkStep1Text: string;
     frameworkStep1Cta: string;
+    frameworkStep2Title: string;
     frameworkStep2Text: string;
     frameworkStep2Cta: string;
+    frameworkStep3Title: string;
     frameworkStep3Text: string;
+    frameworkStep3Cta?: string;
+    frameworkStep4Title: string;
     frameworkStep4Text: string;
     frameworkStep4Cta: string;
     journalEyebrow: string;
