@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
+import { resolveAnalysisEntry } from "@/lib/credits/analysisEntryGate";
 
 export default function StitchPremiumCard({
   reportId,
@@ -18,6 +19,7 @@ export default function StitchPremiumCard({
   const isKo = locale === "ko-KR";
   const href = localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`);
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [checkingCredit, setCheckingCredit] = useState(false);
 
   // Pricing/name/tagline below come from the same regional catalog copy
   // /pricing uses (messages.pricing.regionalPlans) rather than being typed
@@ -28,9 +30,30 @@ export default function StitchPremiumCard({
   const planId = isKo ? "kr_personal_premium" : "us_personal_premium";
   const plan = messages.pricing.regionalPlans[planId];
 
-  const handleClick = () => {
+  // A signed-in user who already holds a Personal credit (purchase, gift,
+  // tester code) goes straight into the analysis instead of checkout.
+  // ?autostart=1 is the same explicit-intent convention the other Personal
+  // entry points use (see useSlimV1Integrated.ts): the deep page generates
+  // right away, and reserve_credit there -- not this check -- is what
+  // actually spends the credit, only when the report is generated.
+  const handleClick = async () => {
     if (onGuestClick) {
       onGuestClick();
+      return;
+    }
+    if (checkingCredit) return;
+    setCheckingCredit(true);
+    let summary = null;
+    try {
+      const res = await fetch("/api/account/entitlements", { cache: "no-store" });
+      summary = res.ok ? await res.json() : null;
+    } catch {
+      summary = null;
+    } finally {
+      setCheckingCredit(false);
+    }
+    if (resolveAnalysisEntry(summary, "personal") === "open_analysis") {
+      router.push(`${href}?autostart=1`);
       return;
     }
     setSelectorOpen(true);
@@ -98,7 +121,9 @@ export default function StitchPremiumCard({
 
         <button
           type="button"
-          onClick={handleClick}
+          onClick={() => void handleClick()}
+          disabled={checkingCredit}
+          aria-busy={checkingCredit}
           className="stitch-cta-primary inline-flex w-full items-center justify-center gap-2 sm:w-auto sm:min-w-[13rem] !py-3.5 !text-base shadow-md group-hover:shadow-lg transition-all"
         >
           <span>{isKo ? "심화 리포트 열기" : "Unlock Full Report"}</span>
