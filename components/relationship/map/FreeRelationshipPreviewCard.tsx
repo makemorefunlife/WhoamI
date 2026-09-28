@@ -195,31 +195,33 @@ export default function FreeRelationshipPreviewCard({
         existing-report link (blueprintRoute), no new birth entry, no new
         analysis logic.
       */}
-      <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>
-        <div className="flex items-start gap-3">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-secondary/15 text-xs font-bold text-secondary select-none" aria-hidden>
-            ▪
-          </span>
-          <div className="space-y-0.5">
-            <p className="text-sm font-semibold text-primary">
-              {locale === "ko-KR"
-                ? "나에 대한 무료 개인분석도 볼 수 있어요"
-                : "Your free personal analysis is ready too"}
-            </p>
-            <p className="text-xs leading-relaxed text-on-surface-variant">
-              {locale === "ko-KR"
-                ? "생년월일만으로 보는 타고난 성향과 에너지 패턴이에요."
-                : "Your innate tendencies and energy pattern, from your birth chart alone."}
-            </p>
+      {!viewerSurveyCompleted ? (
+        <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>
+          <div className="flex items-start gap-3">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-secondary/15 text-xs font-bold text-secondary select-none" aria-hidden>
+              ▪
+            </span>
+            <div className="space-y-0.5">
+              <p className="text-sm font-semibold text-primary">
+                {locale === "ko-KR"
+                  ? "나에 대한 무료 개인분석도 볼 수 있어요"
+                  : "Your free personal analysis is ready too"}
+              </p>
+              <p className="text-xs leading-relaxed text-on-surface-variant">
+                {locale === "ko-KR"
+                  ? "생년월일만으로 보는 타고난 성향과 에너지 패턴이에요."
+                  : "Your innate tendencies and energy pattern, from your birth chart alone."}
+              </p>
+            </div>
           </div>
+          <a
+            href={localize(blueprintRoute(viewerReportId))}
+            className="stitch-cta-primary w-full !min-w-0 text-center"
+          >
+            {locale === "ko-KR" ? "무료 개인분석 보러가기" : "See my free personal analysis"}
+          </a>
         </div>
-        <a
-          href={localize(blueprintRoute(viewerReportId))}
-          className="stitch-cta-primary w-full !min-w-0 text-center"
-        >
-          {locale === "ko-KR" ? "무료 개인분석 보러가기" : "See my free personal analysis"}
-        </a>
-      </div>
+      ) : null}
 
       {!viewerSurveyCompleted && !surveyChoiceDismissed ? (
         <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>

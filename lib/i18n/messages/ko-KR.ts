@@ -268,6 +268,8 @@ export const messagesKoKR: MessageCatalog = {
     viewingSavedSnapshot: "저장된 분석 기록을 보고 있어요",
     viewLatestResult: "최신 결과로",
     createBasicAnalysis: "기본 분석 만들기",
+    unlockDeepInsight: "심화 분석 리포트 열람하기",
+    analyzeWithAnotherFriend: "다른 친구와 관계 분석하기",
     reportReadyNotice: "리포트가 준비됐어요. 아래에서 바로 확인하세요.",
     continuationTitle: "다음으로 뭘 해볼까요?",
     exploreAnotherLensCta: "이 사람과 다른 관계로 보기",

@@ -361,13 +361,29 @@ export default function RelationshipView({
                   viewerReportId={viewerReportId}
                 />
               ) : null}
+            </div>
+          ) : null}
+
+          {viewingBasicSurface && !showGeneratingPanel && !showLoadingPanel && !err ? (
+            <div className="mt-6 flex flex-col gap-3">
               <button
                 type="button"
-                className="stitch-cta-secondary w-full !min-w-0 disabled:opacity-50"
+                className="stitch-cta-primary w-full disabled:opacity-50"
                 disabled={generating}
-                onClick={() => retryAnalysis()}
+                onClick={() => {
+                  onAnalysisSurfaceChange(premiumKind);
+                  void runPremium(premiumKind);
+                }}
               >
-                {generating ? messages.common.creating : messages.report.createBasicAnalysis}
+                {generating ? messages.report.processing : messages.report.unlockDeepInsight}
+              </button>
+              <button
+                type="button"
+                className="stitch-cta-secondary w-full disabled:opacity-50"
+                disabled={generating}
+                onClick={() => router.push(localize(ROUTES.relationships))}
+              >
+                {messages.report.analyzeWithAnotherFriend}
               </button>
             </div>
           ) : null}
@@ -470,7 +486,7 @@ export default function RelationshipView({
             className="stitch-cta-secondary mt-8 w-full"
             onClick={() => router.push(localize(ROUTES.relationships))}
           >
-            {messages.report.goToRelationHub}
+            {messages.report.analyzeWithAnotherFriend}
           </button>
         </>
       ) : null}

@@ -279,6 +279,8 @@ export const messagesEnUS = {
     viewingSavedSnapshot: "You're viewing a saved analysis record",
     viewLatestResult: "View latest",
     createBasicAnalysis: "Create basic analysis",
+    unlockDeepInsight: "Unlock Deep Relationship Insight",
+    analyzeWithAnotherFriend: "Analyze with Another Friend",
     reportReadyNotice: "Your report is ready. Check it out below.",
     continuationTitle: "What's next?",
     exploreAnotherLensCta: "Explore another side of this relationship",
