@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useSignUp } from "@clerk/nextjs";
+import { useSignUp, SignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { ROUTES } from "@/constants/routes";
-import { Check, Eye, EyeOff, AlertCircle, Sparkles } from "lucide-react";
+import { Check, Eye, EyeOff, AlertCircle, Sparkles, RefreshCw } from "lucide-react";
 
 type Props = {
   fallbackRedirectPath?: string;
@@ -33,6 +33,8 @@ export default function CustomSignUpForm({
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [useOfficialFallback, setUseOfficialFallback] = useState(false);
+  const [showFallbackOption, setShowFallbackOption] = useState(false);
 
   // Validation rules
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim());
@@ -123,15 +125,6 @@ export default function CustomSignUpForm({
     if (loading) return;
     setErrorMessage(null);
 
-    if (!isLoaded) {
-      setErrorMessage(
-        isKr
-          ? "인증 시스템을 준비 중입니다. 1~2초 후 다시 시도해 주세요."
-          : "Initializing authentication module. Please try again in a moment."
-      );
-      return;
-    }
-
     const unmetReason = getUnmetReason();
     if (unmetReason) {
       setErrorMessage(unmetReason);
@@ -139,6 +132,35 @@ export default function CustomSignUpForm({
     }
 
     setLoading(true);
+
+    // Wait up to 3.5s if isLoaded is still false
+    let ready = isLoaded;
+    if (!ready) {
+      console.log("[SignUp] Clerk SDK initializing, waiting for readiness...");
+      for (let i = 0; i < 20; i++) {
+        await new Promise((r) => setTimeout(r, 150));
+        if (
+          typeof window !== "undefined" &&
+          (window as unknown as { Clerk?: { isReady?: boolean } }).Clerk?.isReady
+        ) {
+          ready = true;
+          break;
+        }
+      }
+    }
+
+    if (!ready && !signUp) {
+      console.warn("[SignUp] Clerk SDK init timeout");
+      setErrorMessage(
+        isKr
+          ? "인증 서비스 연결이 지연되고 있습니다. 표준 가입 양식을 이용하시거나 잠시 후 다시 시도해 주세요."
+          : "Authentication service initialization timed out. Please try standard sign up or try again."
+      );
+      setShowFallbackOption(true);
+      setLoading(false);
+      return;
+    }
+
     console.log("[SignUp] create started", { email: emailAddress.trim() });
     try {
       const res = await Promise.race([
@@ -330,6 +352,26 @@ export default function CustomSignUpForm({
     }
   };
 
+  // Official Clerk SignUp widget fallback
+  if (useOfficialFallback) {
+    return (
+      <div className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl border border-[#D4CFC4]/70 bg-[#FFFDF8] p-6 shadow-[0_12px_32px_rgba(26,51,40,0.06)] sm:p-8">
+        <SignUp
+          routing="hash"
+          signInUrl={signInUrl || href(ROUTES.signIn)}
+          fallbackRedirectUrl={href(fallbackRedirectPath)}
+        />
+        <button
+          type="button"
+          onClick={() => setUseOfficialFallback(false)}
+          className="mt-5 text-xs font-bold text-[#1A3328] underline decoration-[#1A3328]/30 underline-offset-2 hover:text-[#3A8F6E]"
+        >
+          {isKr ? "← 커스텀 가입 양식으로 돌아가기" : "← Back to custom sign up form"}
+        </button>
+      </div>
+    );
+  }
+
   // If in email verification step
   if (verifying) {
     return (
@@ -338,9 +380,20 @@ export default function CustomSignUpForm({
         <p className="mt-1 text-xs text-[#4A5C52]">{labels.verifyingSub}</p>
 
         {errorMessage && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-800 border border-amber-200">
-            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-            <span>{errorMessage}</span>
+          <div className="mt-4 flex flex-col gap-2 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-800 border border-amber-200">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+              <span>{errorMessage}</span>
+            </div>
+            {showFallbackOption && (
+              <button
+                type="button"
+                onClick={() => setUseOfficialFallback(true)}
+                className="mt-1 text-left font-bold text-[#1A3328] underline underline-offset-2 hover:text-[#3A8F6E]"
+              >
+                {isKr ? "→ 표준 가입 양식 이용하기" : "→ Use standard sign up form"}
+              </button>
+            )}
           </div>
         )}
 
@@ -416,9 +469,20 @@ export default function CustomSignUpForm({
       </div>
 
       {errorMessage && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-800 border border-amber-200">
-          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-          <span>{errorMessage}</span>
+        <div className="mb-4 flex flex-col gap-2 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-800 border border-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+            <span>{errorMessage}</span>
+          </div>
+          {showFallbackOption && (
+            <button
+              type="button"
+              onClick={() => setUseOfficialFallback(true)}
+              className="mt-1 text-left font-bold text-[#1A3328] underline underline-offset-2 hover:text-[#3A8F6E]"
+            >
+              {isKr ? "→ 표준 가입 양식 이용하기" : "→ Use standard sign up form"}
+            </button>
+          )}
         </div>
       )}
 
