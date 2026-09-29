@@ -9,6 +9,7 @@ import { Menu, Settings, User } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import StitchSideMenu from "@/components/layout/stitch/StitchSideMenu";
+import LanguageSwitcher from "@/components/layout/stitch/LanguageSwitcher";
 import { ROUTES } from "@/constants/routes";
 
 export default function StitchFixedHeader({
@@ -93,6 +94,7 @@ export default function StitchFixedHeader({
           </div>
 
           <div className="flex h-9 items-center justify-end gap-2">
+            <LanguageSwitcher className="sm:mr-1" />
             {isFounder ? (
               <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300 shadow-xs select-none">
                 🏅 Founders
