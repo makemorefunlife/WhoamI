@@ -5,20 +5,17 @@ import type { Locale } from "@/lib/i18n/locale";
  * Terms of Service — en-US sourced from Legal/terms_of_service_en.md,
  * ko-KR sourced from Legal/terms_of_service_kr.md.
  *
- * The ko-KR source originally described a dual processor split (Toss
- * Payments for KRW, Paddle for USD) — that was the pre-Beta plan. The
- * actual Beta implementation routes ALL checkouts (both locales) through
- * Paddle only (see components/payment/CheckoutWithRefundConsent.tsx's own
- * doc comment: "the earlier Toss-for-ko-KR branch was dropped"). Section 5
- * below reflects that — Paddle only, matching the en-US version and the
- * real payment code — not the original KR draft's Toss/Paddle split.
+ * Section 5 (payments) is provider-neutral as of 2026-09-29: the previous
+ * payment provider was retired and online purchasing is temporarily
+ * unavailable (lib/payment/checkoutAvailability.ts). Name the replacement
+ * Merchant of Record here once it is live.
  */
 export const termsOfService: Record<Locale, PolicyDocument> = {
   "en-US": {
     title: "Terms of Service",
     description:
-      "Terms governing use of Aha It's me, including AI reports, third-party data, payments via Paddle, and dispute resolution.",
-    lastUpdated: "2026-07-15",
+      "Terms governing use of Aha It's me, including AI reports, third-party data, payments, and dispute resolution.",
+    lastUpdated: "2026-09-29",
     sections: [
       {
         id: "about",
@@ -56,9 +53,9 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. Payments, Subscriptions & Refunds",
         paragraphs: [
-          "1. Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record (MoR) for all our orders. Paddle handles payment-related customer service inquiries and returns. Charges on your billing statement will typically appear under a descriptor format such as PADDLE.NET* AHAITSME (or a similar Paddle merchant descriptor depending on your payment method and card issuer). By placing an order, you agree to Paddle’s Terms of Use and Privacy Policy.",
-          "2. Subscriptions renew automatically unless cancelled through your account settings or Paddle support at least 24 hours before the renewal date.",
-          "3. All refund requests are handled in accordance with our standalone Refund Policy and Paddle’s reseller terms.",
+          "1. Our order process is conducted by a third-party online reseller that acts as the Merchant of Record (MoR) for our orders and handles payment-related customer service inquiries and returns. The reseller, the descriptor that will appear on your billing statement, and the reseller’s own terms and privacy policy are shown to you at checkout; by placing an order, you agree to them. Online purchasing may be temporarily unavailable while we update our payment provider.",
+          "2. Subscriptions renew automatically unless cancelled through your account settings or by contacting support at least 24 hours before the renewal date.",
+          "3. All refund requests are handled in accordance with our standalone Refund Policy and the Merchant of Record’s reseller terms.",
         ],
       },
       {
@@ -87,8 +84,8 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
   "ko-KR": {
     title: "이용약관",
     description:
-      "아하잇츠미(Aha It's me) 서비스 이용에 관한 약관입니다 — AI 분석 보고서, 상대방 정보 입력, Paddle을 통한 결제, 분쟁 해결 방법을 포함합니다.",
-    lastUpdated: "2026-09-10",
+      "아하잇츠미(Aha It's me) 서비스 이용에 관한 약관입니다 — AI 분석 보고서, 상대방 정보 입력, 결제, 분쟁 해결 방법을 포함합니다.",
+    lastUpdated: "2026-09-29",
     sections: [
       {
         id: "about",
@@ -126,16 +123,16 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. 결제, 구독 및 환불",
         paragraphs: [
-          "1. 당사의 주문 처리 및 결제는 온라인 리셀러인 Paddle.com에서 수행되며, Paddle.com은 모든 주문에 대한 판매 대행자(Merchant of Record)입니다. Paddle은 결제 관련 고객 지원 문의 및 반품/환불 처리를 담당합니다. 결제 관련 카드 및 은행 명세서에는 결제 수단 및 카드사에 따라 PADDLE.NET* AHAITSME 형태 또는 유사한 Paddle 가맹점 식별 문구(descriptor)로 표시됩니다. 결제를 진행함으로써 이용자는 Paddle의 이용약관 및 개인정보처리방침에 동의하게 됩니다.",
-          "2. 구독 서비스는 이용자가 계정 설정 또는 Paddle 고객지원을 통해 다음 결제일 최소 24시간 전까지 해지하지 않는 한 자동으로 갱신됩니다.",
-          "3. 모든 환불 요청은 별도의 환불 정책 및 Paddle의 결제대행 약관에 따라 처리됩니다.",
+          "1. 당사의 주문 처리 및 결제는 판매 대행자(Merchant of Record) 역할을 하는 외부 온라인 리셀러가 수행하며, 해당 리셀러가 결제 관련 고객 지원 문의 및 반품/환불 처리를 담당합니다. 리셀러의 명칭, 카드·은행 명세서에 표시되는 가맹점 식별 문구(descriptor), 리셀러의 이용약관 및 개인정보처리방침은 결제 화면에서 안내되며, 결제를 진행함으로써 이용자는 이에 동의하게 됩니다. 결제 시스템 정비 기간에는 온라인 구매가 일시적으로 중단될 수 있습니다.",
+          "2. 구독 서비스는 이용자가 계정 설정 또는 고객지원 문의를 통해 다음 결제일 최소 24시간 전까지 해지하지 않는 한 자동으로 갱신됩니다.",
+          "3. 모든 환불 요청은 별도의 환불 정책 및 판매 대행자(Merchant of Record)의 결제대행 약관에 따라 처리됩니다.",
         ],
       },
       {
         id: "liability",
         title: "6. 책임의 제한",
         paragraphs: [
-          "법이 허용하는 최대 범위 내에서, 회사는 서비스 이용으로 인해 발생하는 간접적, 부수적, 결과적 손해에 대해 책임을 지지 않습니다. 또한 천재지변, 이용자의 귀책사유, 제3자(Paddle, Vercel, Supabase, Clerk 등)의 서비스 장애로 인한 서비스 중단에 대해서도 책임을 지지 않습니다.",
+          "법이 허용하는 최대 범위 내에서, 회사는 서비스 이용으로 인해 발생하는 간접적, 부수적, 결과적 손해에 대해 책임을 지지 않습니다. 또한 천재지변, 이용자의 귀책사유, 제3자(결제대행사, Vercel, Supabase, Clerk 등)의 서비스 장애로 인한 서비스 중단에 대해서도 책임을 지지 않습니다.",
         ],
       },
       {

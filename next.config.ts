@@ -20,19 +20,19 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          // Report-Only while we confirm the allowlist against real Clerk/Paddle/Supabase
+          // Report-Only while we confirm the allowlist against real Clerk/Supabase
           // traffic in production. Promote to `Content-Security-Policy` once a deploy
           // shows no unexpected violation reports.
           {
             key: "Content-Security-Policy-Report-Only",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.com https://js.paddle.com https://cdn.paddle.com",
+              "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
               "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.supabase.co https://api.openai.com https://vitals.vercel-insights.com",
-              "frame-src https://*.clerk.accounts.dev https://buy.paddle.com https://checkout.paddle.com https://sandbox-buy.paddle.com https://sandbox-checkout.paddle.com",
+              "frame-src https://*.clerk.accounts.dev",
               "object-src 'none'",
               "base-uri 'self'",
             ].join("; "),

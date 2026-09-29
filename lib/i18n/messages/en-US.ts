@@ -462,6 +462,7 @@ export const messagesEnUS = {
     relationshipDataMissing: "We couldn't load both people's report details.",
     invalidRequest: "This request is invalid.",
     serviceUnavailable: "This is temporarily unavailable. Please try again in a moment.",
+    purchaseUnavailable: "Purchasing is temporarily unavailable. Please try again later.",
     relationshipManualFieldsRequired:
       "A report ID, partner name, and birth date are required.",
     friendSurveyIncomplete: "10 survey answers are required.",
@@ -651,8 +652,6 @@ export const messagesEnUS = {
     regionalHeroTitleLine2: "Pick what fits how you use Aha It's me!",
     regionalHeroBody:
       "One-time reports, a 30-day pass, or an annual membership — every plan below is the actual product and the actual price.",
-    regionalSandboxNotice:
-      "Checkout is currently running in Paddle Sandbox test mode while payment processing is under review. No real charge happens yet — nothing you buy here will bill your card.",
     regionalOneTimeBadge: "One-time purchase · no auto-renewal",
     regionalAutoRenewBadge: "Auto-renews annually until cancelled",
     selectorTitlePersonal: "Unlock your deep analysis",
@@ -826,14 +825,14 @@ export const messagesEnUS = {
           "Yes, once. Your birth date can be corrected a single time from your account settings; after that, further changes require contacting support.",
       },
       {
-        question: "Will I actually be charged if I check out during the Beta?",
+        question: "Can I buy credits right now?",
         answer:
-          "No. Every checkout button on the Pricing page opens a Sandbox test checkout during the Beta — no real card charge or billing happens, and nothing bills automatically once the Beta ends.",
+          "Purchasing is temporarily unavailable while we update our payment system. Any credits you already have still work, and your saved reports remain available.",
       },
       {
         question: "What data do you collect, and is it safe?",
         answer:
-          "We collect your account info, the birth details you provide (for yourself and, if applicable, for people you analyze relationships with), and standard usage data like IP address and device info. Payment is handled by Paddle — we don't store your full card details. See our Privacy Policy for the complete list.",
+          "We collect your account info, the birth details you provide (for yourself and, if applicable, for people you analyze relationships with), and standard usage data like IP address and device info. Payments are handled by a third-party payment processor — we don't store your full card details. See our Privacy Policy for the complete list.",
       },
       {
         question: "What's your refund policy?",
@@ -1398,9 +1397,12 @@ export const messagesEnUS = {
     refundPolicyLinkLabel: "View refund policy",
     requiredHint: "Please check the notice above before continuing to payment.",
     processing: "Starting checkout…",
-    paddleNotice: "Payments are processed by Paddle, our Merchant of Record.",
-    betaSandboxSuccess: "Sandbox checkout complete — that item is unlocked now.",
-    betaSandboxError: "Something went wrong processing the test checkout. Please try again.",
+    betaSandboxSuccess: "Purchase complete — that item is unlocked now.",
+    betaSandboxError: "Something went wrong processing your checkout. Please try again.",
+    purchaseUnavailableTitle: "Purchasing is temporarily unavailable",
+    purchaseUnavailableBody:
+      "We're updating our payment system. Any credits you already have still work, and your saved reports stay available.",
+    purchaseUnavailableCta: "Temporarily unavailable",
     checkoutNeedsReview:
       "Your payment went through, but the quantity was changed in checkout, so we're reviewing it manually before adding your analyses. Please don't pay again — we'll sort it out shortly.",
   },
@@ -2391,6 +2393,7 @@ export type MessageCatalog = {
     relationshipDataMissing: string;
     invalidRequest: string;
     serviceUnavailable: string;
+    purchaseUnavailable: string;
     relationshipManualFieldsRequired: string;
     friendSurveyIncomplete: string;
     relationshipSurveyIncomplete: string;
@@ -2550,7 +2553,6 @@ export type MessageCatalog = {
     regionalHeroTitleLine1: string;
     regionalHeroTitleLine2: string;
     regionalHeroBody: string;
-    regionalSandboxNotice: string;
     regionalOneTimeBadge: string;
     regionalAutoRenewBadge: string;
     selectorTitlePersonal: string;
@@ -3072,6 +3074,9 @@ export type MessageCatalog = {
     processing: string;
     betaSandboxSuccess: string;
     betaSandboxError: string;
+    purchaseUnavailableTitle: string;
+    purchaseUnavailableBody: string;
+    purchaseUnavailableCta: string;
     checkoutNeedsReview: string;
   };
   birthForm: {

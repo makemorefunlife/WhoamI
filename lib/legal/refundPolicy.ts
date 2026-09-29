@@ -15,7 +15,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
     title: "Refund Policy",
     description:
       "Thank you for using Aha It's me. Because our Service provides digital, AI-generated analysis reports that are delivered instantly upon creation, we maintain the following refund policy to ensure fairness and transparency.",
-    lastUpdated: "2026-09-24",
+    lastUpdated: "2026-09-29",
     sections: [
       {
         id: "eligibility",
@@ -43,18 +43,18 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         id: "request",
         title: "3. How to Request a Refund & Merchant Authority",
         paragraphs: [
-          "Since Paddle.com is the Merchant of Record for our global orders, all billing inquiries, disputes, and refund requests are processed through Paddle in accordance with reseller terms and statutory consumer regulations.",
+          "Our orders are sold through a third-party payment processor that acts as the Merchant of Record. Billing inquiries, disputes, and refund requests are processed through the Merchant of Record in accordance with its reseller terms and statutory consumer regulations.",
         ],
         listItems: [
-          "You can submit a refund request directly to Paddle support via your email receipt link, or contact us at support@ahaitsme.com with your transaction ID, and we will assist in escalating the request to Paddle.",
-          "As the Merchant of Record, Paddle retains full authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and reseller terms.",
+          "You can submit a refund request using the link in your email receipt, or contact us at support@ahaitsme.com with your transaction ID, and we will assist in escalating the request to the Merchant of Record.",
+          "As the Merchant of Record, the payment processor retains full authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and reseller terms.",
         ],
       },
       {
         id: "processing",
         title: "4. Processing Time",
         paragraphs: [
-          "Once approved, refunds are processed by Paddle and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.",
+          "Once approved, refunds are processed by the Merchant of Record and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.",
         ],
       },
     ],
@@ -63,7 +63,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
     title: "환불 정책",
     description:
       "아하잇츠미(Aha It's me)를 이용해 주셔서 감사합니다. 본 서비스는 생성 즉시 제공되는 디지털 AI 분석 보고서를 다루는 특성상, 공정성과 투명성을 위해 다음과 같은 환불 정책을 운영합니다.",
-    lastUpdated: "2026-09-24",
+    lastUpdated: "2026-09-29",
     sections: [
       {
         id: "eligibility",
@@ -91,18 +91,18 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         id: "request",
         title: "3. 환불 요청 방법 및 결제대행사 권한",
         paragraphs: [
-          "글로벌 주문 건의 결제 대행사(Merchant of Record)는 Paddle.com이므로, 모든 결제 문의, 분쟁, 환불 요청은 관련 법령 및 리셀러 약관에 따라 Paddle을 통해 처리됩니다.",
+          "주문은 판매 대행자(Merchant of Record) 역할을 하는 외부 결제대행사를 통해 판매되며, 결제 문의, 분쟁, 환불 요청은 관련 법령 및 해당 결제대행사의 리셀러 약관에 따라 결제대행사를 통해 처리됩니다.",
         ],
         listItems: [
-          "이메일 영수증에 포함된 링크로 Paddle 고객지원에 직접 환불을 요청하시거나, 거래 번호와 함께 support@ahaitsme.com으로 문의해 주시면 Paddle에 요청이 전달되도록 안내해 드립니다.",
-          "Merchant of Record인 Paddle은 법정 소비자 권리, 리셀러 정책 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
+          "이메일 영수증에 포함된 링크로 환불을 요청하시거나, 거래 번호와 함께 support@ahaitsme.com으로 문의해 주시면 결제대행사에 요청이 전달되도록 안내해 드립니다.",
+          "Merchant of Record인 결제대행사는 법정 소비자 권리, 리셀러 정책 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
         ],
       },
       {
         id: "processing",
         title: "4. 처리 기간",
         paragraphs: [
-          "환불이 승인되면 Paddle을 통해 처리되며, 결제하신 원래 수단으로 자동 환급됩니다. 이용하시는 금융기관에 따라 명세서에 반영되기까지 영업일 기준 5~10일이 소요될 수 있습니다.",
+          "환불이 승인되면 결제대행사를 통해 처리되며, 결제하신 원래 수단으로 자동 환급됩니다. 이용하시는 금융기관에 따라 명세서에 반영되기까지 영업일 기준 5~10일이 소요될 수 있습니다.",
         ],
       },
     ],

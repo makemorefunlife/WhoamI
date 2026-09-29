@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * DORMANT (Paddle) -- not rendered by any live page. Kept only until the
+ * replacement payment provider is live; see docs/payments/paddle-deprecation.md.
+ */
+
 import { useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -94,10 +99,6 @@ export default function CheckoutWithRefundConsent({
       >
         {busy ? copy.processing : ctaLabel}
       </button>
-
-      <p className="text-center text-[11px] leading-tight text-[#4A5C52]/75">
-        {copy.paddleNotice}
-      </p>
     </div>
   );
 }

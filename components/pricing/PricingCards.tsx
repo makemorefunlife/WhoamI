@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * DORMANT (Paddle) -- not rendered by any live page. Kept only until the
+ * replacement payment provider is live; see docs/payments/paddle-deprecation.md.
+ */
+
 import CheckoutWithRefundConsent from "@/components/payment/CheckoutWithRefundConsent";
 import { Check, Sparkles, Zap } from "lucide-react";
 import { useMessages } from "@/lib/i18n/LocaleProvider";

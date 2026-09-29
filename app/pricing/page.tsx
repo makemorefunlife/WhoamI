@@ -3,6 +3,7 @@ import PurchaseSelectorPage from "@/components/payment/PurchaseSelectorPage";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { buildPageMetadata } from "@/lib/seo/pageMetadata";
+import { isPurchasingAvailable } from "@/lib/payment/checkoutAvailability";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
@@ -19,6 +20,7 @@ export default async function PricingPage() {
   const locale = await getRequestLocale();
   const messages = getMessages(locale);
   const copy = messages.pricing;
+  const purchasingAvailable = isPurchasingAvailable();
 
   return (
     <div className="stitch-landing relative min-h-screen w-full bg-[#FAF7F0]">
@@ -36,9 +38,15 @@ export default async function PricingPage() {
           <p className="mt-4 text-base leading-relaxed text-[#4A5C52]">{copy.regionalHeroBody}</p>
         </div>
 
-        <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-[#D4CFC4] bg-[#FFFDF8] px-5 py-3 text-center text-[13px] font-medium leading-relaxed text-[#4A5C52]">
-          {copy.regionalSandboxNotice}
-        </div>
+        {!purchasingAvailable ? (
+          <div
+            role="status"
+            className="mx-auto mt-8 max-w-2xl rounded-2xl border border-[#D4CFC4] bg-[#FFFDF8] px-5 py-3 text-center text-[13px] font-medium leading-relaxed text-[#4A5C52]"
+          >
+            <p className="font-semibold text-[#1A3328]">{messages.paymentRefund.purchaseUnavailableTitle}</p>
+            <p className="mt-1">{messages.paymentRefund.purchaseUnavailableBody}</p>
+          </div>
+        ) : null}
 
         <div className="mt-10 sm:mt-12">
           <PurchaseSelectorPage context="personal" />

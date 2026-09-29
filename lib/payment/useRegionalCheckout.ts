@@ -1,10 +1,21 @@
 "use client";
 
+/**
+ * DORMANT (Paddle) -- not imported by any live page or component.
+ * Paddle is no longer our payment provider; live purchase UI goes through
+ * the provider-agnostic lib/payment/usePurchaseCheckout.ts instead. The
+ * isPurchasingAvailable() guard below is a second line of defense so this
+ * hook can never load Paddle.js or open a Paddle checkout even if it is
+ * re-imported by mistake. Scheduled for deletion once the replacement
+ * provider is live -- see docs/payments/paddle-deprecation.md.
+ */
+
 import { useCallback, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { resolveRegionalPlan } from "@/lib/payment/resolveRegionalPlan";
 import { localizedPath, type Locale } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
+import { isPurchasingAvailable } from "@/lib/payment/checkoutAvailability";
 
 type PaddleEvent = { name: string; data?: Record<string, unknown> };
 
@@ -94,7 +105,9 @@ export type RegionalCheckoutOutcome =
   | "ineligible"
   | "not_ready"
   /** Paid, but the final Paddle quantity was not 1 -- held for manual review (nothing granted). */
-  | "needs_review";
+  | "needs_review"
+  /** No active checkout provider -- see checkoutAvailability.ts. */
+  | "unavailable";
 
 /**
  * Opens a Paddle SANDBOX checkout for one US or KR regional-catalog plan.
@@ -129,6 +142,8 @@ export function useRegionalCheckout() {
        */
       opts?: { successRedirectPath?: string },
     ): Promise<RegionalCheckoutOutcome> => {
+      // Paddle is retired: never load Paddle.js or open its checkout.
+      if (!isPurchasingAvailable()) return "unavailable";
       if (!isLoaded) return "not_ready";
       const match = resolveRegionalPlan(planId);
       const clientToken = process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN;

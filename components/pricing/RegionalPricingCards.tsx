@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * DORMANT (Paddle) -- not rendered by any live page. Kept only until the
+ * replacement payment provider is live; see docs/payments/paddle-deprecation.md.
+ */
+
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Check } from "lucide-react";
