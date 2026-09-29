@@ -5,6 +5,7 @@ import Logo from "@/components/brand/Logo";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { pathnameWithoutLocalePrefix } from "@/lib/i18n/locale";
+import LanguageSwitcher from "@/components/layout/stitch/LanguageSwitcher";
 import { ROUTES } from "@/constants/routes";
 import { ChevronRight } from "lucide-react";
 import {
@@ -188,6 +189,10 @@ export default function StitchSideMenu({
           >
             ×
           </button>
+        </div>
+
+        <div className="px-5 pb-3">
+          <LanguageSwitcher variant="menu" />
         </div>
 
         <nav className="flex-1 overflow-y-auto overscroll-contain px-3 pb-8 pt-2">

@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { languageSwitchHref } from "../../components/layout/stitch/LanguageSwitcher";
+import { LANGUAGE_OPTIONS, languageSwitchHref } from "../../components/layout/stitch/LanguageSwitcher";
 
 let passed = 0;
 const ok = (n: string) => {
@@ -34,7 +34,18 @@ const header = readFileSync(new URL("../../components/layout/stitch/StitchFixedH
 assert.ok(header.includes("<LanguageSwitcher"), "switcher is rendered in the shared site header (all breakpoints)");
 const sw = readFileSync(new URL("../../components/layout/stitch/LanguageSwitcher.tsx", import.meta.url), "utf8");
 assert.ok(sw.includes('aria-current="true"') && sw.includes("<a"), "active language marked; other language is a full-navigation link");
-assert.ok(!/(?<![-\w])hidden\b/.test(sw.split("export default")[1]), "not hidden at any breakpoint");
+assert.ok(/<LanguageSwitcher className="sm:mr-1" \/>/.test(header) && !/inline-flex[^"]*\bhidden\b/.test(sw), "the control itself is never hidden (only its long/short label swaps at sm)");
 ok("header renders the switcher at every breakpoint with the active language marked");
+
+assert.deepEqual(LANGUAGE_OPTIONS.map((o) => o.label), ["English (US)", "한국어 (KR)"]);
+assert.deepEqual(LANGUAGE_OPTIONS.map((o) => o.locale), ["en-US", "ko-KR"]);
+const menu = readFileSync(new URL("../../components/layout/stitch/StitchSideMenu.tsx", import.meta.url), "utf8");
+assert.ok(menu.includes('<LanguageSwitcher variant="menu" />'), "full labels also in the mobile side menu");
+ok("labels are 'English (US) | 한국어 (KR)' in header and side menu");
+
+const proxy = readFileSync(new URL("../../proxy.ts", import.meta.url), "utf8");
+assert.ok(!/accept-language|x-vercel-ip-country|geo/i.test(proxy), "no language/IP/country detection");
+assert.ok(!sw.includes("navigator.language") && !sw.includes("useEffect"), "switcher never redirects on its own");
+ok("no automatic redirect: proxy has no detection; switcher only navigates on click");
 
 console.log(`\nlanguage-switcher: ${passed} passed`);
