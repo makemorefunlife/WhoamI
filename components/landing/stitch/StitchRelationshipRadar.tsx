@@ -10,7 +10,12 @@ type Props = {
 export default function StitchRelationshipRadar({
   sampleBadgeText,
 }: Props) {
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
+  // en-US gets the English-labelled sample chart; ko-KR keeps the Korean one.
+  const radar =
+    locale === "en-US"
+      ? { src: "/landing/relationship-radar-en.png", width: 1020, height: 1185 }
+      : { src: "/landing/relationship-radar.png", width: 600, height: 600 };
   const badge = sampleBadgeText || messages.landing.relBridgeSampleBadge;
   const note = messages.landing.relBridgeSampleNote;
 
@@ -27,10 +32,10 @@ export default function StitchRelationshipRadar({
 
       <div className="relative mx-auto w-full overflow-hidden rounded-2xl border border-outline-variant/20 bg-surface-container-low/20">
         <Image
-          src="/landing/relationship-radar.png"
+          src={radar.src}
           alt="11-Axis Relationship Comparison Radar"
-          width={600}
-          height={600}
+          width={radar.width}
+          height={radar.height}
           className="h-auto w-full object-contain"
           priority
         />
