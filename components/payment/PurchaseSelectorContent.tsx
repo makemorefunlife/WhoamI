@@ -97,7 +97,8 @@ export default function PurchaseSelectorContent({
   const { locale, messages } = useLocale();
   const { isSignedIn } = useUser();
   const copy = messages.pricing.regionalPlans;
-  const { busy, openCheckout, isLoaded: authLoaded, purchasingAvailable } = usePurchaseCheckout();
+  const { busy, openCheckout, isLoaded: authLoaded, purchasingAvailable, availabilityLoaded } = usePurchaseCheckout();
+  const showUnavailable = availabilityLoaded && !purchasingAvailable;
   const [result, setResult] = useState<Record<string, "success" | "error" | "review" | "unavailable">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
@@ -176,8 +177,8 @@ export default function PurchaseSelectorContent({
     region === "us" && additionalEligible && primaryPlanId !== "us_additional_relationship";
 
   async function handleCheckout(planId: string) {
-    // No active checkout provider (see lib/payment/checkoutAvailability.ts):
-    // never open any checkout -- show the localized unavailable state.
+    // Not on the checkout QA allowlist (see lib/payment/checkoutAvailability.ts):
+    // never open a checkout -- show the localized unavailable state.
     if (!purchasingAvailable) {
       setResult((prev) => ({ ...prev, [planId]: "unavailable" }));
       return;
@@ -337,7 +338,7 @@ export default function PurchaseSelectorContent({
             busy || !authLoaded || !purchasingAvailable ? "cursor-not-allowed opacity-60" : "",
           ].join(" ")}
         >
-          {purchasingAvailable ? plan.cta : messages.paymentRefund.purchaseUnavailableCta}
+          {showUnavailable ? messages.paymentRefund.purchaseUnavailableCta : plan.cta}
         </button>
       </article>
     );
@@ -347,7 +348,7 @@ export default function PurchaseSelectorContent({
     <div className="space-y-6">
       <h2 className="stitch-headline text-2xl font-bold text-[#1A3328]">{title}</h2>
 
-      {!purchasingAvailable ? (
+      {showUnavailable ? (
         <div
           role="status"
           data-testid="purchase-unavailable"
@@ -404,9 +405,9 @@ export default function PurchaseSelectorContent({
                 busy || !authLoaded || !purchasingAvailable ? "cursor-not-allowed opacity-60" : "",
               ].join(" ")}
             >
-              {purchasingAvailable
-                ? copy.us_additional_relationship.cta
-                : messages.paymentRefund.purchaseUnavailableCta}
+              {showUnavailable
+                ? messages.paymentRefund.purchaseUnavailableCta
+                : copy.us_additional_relationship.cta}
             </button>
           </div>
         </article>

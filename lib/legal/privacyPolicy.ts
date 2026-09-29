@@ -22,12 +22,12 @@ import type { Locale } from "@/lib/i18n/locale";
  * - Auth: Clerk. Clerk's own privacy policy states it provides no
  *   selectable regional data residency -- data is processed/hosted on US
  *   infrastructure.
- * - Payments (updated 2026-09-29): the previous provider (Paddle) was
- *   retired and online purchasing is temporarily unavailable
- *   (lib/payment/checkoutAvailability.ts). The policy names no payment
- *   processor until the replacement Merchant of Record is live; name it
- *   in Sections 3/5/6 at that point. No card/payment field exists
- *   anywhere in our own database.
+ * - Payments (updated 2026-09-29): the payment provider is deliberately
+ *   NOT named on public pages while it is being replaced; checkout is
+ *   QA-only meanwhile (lib/payment/checkoutAvailability.ts). The current
+ *   (sandbox) Merchant of Record processes in the UK/US. Update the
+ *   country details in Sections 5/6 when the new provider is live. No
+ *   card/payment field exists anywhere in our own database.
  * - AI: OpenAI API only (never the ChatGPT consumer product). Verified via
  *   grep that OPENAI_API_KEY is referenced only in server-side route
  *   handlers/lib modules, never in a "use client" file, and that no email
@@ -91,7 +91,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Personal & Relationship Service Input: your name, date of birth, time of birth, and gender, where you provide them, used to generate your Personal and Relationship analyses.",
           "Behavioral Psychology Questionnaire Responses: your answers to our behavioral survey, used alongside your birth information to generate your analysis.",
           "Third-Party Data (Relationship Analysis): information you submit about another person -- such as their name, date of birth, time of birth, or gender -- in order to generate a Relationship analysis involving them. See Section 2 below for the responsibility this places on you.",
-          "Payment & Transaction Information: we do not collect or store your full card number or other payment credentials. Our third-party payment processor collects your payment details directly and shares limited transaction data back with us -- a transaction identifier, the product purchased, the price/currency, and transaction status.",
+          "Payment & Transaction Information: we do not collect or store your full card number or other payment credentials. Our third-party payment service provider collects your payment details directly and shares limited transaction data back with us -- a transaction identifier, the product purchased, the price/currency, and transaction status.",
           "Automatically Collected Technical & Usage Information: IP address, browser/device information, and usage/analytics events, collected via cookies and Google Tag Manager (currently configured for GA4 analytics only -- see Section 6).",
           "Decision Journal entries are currently stored locally on your device and are not transmitted to our servers unless a future feature explicitly informs you otherwise.",
         ],
@@ -112,7 +112,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         listItems: [
           "To generate your Personal analysis, Relationship analysis, and to support the Decision Journal feature (which, as noted above, is stored on your device, not ours).",
           "To combine your behavioral psychology questionnaire responses with Saju-derived contextual signals from your birth information, producing an AI-assisted, self-insight report -- not a fortune-telling or future-prediction service, and not a substitute for professional advice (see Section 4).",
-          "To process payments and manage your purchases through our third-party payment processor.",
+          "To process payments and manage your purchases through our third-party payment service provider.",
           "To communicate with you about your account, service updates, or customer support requests.",
           "To maintain the security of the Service and to improve it over time.",
         ],
@@ -136,7 +136,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc. (United States) -- application hosting and content delivery. Our production functions currently run in Vercel's sfo1 (San Francisco) region.",
           "Supabase (United States) -- database hosting and storage. Our production database is hosted in Supabase's us-west-1 (Oregon) region.",
           "Clerk (United States) -- authentication and account/identity management. Clerk provides no selectable regional data residency; account data is processed and hosted on Clerk's US infrastructure.",
-          "Payment processor -- online purchasing is temporarily unavailable. When it resumes, a third-party payment processor acting as Merchant of Record will handle payment processing directly and will be identified in this section; we never receive your full card details.",
+          "Third-party payment service provider (United Kingdom / United States) -- acts as the Merchant of Record for purchases and handles payment processing directly; we never receive your full card details.",
           "OpenAI, L.L.C. (United States) -- AI-assisted analysis generation, as described in Section 4.",
           "Google LLC, via Google Tag Manager (United States) -- currently configured to load Google Analytics 4 only, for website usage analytics. No advertising or remarketing tag is configured as of this writing.",
         ],
@@ -151,6 +151,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc. | United States (production functions run in the sfo1 / San Francisco region) | IP address, request/browser metadata | Application hosting and content delivery | Continuous and automated, with each request to our Service | Governed by Vercel's own data retention policy | See Vercel's published privacy policy for contact details.",
           "Supabase | United States (production database region: us-west-1 / Oregon) | Account identifiers, service input, questionnaire responses, relationship analysis data, transaction identifiers | Database hosting and storage | Continuous and automated | Retained while your account is active; backup copies are retained for a limited period in accordance with our database provider's own backup lifecycle policy | See Supabase's published privacy policy for contact details.",
           "Clerk | United States (Clerk offers no selectable regional data residency) | Email address, authentication and session data | Authentication and account management | Continuous and automated | Governed by Clerk's own data retention policy | See Clerk's published privacy policy for contact details.",
+          "Third-party payment service provider (Merchant of Record) | United Kingdom / United States | Email address, payment/cardholder details, transaction history | Payment processing; the provider is the seller of record for your purchase | At checkout, directly between you and the provider | Governed by the provider's own data retention policy | Contact details are included in your payment receipt, or contact us at support@ahaitsme.com.",
           "OpenAI, L.L.C. | United States | Birth-derived analysis signals, questionnaire responses, and (where applicable) a name for personalization -- never your account email or payment data | AI-assisted report generation | At the time each report is generated, via API | Not used to train OpenAI's models by default; retained by OpenAI for up to 30 days for service delivery and abuse monitoring | See OpenAI's published API/privacy policy for contact details.",
           "Google LLC (Google Tag Manager / Google Analytics 4) | United States | IP address, device/browser information, usage/analytics events | Website usage analytics only -- no advertising or remarketing tag is currently configured | Continuous and automated, via tags loaded on each page | Governed by Google's own data retention policy | See Google's published privacy policy for contact details.",
         ],
@@ -181,7 +182,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "All traffic to our Service is encrypted in transit over HTTPS.",
           "Our database uses row-level security, with direct data access restricted to service-role, server-side API calls only -- never exposed to the browser.",
           "API credentials for our AI and payment providers are used exclusively in server-side code and are never present in code that runs in your browser.",
-          "We do not collect or store your full payment card details on our own servers; that information is handled directly by our third-party payment processor.",
+          "We do not collect or store your full payment card details on our own servers; that information is handled directly by our third-party payment service provider.",
           "Our server-side logging is designed to redact personal information -- including names, birth details, questionnaire answers, and free-text analysis content -- and to mask account and record identifiers, before anything is written to a log.",
         ],
       },
@@ -247,7 +248,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Personal/Relationship 서비스 입력 정보: 분석 생성을 위해 입력하시는 이름, 생년월일, 태어난 시간, 성별",
           "행동심리 설문 응답: 생년월일시 정보와 함께 분석 생성에 사용되는 행동심리 설문 응답",
           "제3자 정보(관계 분석용): 관계 분석을 위해 이용자가 입력하는 상대방의 이름, 생년월일, 태어난 시간, 성별 등의 정보. 이에 관한 이용자의 책임은 아래 2항을 참고해 주세요.",
-          "결제 및 거래 정보: 회사는 카드번호 등 결제수단 정보 전체를 직접 수집·보관하지 않습니다. 외부 결제대행사가 결제 정보를 직접 수집하며, 거래번호, 구매 상품, 가격·통화, 거래 상태 등 제한된 거래 관련 정보만 회사와 공유합니다.",
+          "결제 및 거래 정보: 회사는 카드번호 등 결제수단 정보 전체를 직접 수집·보관하지 않습니다. 당사가 이용하는 제3자 결제 서비스 제공업체가 결제 정보를 직접 수집하며, 거래번호, 구매 상품, 가격·통화, 거래 상태 등 제한된 거래 관련 정보만 회사와 공유합니다.",
           "자동 수집되는 기술적·이용 정보: IP 주소, 브라우저·기기 정보, 그리고 쿠키 및 Google Tag Manager를 통해 수집되는 이용·분석 이벤트(현재 GA4 분석 용도로만 구성되어 있으며, 자세한 내용은 6항 참고).",
           "디시전 저널(Decision Journal) 항목은 현재 이용자의 기기에만 로컬로 저장되며, 향후 별도 기능을 통해 명시적으로 안내하지 않는 한 당사 서버로 전송되지 않습니다.",
         ],
@@ -268,7 +269,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         listItems: [
           "Personal 분석, Relationship 분석 생성 및 디시전 저널 기능 지원(단, 디시전 저널은 위에서 설명한 바와 같이 회사 서버가 아닌 이용자의 기기에 저장됩니다.)",
           "행동심리 설문 응답과 생년월일시 기반 사주적 맥락 신호를 결합하여 AI 기반 자기이해 리포트를 생성 — 이는 미래예측이나 운세 서비스가 아니며, 전문가 조언을 대체하지 않습니다(4항 참고).",
-          "외부 결제대행사를 통한 결제 처리 및 구매 관리",
+          "제3자 결제 서비스 제공업체를 통한 결제 처리 및 구매 관리",
           "계정, 서비스 업데이트, 고객 지원 관련 안내",
           "서비스의 보안 유지 및 지속적인 개선",
         ],
@@ -292,7 +293,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc.(미국) — 애플리케이션 호스팅 및 콘텐츠 전송. 현재 프로덕션 함수는 Vercel의 sfo1(샌프란시스코) 리전에서 실행됩니다.",
           "Supabase(미국) — 데이터베이스 호스팅 및 저장. 현재 프로덕션 데이터베이스는 Supabase의 us-west-1(오리건) 리전에 위치합니다.",
           "Clerk(미국) — 인증 및 계정 관리. Clerk는 별도의 리전 선택(data residency) 옵션을 제공하지 않으며, 계정 정보는 Clerk의 미국 인프라에서 처리·저장됩니다.",
-          "결제대행사 — 현재 온라인 구매가 일시적으로 중단되어 있습니다. 구매가 재개되면 Merchant of Record(판매 대행자) 역할을 하는 외부 결제대행사가 결제를 직접 처리하며, 해당 업체는 이 항목에 명시됩니다. 회사는 이용자의 전체 카드 정보를 전달받지 않습니다.",
+          "제3자 결제 서비스 제공업체(영국/미국) — 구매 건에 대해 Merchant of Record(판매 대행자)로서 결제를 직접 처리하며, 회사는 이용자의 전체 카드 정보를 전달받지 않습니다.",
           "OpenAI, L.L.C.(미국) — AI 기반 분석 생성(4항 참고).",
           "Google LLC, Google Tag Manager를 통해(미국) — 현재 웹사이트 이용 분석을 위한 Google Analytics 4만 구성되어 있으며, 이 문서 작성 시점 기준 광고·리마케팅 목적의 태그는 구성되어 있지 않습니다.",
         ],
@@ -307,6 +308,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc. | 미국(프로덕션 함수는 sfo1/샌프란시스코 리전에서 실행) | IP 주소, 요청·브라우저 메타데이터 | 애플리케이션 호스팅 및 콘텐츠 전송 | 서비스 이용 시마다 자동·지속적으로 발생 | Vercel 자체 보유기간 정책에 따름 | 문의처는 Vercel의 공식 개인정보처리방침 참고",
           "Supabase | 미국(프로덕션 데이터베이스 리전: us-west-1/오리건) | 계정 식별자, 서비스 입력 정보, 설문 응답, 관계 분석 데이터, 거래 식별자 | 데이터베이스 호스팅 및 저장 | 자동·지속적으로 발생 | 계정이 활성 상태인 동안 보유되며, 백업본은 데이터베이스 제공업체의 자체 백업 보관 정책에 따라 제한된 기간 동안 보관됨 | 문의처는 Supabase의 공식 개인정보처리방침 참고",
           "Clerk | 미국(Clerk는 리전 선택 옵션을 제공하지 않음) | 이메일 주소, 인증·세션 정보 | 인증 및 계정 관리 | 자동·지속적으로 발생 | Clerk 자체 보유기간 정책에 따름 | 문의처는 Clerk의 공식 개인정보처리방침 참고",
+          "제3자 결제 서비스 제공업체(Merchant of Record) | 영국/미국 | 이메일 주소, 결제·카드 정보, 거래 내역 | 결제 처리 — 해당 업체가 이용자 구매의 판매자(Merchant of Record) | 결제 시점에 이용자와 해당 업체 간 직접 처리 | 해당 업체 자체 보유기간 정책에 따름 | 문의처는 결제 영수증의 고객지원 안내 또는 support@ahaitsme.com",
           "OpenAI, L.L.C. | 미국 | 생년월일시 기반 분석 신호, 설문 응답, (해당 시) 개인화를 위한 이름 — 계정 이메일이나 결제 정보는 전송되지 않음 | AI 기반 리포트 생성 | 각 리포트 생성 시점에 API를 통해 발생 | 기본적으로 OpenAI 모델 학습에 사용되지 않으며, 서비스 제공·오남용 모니터링 목적으로 최대 30일간 보관 | 문의처는 OpenAI의 공식 개인정보처리방침 참고",
           "Google LLC(Google Tag Manager / Google Analytics 4) | 미국 | IP 주소, 기기·브라우저 정보, 이용·분석 이벤트 | 웹사이트 이용 분석 목적만 해당 — 이 문서 작성 시점 기준 광고·리마케팅 태그는 구성되어 있지 않음 | 페이지 로드 시마다 태그를 통해 자동·지속적으로 발생 | Google 자체 보유기간 정책에 따름 | 문의처는 Google의 공식 개인정보처리방침 참고",
         ],
@@ -337,7 +339,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "서비스에 대한 모든 통신은 HTTPS를 통해 암호화되어 전송됩니다.",
           "데이터베이스는 행 단위 보안(Row-Level Security)이 적용되어 있으며, 데이터 접근은 서버 측 API를 통한 service-role 접근으로 제한되고 브라우저에는 노출되지 않습니다.",
           "AI·결제 제공업체의 API 인증정보는 서버 측 코드에서만 사용되며, 브라우저에서 실행되는 코드에는 포함되지 않습니다.",
-          "회사는 이용자의 전체 결제카드 정보를 자체 서버에 수집·보관하지 않으며, 해당 정보는 외부 결제대행사가 직접 처리합니다.",
+          "회사는 이용자의 전체 결제카드 정보를 자체 서버에 수집·보관하지 않으며, 해당 정보는 당사가 이용하는 제3자 결제 서비스 제공업체가 직접 처리합니다.",
           "서버 측 로그 시스템은 이름, 생년월일시, 설문 응답, 자유 서술형 분석 내용 등 개인정보를 자동으로 가리고(redact) 계정·기록 식별자를 마스킹한 뒤 기록하도록 설계되어 있습니다.",
         ],
       },

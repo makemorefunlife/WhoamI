@@ -8,7 +8,7 @@ import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
-import { isPurchasingAvailable, PURCHASE_UNAVAILABLE_CODE } from "@/lib/payment/checkoutAvailability";
+import { isCheckoutAllowedForUser, PURCHASE_UNAVAILABLE_CODE } from "@/lib/payment/checkoutAvailability";
 import { resolveRegionalPlan } from "@/lib/payment/resolveRegionalPlan";
 import { resolveUsPlan } from "@/lib/payment/usPricing";
 import { isAdditionalRelationshipEligible } from "@/lib/credits/creditEngine";
@@ -41,19 +41,19 @@ export async function POST(req: Request) {
     headerLanguage: req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
   });
   const messages = getMessages(locale);
-  // Paddle is retired and no replacement provider is active yet: refuse
-  // before any auth/body/Paddle API work so no purchase can be created or
-  // granted through this route. See lib/payment/checkoutAvailability.ts.
-  if (!isPurchasingAvailable()) {
-    return NextResponse.json(
-      { error: messages.errors.purchaseUnavailable, code: PURCHASE_UNAVAILABLE_CODE },
-      { status: 503 },
-    );
-  }
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: messages.errors.unauthorized }, { status: 401 });
+    }
+    // Checkout is QA-only until the replacement payment provider is live:
+    // refuse non-allowlisted users before any body/provider API/DB/grant
+    // work. See lib/payment/checkoutAvailability.ts.
+    if (!isCheckoutAllowedForUser(userId)) {
+      return NextResponse.json(
+        { error: messages.errors.purchaseUnavailable, code: PURCHASE_UNAVAILABLE_CODE },
+        { status: 503 },
+      );
     }
 
     const parsed = await readJsonBodyLimited(req);

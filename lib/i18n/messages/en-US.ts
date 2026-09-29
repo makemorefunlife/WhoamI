@@ -636,7 +636,7 @@ export const messagesEnUS = {
   },
   pricing: {
     title: "Pricing",
-    shellNote: "During the Beta, checkout is Sandbox-only test checkout.",
+    shellNote: "During the Beta, checkout runs in test mode only.",
     metaTitle: "Pricing | Aha It's me!",
     metaDescription: "Personal · Relationship · Membership — 1-week Beta pricing",
     heroTitleLine1: "Me · Relationships · Membership",
@@ -645,7 +645,7 @@ export const messagesEnUS = {
       "This is the real product lineup and real pricing. The checkout flow itself is part of the Beta test.",
     popularBadge: "Popular",
     betaNotice:
-      "This is a Beta test. No real charge happens — every button below opens a Sandbox test checkout. Nothing bills automatically after the Beta ends.",
+      "This is a Beta test. No real charge happens — every button below opens a test checkout. Nothing bills automatically after the Beta ends.",
     regionalMetaTitle: "Pricing | Aha It's me!",
     regionalMetaDescription: "Personal · Relationship · 30-Day Pass · Annual Membership pricing for Aha It's me!",
     regionalHeroTitleLine1: "Real pricing, real product",
@@ -832,7 +832,7 @@ export const messagesEnUS = {
       {
         question: "What data do you collect, and is it safe?",
         answer:
-          "We collect your account info, the birth details you provide (for yourself and, if applicable, for people you analyze relationships with), and standard usage data like IP address and device info. Payments are handled by a third-party payment processor — we don't store your full card details. See our Privacy Policy for the complete list.",
+          "We collect your account info, the birth details you provide (for yourself and, if applicable, for people you analyze relationships with), and standard usage data like IP address and device info. Payments are handled by a third-party payment service provider — we don't store your full card details. See our Privacy Policy for the complete list.",
       },
       {
         question: "What's your refund policy?",

@@ -1,44 +1,41 @@
 /**
- * Provider-agnostic purchase availability switch.
+ * Who may start a checkout right now.
  *
- * Paddle is no longer our payment provider (merchant application rejected,
- * 2026-09). Until the next provider (Lemon Squeezy) is approved and
- * integrated, there is NO active checkout provider, so:
- *   - every purchase CTA renders the localized "Purchasing is temporarily
- *     unavailable" state instead of opening any checkout,
- *   - /api/pricing/checkout/{prepare,complete} and
- *     /api/beta/checkout/complete refuse with 503 purchase_unavailable,
- *   - the Paddle webhook no longer grants NEW purchases (existing
- *     memberships' lifecycle events -- renewal, cancel, refund -- still
- *     apply, so nothing a user already owns is changed or destroyed).
+ * The public payment provider is being replaced (the previous merchant
+ * application was rejected). Until the replacement is approved, the
+ * existing SANDBOX checkout stays wired end-to-end (purchase selector ->
+ * sandbox checkout -> /api/pricing/checkout/complete -> webhook backstop ->
+ * credit grant -> analysis) but is only open to internal QA accounts.
+ * Everyone else sees the localized "Purchasing is temporarily unavailable"
+ * state. Nothing here touches existing credits, memberships or reports.
  *
- * Deliberately a hard-coded constant, NOT an env flag: there is no
- * configuration value that can accidentally re-enable the dormant Paddle
- * checkout in production. Turning purchasing back on is a code change
- * that sets ACTIVE_CHECKOUT_PROVIDER to the new provider's id and wires
- * its checkout into usePurchaseCheckout.ts.
+ * Server-only env CHECKOUT_QA_USER_IDS:
+ *   - comma-separated Clerk user ids -> only those users may check out
+ *   - "*"                            -> every signed-in user (the pre-
+ *                                       2026-09-29 public sandbox beta)
+ *   - unset / empty                  -> nobody (safe default)
  *
- * Nothing here touches credits, entitlements, reports or purchase history:
- * existing credits are still reserved/consumed/released exactly as before,
- * and redeem codes (/api/redeem) keep working.
+ * Enforced server-side in /api/pricing/checkout/{prepare,complete},
+ * /api/beta/checkout/complete and the webhook's new-purchase grant;
+ * /api/pricing/checkout/availability only mirrors it for the UI.
  */
 
-/** Providers the app knows how to run a checkout with. Paddle is intentionally absent. */
-export type CheckoutProviderId = "lemonsqueezy";
-
-export const ACTIVE_CHECKOUT_PROVIDER: CheckoutProviderId | null = null;
-
-/** Machine-readable error code returned by checkout API routes while purchasing is off. */
+/** Machine-readable error code returned by checkout API routes when the caller may not check out. */
 export const PURCHASE_UNAVAILABLE_CODE = "purchase_unavailable";
 
-export function isPurchasingAvailable(): boolean {
-  return ACTIVE_CHECKOUT_PROVIDER !== null;
+export function parseCheckoutQaUserIds(raw: string | undefined | null): { all: boolean; ids: Set<string> } {
+  const parts = (raw ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return { all: parts.includes("*"), ids: new Set(parts.filter((p) => p !== "*")) };
 }
 
-/**
- * Pure outcome of "the user clicked a buy button" while no provider is
- * active -- exported for tests and used by usePurchaseCheckout.
- */
-export function unavailableCheckoutOutcome(): "unavailable" | null {
-  return isPurchasingAvailable() ? null : "unavailable";
+export function isCheckoutAllowedForUser(
+  userId: string | null | undefined,
+  raw: string | undefined | null = process.env.CHECKOUT_QA_USER_IDS,
+): boolean {
+  if (!userId) return false;
+  const { all, ids } = parseCheckoutQaUserIds(raw);
+  return all || ids.has(userId);
 }

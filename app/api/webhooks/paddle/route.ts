@@ -10,7 +10,7 @@ import { processPaddleAdjustmentOnce } from "@/lib/payment/paddleAdjustmentClaim
 import { grantUsAnnualRenewal, grantUsPurchase } from "@/lib/payment/grantUsPurchase";
 import { grantKrPurchase } from "@/lib/payment/grantKrPurchase";
 import { resolveRegionalPlan, regionalPlanHasPriceId } from "@/lib/payment/resolveRegionalPlan";
-import { isPurchasingAvailable } from "@/lib/payment/checkoutAvailability";
+import { isCheckoutAllowedForUser } from "@/lib/payment/checkoutAvailability";
 import {
   flagPaymentForManualReview,
   paddleQuantityRequiresReview,
@@ -258,17 +258,6 @@ async function handleTransactionCompleted(
   // fired, network drop, etc.); it is idempotent with that primary path
   // via the same paddle_transaction_id unique constraint, so whichever
   // one runs first wins and the other becomes a harmless no-op.
-  //
-  // DORMANT: Paddle is retired and purchasing is unavailable, so a NEW
-  // purchase must never be granted from here -- otherwise a checkout opened
-  // against our (public) client token + price ids outside the app could
-  // still mint credits. Existing memberships' renewal (above), cancel and
-  // refund events keep working, so nothing a user already owns changes.
-  if (!isPurchasingAvailable()) {
-    logServerEvent("webhooks.paddle", "initial_purchase_grant_skipped_purchasing_unavailable");
-    return;
-  }
-
   const customData = asRecord(data.custom_data);
   const planId = asString(customData?.planId);
   const clerkUserId = asString(customData?.clerkUserId);
@@ -276,6 +265,15 @@ async function handleTransactionCompleted(
     // No usable custom_data -- nothing we can safely attribute this
     // transaction to. Not an error: plenty of transactions (e.g. the
     // renewal case above) legitimately lack it.
+    return;
+  }
+
+  // Checkout is QA-only until the replacement payment provider is live
+  // (lib/payment/checkoutAvailability.ts): a checkout opened outside the
+  // app with our public client token must not mint credits for a non-QA
+  // account. Renewals (above), cancels and refunds are unaffected.
+  if (!isCheckoutAllowedForUser(clerkUserId)) {
+    logServerEvent("webhooks.paddle", "initial_purchase_grant_skipped_not_qa_user");
     return;
   }
 

@@ -43,18 +43,18 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         id: "request",
         title: "3. How to Request a Refund & Merchant Authority",
         paragraphs: [
-          "Our orders are sold through a third-party payment processor that acts as the Merchant of Record. Billing inquiries, disputes, and refund requests are processed through the Merchant of Record in accordance with its reseller terms and statutory consumer regulations.",
+          "Global payment and refund processing may be handled through a third-party payment service provider that acts as the Merchant of Record for our orders. Billing inquiries, disputes, and refund requests are processed in accordance with that provider's reseller terms and applicable consumer protection laws.",
         ],
         listItems: [
-          "You can submit a refund request using the link in your email receipt, or contact us at support@ahaitsme.com with your transaction ID, and we will assist in escalating the request to the Merchant of Record.",
-          "As the Merchant of Record, the payment processor retains full authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and reseller terms.",
+          "To request a refund, contact us at support@ahaitsme.com with your transaction ID, or use the support information included in your payment receipt. Where needed, we will help escalate your request to the payment service provider.",
+          "As the Merchant of Record, the payment service provider has final authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and its reseller terms.",
         ],
       },
       {
         id: "processing",
         title: "4. Processing Time",
         paragraphs: [
-          "Once approved, refunds are processed by the Merchant of Record and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.",
+          "Once approved, refunds are processed by the payment service provider and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.",
         ],
       },
     ],
@@ -89,20 +89,20 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
       },
       {
         id: "request",
-        title: "3. 환불 요청 방법 및 결제대행사 권한",
+        title: "3. 환불 요청 방법 및 결제 서비스 제공업체 권한",
         paragraphs: [
-          "주문은 판매 대행자(Merchant of Record) 역할을 하는 외부 결제대행사를 통해 판매되며, 결제 문의, 분쟁, 환불 요청은 관련 법령 및 해당 결제대행사의 리셀러 약관에 따라 결제대행사를 통해 처리됩니다.",
+          "글로벌 주문 건의 결제 및 환불 처리는 당사가 이용하는 제3자 결제 서비스 제공업체(Merchant of Record)를 통해 처리될 수 있으며, 결제 문의, 분쟁, 환불 요청은 관련 법령 및 해당 업체의 리셀러 약관에 따라 처리됩니다.",
         ],
         listItems: [
-          "이메일 영수증에 포함된 링크로 환불을 요청하시거나, 거래 번호와 함께 support@ahaitsme.com으로 문의해 주시면 결제대행사에 요청이 전달되도록 안내해 드립니다.",
-          "Merchant of Record인 결제대행사는 법정 소비자 권리, 리셀러 정책 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
+          "환불을 원하시면 거래 번호와 함께 support@ahaitsme.com으로 문의하시거나, 결제 영수증에 안내된 고객지원 정보를 이용해 주세요. 필요한 경우 당사가 결제 서비스 제공업체에 요청이 전달되도록 도와드립니다.",
+          "Merchant of Record인 결제 서비스 제공업체는 법정 소비자 권리, 리셀러 정책 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
         ],
       },
       {
         id: "processing",
         title: "4. 처리 기간",
         paragraphs: [
-          "환불이 승인되면 결제대행사를 통해 처리되며, 결제하신 원래 수단으로 자동 환급됩니다. 이용하시는 금융기관에 따라 명세서에 반영되기까지 영업일 기준 5~10일이 소요될 수 있습니다.",
+          "환불이 승인되면 결제 서비스 제공업체를 통해 처리되며, 결제하신 원래 수단으로 자동 환급됩니다. 이용하시는 금융기관에 따라 명세서에 반영되기까지 영업일 기준 5~10일이 소요될 수 있습니다.",
         ],
       },
     ],

@@ -602,7 +602,7 @@ export const messagesKoKR: MessageCatalog = {
   },
   pricing: {
     title: "요금제",
-    shellNote: "베타 기간에는 Sandbox 테스트 결제만 진행돼요.",
+    shellNote: "베타 기간에는 테스트 결제만 진행돼요.",
     metaTitle: "요금 안내 | Aha It's me!",
     metaDescription: "Personal · Relationship · Membership — 1주 베타 요금제",
     heroTitleLine1: "나 · 관계 · 멤버십",
@@ -610,7 +610,7 @@ export const messagesKoKR: MessageCatalog = {
     heroBody: "실제 상품 구성과 가격을 그대로 보여드려요. 결제 과정도 베타 테스트의 일부입니다.",
     popularBadge: "인기",
     betaNotice:
-      "이건 Beta 테스트예요. 실제 결제는 발생하지 않고, 아래 버튼은 Sandbox 테스트 결제로 연결돼요. 베타 종료 후 자동으로 청구되는 금액은 전혀 없습니다.",
+      "이건 Beta 테스트예요. 실제 결제는 발생하지 않고, 아래 버튼은 테스트 결제로 연결돼요. 베타 종료 후 자동으로 청구되는 금액은 전혀 없습니다.",
     regionalMetaTitle: "요금제 안내 | Aha It's me!",
     regionalMetaDescription: "Personal · Relationship · 30일 이용권 · 연간 멤버십 요금제 안내",
     regionalHeroTitleLine1: "실제 요금제, 실제 상품",
@@ -797,7 +797,7 @@ export const messagesKoKR: MessageCatalog = {
       {
         question: "어떤 정보를 수집하고, 안전하게 관리되나요?",
         answer:
-          "계정 정보, 입력하신 생년월일 정보(본인 및 관계 분석 대상자), IP 주소·기기 정보 같은 일반적인 이용 데이터를 수집해요. 결제는 외부 결제대행사를 통해 처리되며 카드 전체 정보는 저희가 직접 저장하지 않습니다. 자세한 내용은 개인정보처리방침을 확인해 주세요.",
+          "계정 정보, 입력하신 생년월일 정보(본인 및 관계 분석 대상자), IP 주소·기기 정보 같은 일반적인 이용 데이터를 수집해요. 결제는 제3자 결제 서비스 제공업체를 통해 처리되며 카드 전체 정보는 저희가 직접 저장하지 않습니다. 자세한 내용은 개인정보처리방침을 확인해 주세요.",
       },
       {
         question: "환불 정책은 어떻게 되나요?",

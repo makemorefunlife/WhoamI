@@ -5,10 +5,9 @@ import type { Locale } from "@/lib/i18n/locale";
  * Terms of Service — en-US sourced from Legal/terms_of_service_en.md,
  * ko-KR sourced from Legal/terms_of_service_kr.md.
  *
- * Section 5 (payments) is provider-neutral as of 2026-09-29: the previous
- * payment provider was retired and online purchasing is temporarily
- * unavailable (lib/payment/checkoutAvailability.ts). Name the replacement
- * Merchant of Record here once it is live.
+ * Section 5 (payments) is provider-neutral as of 2026-09-29: the payment
+ * provider is deliberately not named on public pages while it is being
+ * replaced (checkout is QA-only meanwhile, lib/payment/checkoutAvailability.ts).
  */
 export const termsOfService: Record<Locale, PolicyDocument> = {
   "en-US": {
@@ -53,9 +52,9 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. Payments, Subscriptions & Refunds",
         paragraphs: [
-          "1. Our order process is conducted by a third-party online reseller that acts as the Merchant of Record (MoR) for our orders and handles payment-related customer service inquiries and returns. The reseller, the descriptor that will appear on your billing statement, and the reseller’s own terms and privacy policy are shown to you at checkout; by placing an order, you agree to them. Online purchasing may be temporarily unavailable while we update our payment provider.",
-          "2. Subscriptions renew automatically unless cancelled through your account settings or by contacting support at least 24 hours before the renewal date.",
-          "3. All refund requests are handled in accordance with our standalone Refund Policy and the Merchant of Record’s reseller terms.",
+          "1. Global payment and refund processing may be handled through a third-party payment service provider that acts as the Merchant of Record (MoR) for our orders and handles payment-related customer service inquiries and returns. The merchant name shown on your billing statement and the provider’s own terms and privacy policy are presented at checkout and in your payment receipt; by placing an order, you agree to them.",
+          "2. Subscriptions renew automatically unless cancelled through your account settings or by contacting support@ahaitsme.com at least 24 hours before the renewal date.",
+          "3. All refund requests are handled in accordance with our standalone Refund Policy and the payment service provider’s reseller terms.",
         ],
       },
       {
@@ -123,16 +122,16 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. 결제, 구독 및 환불",
         paragraphs: [
-          "1. 당사의 주문 처리 및 결제는 판매 대행자(Merchant of Record) 역할을 하는 외부 온라인 리셀러가 수행하며, 해당 리셀러가 결제 관련 고객 지원 문의 및 반품/환불 처리를 담당합니다. 리셀러의 명칭, 카드·은행 명세서에 표시되는 가맹점 식별 문구(descriptor), 리셀러의 이용약관 및 개인정보처리방침은 결제 화면에서 안내되며, 결제를 진행함으로써 이용자는 이에 동의하게 됩니다. 결제 시스템 정비 기간에는 온라인 구매가 일시적으로 중단될 수 있습니다.",
-          "2. 구독 서비스는 이용자가 계정 설정 또는 고객지원 문의를 통해 다음 결제일 최소 24시간 전까지 해지하지 않는 한 자동으로 갱신됩니다.",
-          "3. 모든 환불 요청은 별도의 환불 정책 및 판매 대행자(Merchant of Record)의 결제대행 약관에 따라 처리됩니다.",
+          "1. 글로벌 주문 건의 결제 및 환불 처리는 당사가 이용하는 제3자 결제 서비스 제공업체를 통해 처리될 수 있으며, 해당 업체는 판매 대행자(Merchant of Record)로서 결제 관련 고객 지원 문의 및 반품/환불 처리를 담당합니다. 카드·은행 명세서에 표시되는 가맹점명과 해당 업체의 이용약관 및 개인정보처리방침은 결제 화면과 결제 영수증에서 안내되며, 결제를 진행함으로써 이용자는 이에 동의하게 됩니다.",
+          "2. 구독 서비스는 이용자가 계정 설정 또는 support@ahaitsme.com 문의를 통해 다음 결제일 최소 24시간 전까지 해지하지 않는 한 자동으로 갱신됩니다.",
+          "3. 모든 환불 요청은 별도의 환불 정책 및 결제 서비스 제공업체의 결제대행 약관에 따라 처리됩니다.",
         ],
       },
       {
         id: "liability",
         title: "6. 책임의 제한",
         paragraphs: [
-          "법이 허용하는 최대 범위 내에서, 회사는 서비스 이용으로 인해 발생하는 간접적, 부수적, 결과적 손해에 대해 책임을 지지 않습니다. 또한 천재지변, 이용자의 귀책사유, 제3자(결제대행사, Vercel, Supabase, Clerk 등)의 서비스 장애로 인한 서비스 중단에 대해서도 책임을 지지 않습니다.",
+          "법이 허용하는 최대 범위 내에서, 회사는 서비스 이용으로 인해 발생하는 간접적, 부수적, 결과적 손해에 대해 책임을 지지 않습니다. 또한 천재지변, 이용자의 귀책사유, 제3자(결제 서비스 제공업체, Vercel, Supabase, Clerk 등)의 서비스 장애로 인한 서비스 중단에 대해서도 책임을 지지 않습니다.",
         ],
       },
       {
