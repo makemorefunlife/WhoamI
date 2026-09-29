@@ -10,7 +10,6 @@ import { processPaddleAdjustmentOnce } from "@/lib/payment/paddleAdjustmentClaim
 import { grantUsAnnualRenewal, grantUsPurchase } from "@/lib/payment/grantUsPurchase";
 import { grantKrPurchase } from "@/lib/payment/grantKrPurchase";
 import { resolveRegionalPlan, regionalPlanHasPriceId } from "@/lib/payment/resolveRegionalPlan";
-import { isCheckoutAllowedForUser } from "@/lib/payment/checkoutAvailability";
 import {
   flagPaymentForManualReview,
   paddleQuantityRequiresReview,
@@ -265,15 +264,6 @@ async function handleTransactionCompleted(
     // No usable custom_data -- nothing we can safely attribute this
     // transaction to. Not an error: plenty of transactions (e.g. the
     // renewal case above) legitimately lack it.
-    return;
-  }
-
-  // Checkout is QA-only until the replacement payment provider is live
-  // (lib/payment/checkoutAvailability.ts): a checkout opened outside the
-  // app with our public client token must not mint credits for a non-QA
-  // account. Renewals (above), cancels and refunds are unaffected.
-  if (!isCheckoutAllowedForUser(clerkUserId)) {
-    logServerEvent("webhooks.paddle", "initial_purchase_grant_skipped_not_qa_user");
     return;
   }
 

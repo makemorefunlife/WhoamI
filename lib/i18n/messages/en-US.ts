@@ -462,7 +462,6 @@ export const messagesEnUS = {
     relationshipDataMissing: "We couldn't load both people's report details.",
     invalidRequest: "This request is invalid.",
     serviceUnavailable: "This is temporarily unavailable. Please try again in a moment.",
-    purchaseUnavailable: "Purchasing is temporarily unavailable. Please try again later.",
     relationshipManualFieldsRequired:
       "A report ID, partner name, and birth date are required.",
     friendSurveyIncomplete: "10 survey answers are required.",
@@ -825,9 +824,9 @@ export const messagesEnUS = {
           "Yes, once. Your birth date can be corrected a single time from your account settings; after that, further changes require contacting support.",
       },
       {
-        question: "Can I buy credits right now?",
+        question: "Will I actually be charged if I check out during the Beta?",
         answer:
-          "Purchasing is temporarily unavailable while we update our payment system. Any credits you already have still work, and your saved reports remain available.",
+          "No. During the Beta, every checkout button opens a test checkout — no real card charge or billing happens, and nothing bills automatically once the Beta ends.",
       },
       {
         question: "What data do you collect, and is it safe?",
@@ -1397,12 +1396,8 @@ export const messagesEnUS = {
     refundPolicyLinkLabel: "View refund policy",
     requiredHint: "Please check the notice above before continuing to payment.",
     processing: "Starting checkout…",
-    betaSandboxSuccess: "Purchase complete — that item is unlocked now.",
-    betaSandboxError: "Something went wrong processing your checkout. Please try again.",
-    purchaseUnavailableTitle: "Purchasing is temporarily unavailable",
-    purchaseUnavailableBody:
-      "We're updating our payment system. Any credits you already have still work, and your saved reports stay available.",
-    purchaseUnavailableCta: "Temporarily unavailable",
+    betaSandboxSuccess: "Test checkout complete — that item is unlocked now.",
+    betaSandboxError: "Something went wrong processing the test checkout. Please try again.",
     checkoutNeedsReview:
       "Your payment went through, but the quantity was changed in checkout, so we're reviewing it manually before adding your analyses. Please don't pay again — we'll sort it out shortly.",
   },
@@ -2393,7 +2388,6 @@ export type MessageCatalog = {
     relationshipDataMissing: string;
     invalidRequest: string;
     serviceUnavailable: string;
-    purchaseUnavailable: string;
     relationshipManualFieldsRequired: string;
     friendSurveyIncomplete: string;
     relationshipSurveyIncomplete: string;
@@ -3074,9 +3068,6 @@ export type MessageCatalog = {
     processing: string;
     betaSandboxSuccess: string;
     betaSandboxError: string;
-    purchaseUnavailableTitle: string;
-    purchaseUnavailableBody: string;
-    purchaseUnavailableCta: string;
     checkoutNeedsReview: string;
   };
   birthForm: {

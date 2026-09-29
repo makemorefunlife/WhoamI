@@ -437,7 +437,6 @@ export const messagesKoKR: MessageCatalog = {
     relationshipDataMissing: "양쪽 리포트 정보를 불러오지 못했습니다.",
     invalidRequest: "잘못된 요청이에요.",
     serviceUnavailable: "일시적으로 이용할 수 없어요. 잠시 후 다시 시도해 주세요.",
-    purchaseUnavailable: "현재 구매가 일시적으로 중단되었어요. 잠시 후 다시 시도해 주세요.",
     relationshipManualFieldsRequired: "reportIdA, partnerName, birthDate가 필요합니다.",
     relationshipSurveyIncomplete: "두 분의 설문 답변을 아직 모두 찾지 못했어요. 각자 설문을 마쳤는지 확인해 주세요.",
     friendSurveyIncomplete: "친구 설문 10문항 응답이 필요합니다.",
@@ -790,9 +789,9 @@ export const messagesKoKR: MessageCatalog = {
           "네, 딱 한 번요. 계정 설정에서 생년월일을 1회에 한해 수정할 수 있고, 이후 변경이 필요하면 고객센터로 문의해야 해요.",
       },
       {
-        question: "지금 이용권을 구매할 수 있나요?",
+        question: "베타 기간에 결제하면 실제로 돈이 나가나요?",
         answer:
-          "결제 시스템을 정비하는 동안 구매가 일시적으로 중단되었어요. 이미 보유하신 이용권은 그대로 사용하실 수 있고, 저장된 리포트도 계속 보실 수 있습니다.",
+          "아니요. 베타 기간 동안 모든 구매 버튼은 테스트 결제로 연결돼요. 실제 카드 결제나 청구는 전혀 발생하지 않고, 베타 종료 후 자동으로 결제되는 것도 없습니다.",
       },
       {
         question: "어떤 정보를 수집하고, 안전하게 관리되나요?",
@@ -1352,12 +1351,8 @@ export const messagesKoKR: MessageCatalog = {
     refundPolicyLinkLabel: "환불정책 보기",
     requiredHint: "결제 전에 위 고지에 동의해 주세요.",
     processing: "결제 준비 중…",
-    betaSandboxSuccess: "결제가 완료됐어요. 해당 상품이 바로 열렸습니다.",
-    betaSandboxError: "결제 처리 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요.",
-    purchaseUnavailableTitle: "현재 구매가 일시적으로 중단되었어요",
-    purchaseUnavailableBody:
-      "결제 시스템을 정비하고 있어요. 이미 보유하신 이용권은 그대로 사용하실 수 있고, 저장된 리포트도 계속 보실 수 있습니다.",
-    purchaseUnavailableCta: "일시적으로 구매 불가",
+    betaSandboxSuccess: "테스트 결제가 완료됐어요. 해당 상품이 바로 열렸습니다.",
+    betaSandboxError: "테스트 결제 처리 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요.",
     checkoutNeedsReview:
       "결제는 완료됐지만 결제창에서 수량이 변경되어, 분석 이용권을 넣기 전에 직접 확인하고 있어요. 다시 결제하지 마세요. 곧 처리해 드릴게요.",
   },

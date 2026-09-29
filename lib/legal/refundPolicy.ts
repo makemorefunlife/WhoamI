@@ -43,11 +43,11 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         id: "request",
         title: "3. How to Request a Refund & Merchant Authority",
         paragraphs: [
-          "Global payment and refund processing may be handled through a third-party payment service provider that acts as the Merchant of Record for our orders. Billing inquiries, disputes, and refund requests are processed in accordance with that provider's reseller terms and applicable consumer protection laws.",
+          "Global payment and refund processing may be handled through third-party payment service providers, which may act as the seller or Merchant of Record for an order. Billing inquiries, disputes, and refund requests are processed in accordance with the applicable provider's terms and applicable consumer protection laws.",
         ],
         listItems: [
           "To request a refund, contact us at support@ahaitsme.com with your transaction ID, or use the support information included in your payment receipt. Where needed, we will help escalate your request to the payment service provider.",
-          "As the Merchant of Record, the payment service provider has final authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and its reseller terms.",
+          "Where a payment service provider acts as the Merchant of Record, it has final authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and its own terms.",
         ],
       },
       {
@@ -91,11 +91,11 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         id: "request",
         title: "3. 환불 요청 방법 및 결제 서비스 제공업체 권한",
         paragraphs: [
-          "글로벌 주문 건의 결제 및 환불 처리는 당사가 이용하는 제3자 결제 서비스 제공업체(Merchant of Record)를 통해 처리될 수 있으며, 결제 문의, 분쟁, 환불 요청은 관련 법령 및 해당 업체의 리셀러 약관에 따라 처리됩니다.",
+          "글로벌 주문 건의 결제 및 환불 처리는 당사가 이용하는 제3자 결제 서비스 제공업체를 통해 처리될 수 있으며, 해당 업체가 판매자(Merchant of Record) 역할을 하는 경우 결제 문의, 분쟁, 환불 요청은 관련 법령 및 해당 업체의 약관에 따라 처리됩니다.",
         ],
         listItems: [
           "환불을 원하시면 거래 번호와 함께 support@ahaitsme.com으로 문의하시거나, 결제 영수증에 안내된 고객지원 정보를 이용해 주세요. 필요한 경우 당사가 결제 서비스 제공업체에 요청이 전달되도록 도와드립니다.",
-          "Merchant of Record인 결제 서비스 제공업체는 법정 소비자 권리, 리셀러 정책 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
+          "결제 서비스 제공업체가 판매자(Merchant of Record) 역할을 하는 경우, 해당 업체는 법정 소비자 권리, 자체 약관 및 기술적 미제공 건에 대해 환불 심사, 승인 및 처리 권한을 가집니다.",
         ],
       },
       {

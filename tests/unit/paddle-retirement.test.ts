@@ -1,32 +1,26 @@
 /**
- * Payment provider transition -- QA-only sandbox checkout + no provider
- * branding on public pages.
+ * Pre-launch payments -- sandbox checkout for everyone + provider-neutral
+ * public copy.
  * Run: npx tsx tests/unit/paddle-retirement.test.ts
  *
- * The previous payment provider's merchant application was rejected. Its
- * SANDBOX checkout stays wired end-to-end for internal QA (allowlisted via
- * CHECKOUT_QA_USER_IDS, lib/payment/checkoutAvailability.ts); everyone
- * else sees the localized "Purchasing is temporarily unavailable" state,
- * and no public page names the provider. This suite proves:
- *   1. Non-QA users cannot start or complete a checkout; QA users can.
+ * Until the final live payment provider is selected, the site runs the
+ * existing SANDBOX checkout for every user exactly as before (buy CTA ->
+ * sandbox checkout -> /api/pricing/checkout/complete (+ webhook backstop) ->
+ * credit grant -> analysis -> credit consumed at generation). Public EN/KR
+ * copy never names the provider. This suite proves:
+ *   1. No tester/QA gating or "purchasing unavailable" state remains.
  *   2. The sandbox purchase -> complete -> webhook -> grant path is intact.
- *   3. No public EN/KR surface shows "Paddle", "PADDLE.NET" or "Sandbox".
- *   4. Existing Personal / Relationship credits still work.
- *   5. Existing reports remain accessible (not gated).
- *   6. Zero-credit non-QA users get the purchase-unavailable state.
- *   7. EN and KR messages are localized correctly.
- *   8. Historical payment/credit records are unaffected.
+ *   3. No public EN/KR surface shows "Paddle", "PADDLE.NET", "Sandbox" or 패들.
+ *   4. Legal copy is provider-neutral (no company named as Merchant of Record).
+ *   5. Existing Personal / Relationship credits still work.
+ *   6. Existing reports remain accessible; zero-credit users reach checkout.
+ *   7. Historical payment/credit records are unaffected.
  */
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  PURCHASE_UNAVAILABLE_CODE,
-  isCheckoutAllowedForUser,
-  parseCheckoutQaUserIds,
-} from "../../lib/payment/checkoutAvailability";
 import { getMessages } from "../../lib/i18n/messages";
 import { privacyPolicy } from "../../lib/legal/privacyPolicy";
 import { refundPolicy } from "../../lib/legal/refundPolicy";
@@ -137,80 +131,51 @@ function renderedTextOf(src: string) {
 }
 
 async function main() {
-  // ---- 1. QA gate -----------------------------------------------------------
-  section("1. Checkout is QA-only (server-enforced)");
+  const selector = readSrc("components/payment/PurchaseSelectorContent.tsx");
+  const webhook = readSrc("app/api/webhooks/paddle/route.ts");
+  const complete = readSrc("app/api/pricing/checkout/complete/route.ts");
+  const prepare = readSrc("app/api/pricing/checkout/prepare/route.ts");
+  const betaComplete = readSrc("app/api/beta/checkout/complete/route.ts");
+  const regional = readSrc("lib/payment/useRegionalCheckout.ts");
 
-  assert.deepEqual([...parseCheckoutQaUserIds(" user_a, user_b ,,").ids], ["user_a", "user_b"]);
-  assert.equal(isCheckoutAllowedForUser("user_a", "user_a,user_b"), true);
-  assert.equal(isCheckoutAllowedForUser("user_c", "user_a,user_b"), false);
-  assert.equal(isCheckoutAllowedForUser("user_c", "*"), true, "* = every signed-in user (pre-transition public beta)");
-  assert.equal(isCheckoutAllowedForUser(null, "*"), false, "signed-out never");
-  assert.equal(isCheckoutAllowedForUser("user_a", ""), false, "unset = nobody (safe default)");
-  assert.equal(isCheckoutAllowedForUser("user_a", undefined), false);
-  ok("allowlist parsing: ids, '*', empty = nobody, signed-out = never");
+  // ---- 1. No gating ---------------------------------------------------------
+  section("1. No QA gating / purchasing-unavailable state remains");
 
-  for (const path of [
-    "app/api/pricing/checkout/prepare/route.ts",
-    "app/api/pricing/checkout/complete/route.ts",
-    "app/api/beta/checkout/complete/route.ts",
-  ]) {
-    const src = readSrc(path);
-    const gate = src.indexOf("if (!isCheckoutAllowedForUser(userId))");
-    assert.ok(gate > -1, `${path}: QA gate present`);
-    assert.ok(gate > src.indexOf("await auth()"), `${path}: gate uses the authenticated user`);
-    assert.match(src.slice(gate, gate + 300), /status: 503/);
-    assert.ok(src.slice(gate, gate + 300).includes("PURCHASE_UNAVAILABLE_CODE"));
-    for (const later of ["readJsonBodyLimited(req)", "fetchPaddleSandboxTransaction(", "createRouteSupabaseClient()", "grantUsPurchase(", "grantKrPurchase(", "grantBetaPurchase("]) {
-      const idx = src.indexOf(later);
-      if (idx > -1) assert.ok(gate < idx, `${path}: gate must precede ${later}`);
+  for (const gone of ["lib/payment/checkoutAvailability.ts", "lib/payment/usePurchaseCheckout.ts", "app/api/pricing/checkout/availability/route.ts"]) {
+    assert.ok(!existsSync(join(root, gone)), `${gone} removed`);
+  }
+  const sourceFiles = [...walk(join(root, "app")), ...walk(join(root, "components")), ...walk(join(root, "lib"))].filter((p) => /\.(tsx?|jsx?|mjs)$/.test(p));
+  for (const f of sourceFiles) {
+    const src = readFileSync(f, "utf8");
+    for (const needle of ["CHECKOUT_QA_USER_IDS", "isCheckoutAllowedForUser", "isPurchasingAvailable", "purchaseUnavailable", "checkoutAvailability"]) {
+      assert.ok(!src.includes(needle), `${rel(f)} must not contain ${needle}`);
     }
   }
-  ok("prepare + both complete routes refuse non-QA users (503) before any provider API / DB / grant work");
+  ok("allowlist env, availability route/hook and unavailable copy are gone from app/components/lib");
 
-  const availability = readSrc("app/api/pricing/checkout/availability/route.ts");
-  assert.ok(availability.includes("isCheckoutAllowedForUser(userId)"));
-  ok("/api/pricing/checkout/availability mirrors the same gate for the UI");
-
-  const webhook = readSrc("app/api/webhooks/paddle/route.ts");
-  const whGate = webhook.indexOf("if (!isCheckoutAllowedForUser(clerkUserId))");
-  assert.ok(whGate > -1);
-  assert.ok(whGate < webhook.indexOf("const result = await grantUsPurchase("));
-  assert.ok(whGate < webhook.indexOf("const result = await grantKrPurchase("));
-  assert.ok(whGate > webhook.indexOf("const result = await grantUsAnnualRenewal("), "existing members' renewals are not gated");
-  ok("webhook grants a NEW purchase only for QA users (checkouts opened outside the app mint nothing)");
-
-  // ---- 2. Sandbox QA flow restored ------------------------------------------
-  section("2. Sandbox purchase -> complete -> webhook -> grant flow is intact");
-
-  const regional = readSrc("lib/payment/useRegionalCheckout.ts");
-  assert.ok(!regional.includes("isPurchasingAvailable"), "no hard client-side kill switch left");
-  assert.ok(regional.includes('fetch("/api/pricing/checkout/prepare"'));
-  assert.ok(regional.indexOf('fetch("/api/pricing/checkout/prepare"') < regional.indexOf("await loadAndInitPaddle(clientToken)"), "prepare (QA gate) runs before the checkout script loads");
-  assert.match(regional, /if \(prepareRes\.status === 503\) return "unavailable";/);
-  assert.ok(regional.includes('fetch("/api/pricing/checkout/complete"'));
-  assert.ok(regional.includes('window.Paddle.Environment.set("sandbox")'), "still the sandbox environment");
-  const beta = readSrc("lib/payment/useBetaCheckout.ts");
-  assert.ok(!beta.includes("isPurchasingAvailable"));
-  ok("checkout hooks are the pre-transition sandbox hooks (plus 503 -> 'unavailable')");
-
-  const hook = readSrc("lib/payment/usePurchaseCheckout.ts");
-  assert.ok(hook.includes("useRegionalCheckout()") && hook.includes("openCheckout: regional.openCheckout"));
-  assert.ok(hook.includes('fetch("/api/pricing/checkout/availability")'));
-  const selector = readSrc("components/payment/PurchaseSelectorContent.tsx");
-  assert.ok(selector.includes('import { usePurchaseCheckout } from "@/lib/payment/usePurchaseCheckout";'));
-  assert.ok(/outcome === "success" \|\| outcome === "already_processed"[\s\S]{0,120}onSuccess\?\.\(planId\)/.test(selector));
-  ok("purchase selector -> sandbox checkout -> onSuccess (unlock/resume analysis) wiring unchanged");
-
-  for (const f of ["app/api/pricing/checkout/complete/route.ts", "app/api/webhooks/paddle/route.ts"]) {
-    const src = readSrc(f);
-    assert.ok(src.includes("grantUsPurchase(") && src.includes("grantKrPurchase("), `${f} still grants`);
-    assert.ok(!src.includes("isPurchasingAvailable"), `${f}: no hard kill switch`);
+  assert.ok(selector.includes('import { useRegionalCheckout } from "@/lib/payment/useRegionalCheckout";'));
+  assert.ok((selector.match(/disabled=\{busy \|\| !authLoaded\}/g) ?? []).length >= 2, "buy buttons only wait for auth/busy");
+  assert.ok(selector.includes("{plan.cta}") && selector.includes("{copy.us_additional_relationship.cta}"));
+  for (const [name, src] of [["prepare", prepare], ["complete", complete], ["beta complete", betaComplete]] as const) {
+    assert.ok(!/status: 503/.test(src), `${name}: no 503 purchase-unavailable branch`);
   }
-  assert.ok(/js\.paddle\.com/.test(readSrc("next.config.ts")), "CSP allows the sandbox checkout script again (header only, not rendered)");
-  ok("complete route + webhook grant paths and CSP restored");
+  ok("every purchase CTA renders its normal label and opens checkout for any signed-in user");
 
-  // ---- 3. No public provider branding -------------------------------------
-  section("3. No public EN/KR surface shows Paddle / PADDLE.NET / Sandbox");
+  // ---- 2. Sandbox flow ------------------------------------------------------
+  section("2. Sandbox purchase -> completion/webhook -> credit grant is intact");
+
+  assert.ok(regional.indexOf('fetch("/api/pricing/checkout/prepare"') < regional.indexOf("await loadAndInitPaddle(clientToken)"));
+  assert.ok(regional.includes('window.Paddle.Environment.set("sandbox")'), "sandbox environment only");
+  assert.ok(regional.includes('fetch("/api/pricing/checkout/complete"'));
+  assert.ok(/outcome === "success" \|\| outcome === "already_processed"[\s\S]{0,120}onSuccess\?\.\(planId\)/.test(selector), "success -> onSuccess (unlock / resume analysis)");
+  assert.ok(complete.includes("fetchPaddleSandboxTransaction(") && complete.includes("grantUsPurchase(") && complete.includes("grantKrPurchase("));
+  assert.ok(complete.indexOf("paddleQuantityRequiresReview(txn.items)") < complete.indexOf("const result = await grantUsPurchase("));
+  assert.ok(webhook.includes("const result = await grantUsPurchase(") && webhook.includes("const result = await grantKrPurchase(") && webhook.includes("grantUsAnnualRenewal("));
+  assert.ok(/js\.paddle\.com/.test(readSrc("next.config.ts")), "CSP allows the sandbox checkout script (response header, not rendered)");
+  ok("sandbox checkout -> server-side transaction re-verification -> grantUs/KrPurchase (webhook backstop) unchanged");
+
+  // ---- 3. Public copy -------------------------------------------------------
+  section("3. No public EN/KR surface shows provider branding or 'Sandbox'");
 
   for (const locale of ["en-US", "ko-KR"] as const) {
     assertNoProviderBranding(stringValues(getMessages(locale)).join("\n"), `${locale} message catalog`);
@@ -218,16 +183,7 @@ async function main() {
       assertNoProviderBranding(stringValues(doc[locale]).join("\n"), `${name} (${locale})`);
     }
   }
-  ok("EN + KR message catalogs and Privacy/Refund/Terms contain no provider name, descriptor, 'Sandbox' or placeholder name");
-
-  assert.match(stringValues(refundPolicy["en-US"]).join(" "), /third-party payment service provider/);
-  assert.match(stringValues(refundPolicy["ko-KR"]).join(" "), /제3자 결제 서비스 제공업체/);
-  for (const locale of ["en-US", "ko-KR"] as const) {
-    const refund = stringValues(refundPolicy[locale]).join(" ");
-    assert.ok(refund.includes("support@ahaitsme.com"));
-    assert.ok(/payment receipt|결제 영수증/.test(refund), "refund steps point to the receipt's support info");
-  }
-  ok("legal copy uses neutral 'third-party payment service provider' wording; refunds -> support@ahaitsme.com / receipt");
+  ok("EN + KR message catalogs and Privacy/Refund/Terms: no Paddle / PADDLE.NET / Sandbox / 패들 / placeholder name");
 
   let tsxCount = 0;
   for (const f of reachable) {
@@ -236,10 +192,22 @@ async function main() {
     assertNoProviderBranding(renderedTextOf(readFileSync(f, "utf8")), rel(f));
   }
   assert.ok(tsxCount > 50);
-  ok(`no page-reachable component (${tsxCount} .tsx files) renders provider branding or 'Sandbox'`);
+  assert.ok(!readSrc("app/pricing/page.tsx").includes("regionalSandboxNotice"), "no public sandbox banner");
+  ok(`no page-reachable component (${tsxCount} .tsx files) renders provider branding; no sandbox banner`);
 
-  // ---- 4. Existing credits still work ---------------------------------------
-  section("4. Existing Personal and Relationship credits still work");
+  // ---- 4. Legal copy -------------------------------------------------------
+  section("4. Legal copy is provider-neutral and truthful");
+
+  for (const locale of ["en-US", "ko-KR"] as const) {
+    const all = [privacyPolicy, refundPolicy, termsOfService].map((d) => stringValues(d[locale]).join(" ")).join(" ");
+    assert.match(all, locale === "en-US" ? /third-party payment service provider/ : /제3자 결제 서비스 제공업체/);
+    assert.ok(stringValues(refundPolicy[locale]).join(" ").includes("support@ahaitsme.com"));
+    assert.ok(!/(is|acts as) the Merchant of Record for (all )?our/i.test(all), "no company asserted as our permanent Merchant of Record");
+  }
+  ok("payments described as 'may be handled by third-party payment service providers'; contact support@ahaitsme.com");
+
+  // ---- 5. Credits ---------------------------------------------------------------
+  section("5. Existing Personal and Relationship credits still work");
 
   assert.equal(resolveAnalysisEntry({ personal: { remaining: 1 }, relationship: { remaining: 0 } }, "personal"), "open_analysis");
   assert.equal(resolveAnalysisEntry({ personal: { remaining: 0 }, relationship: { remaining: 2 } }, "relationship"), "open_analysis");
@@ -268,71 +236,35 @@ async function main() {
   assert.deepEqual(calls.slice(0, 2).map((c) => c.args.p_credit_type), ["personal", "relationship"]);
   if (prevEnforcement === undefined) delete process.env.CREDIT_ENFORCEMENT;
   else process.env.CREDIT_ENFORCEMENT = prevEnforcement;
-  ok("credit holders go straight to analysis; reserve/consume/release unchanged");
+  ok("credit holders go straight to analysis; credit reserved/consumed at generation");
 
-  // ---- 5. Reports not gated ---------------------------------------------------
-  section("5. Existing reports remain accessible");
+  // ---- 6. Reports + zero-credit ------------------------------------------------
+  section("6. Reports accessible; zero-credit users reach checkout");
 
-  const ALLOWED_IMPORTERS = new Set([
-    "lib/payment/usePurchaseCheckout.ts",
-    "components/payment/PurchaseSelectorContent.tsx",
-    "app/api/pricing/checkout/availability/route.ts",
-    "app/api/pricing/checkout/prepare/route.ts",
-    "app/api/pricing/checkout/complete/route.ts",
-    "app/api/beta/checkout/complete/route.ts",
-    "app/api/webhooks/paddle/route.ts",
-  ]);
-  const sourceFiles = [...walk(join(root, "app")), ...walk(join(root, "components")), ...walk(join(root, "lib"))].filter((p) => /\.(tsx?|jsx?|mjs)$/.test(p));
-  const importers = sourceFiles
-    .filter((p) => /from\s*["'](?:@\/lib\/payment|\.)\/(?:checkoutAvailability|usePurchaseCheckout)["']/.test(readFileSync(p, "utf8")))
-    .map(rel);
-  for (const r of importers) assert.ok(ALLOWED_IMPORTERS.has(r), `${r} must not gate on checkout availability`);
   for (const reportPath of [
     "app/api/v2/deep/essence/route.ts",
     "app/api/relationship/analyze/premium/route.ts",
     "app/relationship/[id]/RelationshipView.tsx",
     "app/relationship/[id]/useRelationshipDetail.ts",
     "lib/v1/slim/useSlimV1Integrated.ts",
-    "lib/credits/creditEngine.ts",
   ]) {
-    assert.ok(existsSync(join(root, reportPath)));
-    assert.ok(!importers.includes(reportPath), `${reportPath} is not gated`);
+    assert.ok(existsSync(join(root, reportPath)), `${reportPath} still exists`);
   }
-  ok("report generation/viewing and credit routes are untouched by the checkout gate");
-
-  // ---- 6. Zero-credit, non-QA users ------------------------------------------
-  section("6. Zero-credit non-QA users get the purchase-unavailable state");
-
   assert.equal(resolveAnalysisEntry({ personal: { remaining: 0 } }, "personal"), "open_checkout");
   assert.equal(resolveAnalysisEntry({ relationship: { remaining: 0 } }, "relationship"), "open_checkout");
-  assert.ok(selector.includes("const showUnavailable = availabilityLoaded && !purchasingAvailable;"));
-  assert.ok((selector.match(/disabled=\{busy \|\| !authLoaded \|\| !purchasingAvailable\}/g) ?? []).length >= 2, "buy buttons disabled unless allowlisted");
-  const handleIdx = selector.indexOf("async function handleCheckout(planId: string) {");
-  const guardIdx = selector.indexOf("if (!purchasingAvailable) {", handleIdx);
-  assert.ok(guardIdx > handleIdx && guardIdx < selector.indexOf("await openCheckout(", handleIdx));
-  assert.ok(selector.includes('data-testid="purchase-unavailable"') && selector.includes("{showUnavailable ? ("));
-  assert.ok(selector.includes('fetch("/api/redeem"'), "redeem codes still available");
-  assert.ok(!readSrc("app/pricing/page.tsx").includes("regionalSandboxNotice"), "no public sandbox banner on /pricing");
-  ok("non-QA users see the localized unavailable banner + disabled CTAs and never reach a checkout");
+  assert.equal(
+    resolveRelationshipEntryState({ hasSavedReport: false, kindLoaded: true, creditExhausted: true, remaining: 0, creditEnforced: true }),
+    "purchase",
+  );
+  assert.equal(
+    resolveRelationshipEntryState({ hasSavedReport: true, kindLoaded: true, creditExhausted: true, remaining: 0, creditEnforced: true }),
+    "saved_report",
+    "a saved report is shown even with zero credits",
+  );
+  ok("saved reports open without a credit; zero-credit users are routed to the (working) purchase selector");
 
-  // ---- 7. Localization ---------------------------------------------------------
-  section("7. EN and KR copy is localized");
-
-  const en = getMessages("en-US");
-  const ko = getMessages("ko-KR");
-  assert.equal(en.paymentRefund.purchaseUnavailableTitle, "Purchasing is temporarily unavailable");
-  assert.equal(ko.paymentRefund.purchaseUnavailableTitle, "현재 구매가 일시적으로 중단되었어요");
-  const HANGUL = /[\uAC00-\uD7A3]/;
-  for (const key of ["purchaseUnavailableTitle", "purchaseUnavailableBody", "purchaseUnavailableCta"] as const) {
-    assert.notEqual(en.paymentRefund[key], ko.paymentRefund[key]);
-    assert.ok(!HANGUL.test(en.paymentRefund[key]) && HANGUL.test(ko.paymentRefund[key]), key);
-  }
-  assert.ok(HANGUL.test(ko.errors.purchaseUnavailable) && !HANGUL.test(en.errors.purchaseUnavailable));
-  assert.equal(PURCHASE_UNAVAILABLE_CODE, "purchase_unavailable");
-  ok("unavailable title/body/CTA + API error localized in both locales");
-
-  // ---- 8. History untouched ------------------------------------------------------
-  section("8. Historical payment/credit records are unaffected");
+  // ---- 7. History ------------------------------------------------------------------
+  section("7. Historical payment/credit records are unaffected");
 
   const migrationsDir = join(root, "supabase/migrations");
   const migrations = readdirSync(migrationsDir);
@@ -353,10 +285,10 @@ async function main() {
   for (const m of migrations.filter((f) => f.endsWith(".sql"))) {
     assert.ok(!destructive.test(readFileSync(join(migrationsDir, m), "utf8")), `${m} must not drop/truncate history`);
   }
-  for (const needle of ['"mark_membership_canceled"', '"set_membership_cancel_schedule"', '"mark_membership_refunded"', "grantUsAnnualRenewal("]) {
-    assert.ok(webhook.includes(needle), `webhook still handles ${needle}`);
+  for (const needle of ['"mark_membership_canceled"', '"set_membership_cancel_schedule"', '"mark_membership_refunded"']) {
+    assert.ok(webhook.includes(needle));
   }
-  ok("migrations kept, nothing drops history; membership renewal/cancel/refund handling intact");
+  ok("migrations kept, nothing drops history; webhook membership lifecycle intact");
 
   console.log(`\npaddle-retirement: ${passed} passed`);
 }

@@ -94,9 +94,7 @@ export type RegionalCheckoutOutcome =
   | "ineligible"
   | "not_ready"
   /** Paid, but the final Paddle quantity was not 1 -- held for manual review (nothing granted). */
-  | "needs_review"
-  /** Caller is not on the checkout QA allowlist (prepare answered 503) -- see checkoutAvailability.ts. */
-  | "unavailable";
+  | "needs_review";
 
 /**
  * Opens a Paddle SANDBOX checkout for one US or KR regional-catalog plan.
@@ -149,7 +147,6 @@ export function useRegionalCheckout() {
           body: JSON.stringify({ planId }),
         });
         if (!prepareRes.ok) {
-          if (prepareRes.status === 503) return "unavailable";
           return prepareRes.status === 403 ? "ineligible" : "error";
         }
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Check } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { usePurchaseCheckout } from "@/lib/payment/usePurchaseCheckout";
+import { useRegionalCheckout } from "@/lib/payment/useRegionalCheckout";
 import type { UsPlanId } from "@/lib/payment/usPricing";
 import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
@@ -68,9 +68,9 @@ function primaryPlanFor(
 }
 
 /**
- * The reusable purchase UI: same regional catalog, same provider-agnostic
- * usePurchaseCheckout hook and entitlement logic as the standalone /pricing
- * page -- only the plan
+ * The reusable purchase UI: same regional catalog, same
+ * useRegionalCheckout hook, same checkout prepare/complete API and
+ * entitlement logic as the standalone /pricing page -- only the plan
  * ORDER and which single plan is highlighted change based on `context`.
  * Rendered as-is inside PurchaseSelectorModal (a dialog) or
  * PurchaseSelectorPage (a full-page shell); this component itself knows
@@ -86,7 +86,7 @@ export default function PurchaseSelectorContent({
   onSuccess?: (planId: string) => void;
   /**
    * Optional explicit post-purchase destination, forwarded as-is to
-   * usePurchaseCheckout's opts.successRedirectPath.
+   * useRegionalCheckout's opts.successRedirectPath (see its doc comment).
    * Fallback/parallel path only -- the onSuccess callback above is still
    * the primary way a caller reacts to a successful purchase. Leave unset
    * for contexts (relationship, account, generic /pricing) with no single
@@ -97,9 +97,8 @@ export default function PurchaseSelectorContent({
   const { locale, messages } = useLocale();
   const { isSignedIn } = useUser();
   const copy = messages.pricing.regionalPlans;
-  const { busy, openCheckout, isLoaded: authLoaded, purchasingAvailable, availabilityLoaded } = usePurchaseCheckout();
-  const showUnavailable = availabilityLoaded && !purchasingAvailable;
-  const [result, setResult] = useState<Record<string, "success" | "error" | "review" | "unavailable">>({});
+  const { busy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
+  const [result, setResult] = useState<Record<string, "success" | "error" | "review">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
 
@@ -177,12 +176,6 @@ export default function PurchaseSelectorContent({
     region === "us" && additionalEligible && primaryPlanId !== "us_additional_relationship";
 
   async function handleCheckout(planId: string) {
-    // Not on the checkout QA allowlist (see lib/payment/checkoutAvailability.ts):
-    // never open a checkout -- show the localized unavailable state.
-    if (!purchasingAvailable) {
-      setResult((prev) => ({ ...prev, [planId]: "unavailable" }));
-      return;
-    }
     if (!authLoaded) return;
     setResult((prev) => ({ ...prev, [planId]: undefined as unknown as "success" }));
     const outcome = await openCheckout(planId, locale, { successRedirectPath });
@@ -191,8 +184,6 @@ export default function PurchaseSelectorContent({
       onSuccess?.(planId);
     } else if (outcome === "needs_review") {
       setResult((prev) => ({ ...prev, [planId]: "review" }));
-    } else if (outcome === "unavailable") {
-      setResult((prev) => ({ ...prev, [planId]: "unavailable" }));
     } else if (outcome === "error" || outcome === "ineligible") {
       setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
@@ -319,26 +310,20 @@ export default function PurchaseSelectorContent({
           <p className="mt-4 text-[12px] font-medium text-rose-700">
             {messages.paymentRefund.betaSandboxError}
           </p>
-        ) : result[planId] === "unavailable" ? (
-          <p className="mt-4 text-[12px] font-medium text-[#4A5C52]">
-            {messages.paymentRefund.purchaseUnavailableTitle}
-          </p>
         ) : null}
         <button
           type="button"
-          disabled={busy || !authLoaded || !purchasingAvailable}
-          aria-disabled={!purchasingAvailable}
-          data-purchase-available={purchasingAvailable ? "true" : "false"}
+          disabled={busy || !authLoaded}
           onClick={() => void handleCheckout(planId)}
           className={[
             "mt-6 w-full cursor-pointer rounded-full px-5 py-3 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98]",
             primary
               ? "bg-[#3A8F6E] text-white hover:bg-[#33805f]"
               : "border border-[#1A3328]/30 bg-[#FFFDF8] text-[#1A3328] hover:bg-[#F5F0E8]",
-            busy || !authLoaded || !purchasingAvailable ? "cursor-not-allowed opacity-60" : "",
+            busy || !authLoaded ? "cursor-not-allowed opacity-60" : "",
           ].join(" ")}
         >
-          {showUnavailable ? messages.paymentRefund.purchaseUnavailableCta : plan.cta}
+          {plan.cta}
         </button>
       </article>
     );
@@ -347,21 +332,6 @@ export default function PurchaseSelectorContent({
   return (
     <div className="space-y-6">
       <h2 className="stitch-headline text-2xl font-bold text-[#1A3328]">{title}</h2>
-
-      {showUnavailable ? (
-        <div
-          role="status"
-          data-testid="purchase-unavailable"
-          className="rounded-2xl border border-[#D4CFC4] bg-[#F5F0E8] px-4 py-3 text-left"
-        >
-          <p className="text-sm font-semibold text-[#1A3328]">
-            {messages.paymentRefund.purchaseUnavailableTitle}
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-[#4A5C52]">
-            {messages.paymentRefund.purchaseUnavailableBody}
-          </p>
-        </div>
-      ) : null}
 
       {alreadyHasAccessNotice ? (
         <p className="rounded-xl border border-[#D4CFC4] bg-[#F5F0E8] px-4 py-2.5 text-xs leading-relaxed text-[#4A5C52]">
@@ -396,18 +366,14 @@ export default function PurchaseSelectorContent({
             </span>
             <button
               type="button"
-              disabled={busy || !authLoaded || !purchasingAvailable}
-              aria-disabled={!purchasingAvailable}
-              data-purchase-available={purchasingAvailable ? "true" : "false"}
+              disabled={busy || !authLoaded}
               onClick={() => void handleCheckout("us_additional_relationship")}
               className={[
                 "cursor-pointer rounded-full border border-[#1A3328]/30 bg-[#FFFDF8] px-5 py-2.5 text-sm font-semibold text-[#1A3328] shadow-sm transition-all duration-200 hover:bg-[#F5F0E8] active:scale-[0.98]",
-                busy || !authLoaded || !purchasingAvailable ? "cursor-not-allowed opacity-60" : "",
+                busy || !authLoaded ? "cursor-not-allowed opacity-60" : "",
               ].join(" ")}
             >
-              {showUnavailable
-                ? messages.paymentRefund.purchaseUnavailableCta
-                : copy.us_additional_relationship.cta}
+              {copy.us_additional_relationship.cta}
             </button>
           </div>
         </article>
