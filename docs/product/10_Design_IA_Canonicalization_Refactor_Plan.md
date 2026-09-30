@@ -88,7 +88,7 @@ This plan identifies what must later be **preserved, promoted, merged, migrated,
 | `docs/product/prep/*` | Pre-05/06/07 inventories | As-built at freeze time; aging | **Archive** after confirming superseded by `08` | `08` | Low |
 | `lib/relationship/romanticproject/*` | Pre-lock mockup + KO plan | Explicitly rejected as design reference (`06` §6A / L3) | **Archive** out of `lib/` after design freeze (code path unused by app) | `05A`/`06` | Low runtime; high agent confusion |
 | `docs/dev/decisions/004`–`031` (relationship) | Frozen engineering decisions | Must not be “cleaned” away | **Preserve**; index from README | Decision records | High if deleted |
-| `docs/dev/01_IA_AND_USER_JOURNEY.md`, `DEVELOPER_HANDBOOK_*` | Stitch-era process docs | May drift from `08` | **Merge** useful bits into `08`/README or mark supporting | `08` | Low |
+| `docs/dev/archive/2026-07-08_IA_AND_USER_JOURNEY.md`, `DEVELOPER_HANDBOOK_*` | Stitch-era process docs | May drift from `08` | **Merge** useful bits into `08`/README or mark supporting | `08` | Low |
 | Duplicate Narrative Bibles | Two SSOT candidates | **Resolved** (2026-07-27) | **Done** — merged into `05N` v2.0; dev-tree doc archived as pointer | Single path under `docs/product/` | Low (resolved) |
 
 ### 1.3 Documentation actions summary

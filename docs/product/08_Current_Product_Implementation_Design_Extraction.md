@@ -1146,7 +1146,7 @@ Lovable provenance comments (repository-backed):
 #### Stitch utility / path helpers
 
 - `lib/stitch/hubPaths.ts`, `lib/stitch/relationHubDockLock.ts`
-- Dev docs acknowledging Stitch as current UI: `docs/dev/01_IA_AND_USER_JOURNEY.md`, `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`
+- Dev docs acknowledging Stitch as current UI: `docs/dev/archive/2026-07-08_IA_AND_USER_JOURNEY.md`, `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`
 
 ---
 
@@ -1302,7 +1302,7 @@ Which of these a design tool should be briefed *from* is a `09`/`10` judgment (s
 | Lovable Inner Compass comments + UI strings | `StitchDeepEssenceView.tsx`, `DeepEssenceReport.tsx`, `deepEssenceUiStrings.ts`, `deepEssenceStructured.ts` | Current baseline (self deep) |
 | Brand PNG assets | `public/brand/logo.png`, `logo-source.png`, favicons | Current baseline |
 | Stitch theme stylesheet | `app/stitch-theme.css` | Current baseline |
-| Dev handbook / IA notes citing “Stitch UI” | `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`, `docs/dev/01_IA_AND_USER_JOURNEY.md` | Document-only process notes |
+| Dev handbook / IA notes citing “Stitch UI” | `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`, `docs/dev/archive/2026-07-08_IA_AND_USER_JOURNEY.md` | Document-only process notes |
 | Visual SSOT (expression) | `docs/product/06_Visual_Design_System.md` | Canonical expression SSOT — brand tokens aligned to shipping Stitch emerald; remaining drift = grades, traffic-light bars, dual Stitch/Space registers, incomplete VA adoption |
 | Integrated / foundations trails | `11_…`, `docs/product/archive/ARCHIVE_Visual_Foundations.md`, `docs/product/archive/ARCHIVE_Romantic_Module_Visual_Evaluation.md` | **Archived** — do not cite as authority; use `06` |
 | **Not found in repo** | External Stitch project links, Lovable.dev URLs, Figma exports, screenshot galleries, Stitch prompt dumps | — |
@@ -1367,7 +1367,7 @@ For the design-intent reading of this table (what to preserve, what may change, 
 
 ### Documentation
 
-`docs/product/README.md`, `01_Product_Vision.md`, `02_Relationship-ux-bible.md`, `03_Market_Research.md`, `05_Relationship_Product_Bible.md`, `05A`–`05E` blueprints, `05N_Ahaitsme_Narrative_Style_Bible.md`, `06_Visual_Design_System.md`, `06A`–`06E` technical blueprints, `07A`–`07E` checklists, `docs/product/archive/ARCHIVE_Visual_Foundations.md`, `docs/product/archive/ARCHIVE_Romantic_Module_Visual_Evaluation.md`, `11_relationship_product_visual_blueprint_integrated.md`, `docs/product/platform/README.md`, `docs/product/prep/README.md`, prep inventories (WORK, FAMILY, MARRIAGE), `docs/dev/00_Status.md`, selected `docs/dev/decisions/*.md`, `docs/dev/01_IA_AND_USER_JOURNEY.md`, `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`
+`docs/product/README.md`, `01_Product_Vision.md`, `02_Relationship-ux-bible.md`, `03_Market_Research.md`, `05_Relationship_Product_Bible.md`, `05A`–`05E` blueprints, `05N_Ahaitsme_Narrative_Style_Bible.md`, `06_Visual_Design_System.md`, `06A`–`06E` technical blueprints, `07A`–`07E` checklists, `docs/product/archive/ARCHIVE_Visual_Foundations.md`, `docs/product/archive/ARCHIVE_Romantic_Module_Visual_Evaluation.md`, `11_relationship_product_visual_blueprint_integrated.md`, `docs/product/platform/README.md`, `docs/product/prep/README.md`, prep inventories (WORK, FAMILY, MARRIAGE), `docs/dev/00_Status.md`, selected `docs/dev/decisions/*.md`, `docs/dev/archive/2026-07-08_IA_AND_USER_JOURNEY.md`, `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`
 
 ### Application routes & API
 

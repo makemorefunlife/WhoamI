@@ -53,7 +53,7 @@
 ### 1.3 문서·draft SQL (코드 변경과 별도, 추후 갱신)
 
 - `docs/database/LEGACY_CODE_AUDIT.md`, `DEV_DB_SETUP.md`, `DB_ARCHITECTURE.md` (이미 entitlement 목표)
-- `docs/dev/02_DATASET_SPECIFICATION.md`, `docs/dev-flow-current.md`, `README.md`, `ARCHITECTURE_MASTER.md`
+- `docs/dev/02_DATASET_SPECIFICATION.md`, `docs/dev/archive/2026-05_dev-flow-current.md`, `README.md`, `ARCHITECTURE_MASTER.md`
 - `supabase/migrations/20260714120000_reports_rls_fail_closed_draft.sql` (레거시 컬럼 WITH CHECK)
 
 ---

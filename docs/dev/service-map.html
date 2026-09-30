@@ -1,0 +1,411 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aha It's Me! 서비스 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; diagrams break wider inside their own scroll boxes. Brand tokens from app/globals.css (Stitch). */
+:root{
+  --bg:#faf7f0; --surface:#fffdf8; --surface-2:#f5f0e8; --line:#d4cfc4;
+  --ink:#1a3328; --ink-2:#4a5c52; --ink-3:#7a8a80;
+  --emerald:#3a8f6e; --emerald-soft:#dceee6; --rose:#b7797c; --rose-soft:#f3e4e4;
+  --grey-soft:#ece8e0;
+  --serif:"Lora",Georgia,"Noto Sans KR",serif;
+  --sans:"Manrope","Noto Sans KR",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121c17; --surface:#18251f; --surface-2:#1e2d26; --line:#33443b;
+  --ink:#e8efe9; --ink-2:#b3c2b9; --ink-3:#86978d;
+  --emerald:#6cc49e; --emerald-soft:#1f3b30; --rose:#dca5a8; --rose-soft:#3a2628; --grey-soft:#26332d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121c17; --surface:#18251f; --surface-2:#1e2d26; --line:#33443b;
+  --ink:#e8efe9; --ink-2:#b3c2b9; --ink-3:#86978d;
+  --emerald:#6cc49e; --emerald-soft:#1f3b30; --rose:#dca5a8; --rose-soft:#3a2628; --grey-soft:#26332d; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+html:not([data-lang="en"]) [lang="en"], html[data-lang="en"] [lang="ko"]{display:none!important}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:28px 72px}
+a{color:var(--emerald)}
+code,.mono{font-family:var(--mono);font-size:.82em}
+
+/* top bar */
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--emerald);font-weight:700}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.seg button{font:600 13px var(--sans);color:var(--ink-2);background:none;border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg button:focus-visible,.tabs a:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,46px);line-height:1.15;margin:18px 0 10px;text-wrap:balance;letter-spacing:-.01em}
+h2{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3vw,28px);line-height:1.25;margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;margin:0}
+.lede{color:var(--ink-2);max-width:62ch;margin:0}
+.meta{margin-top:14px;font-size:12.5px;color:var(--ink-3)}
+.sec-note{color:var(--ink-2);margin:0 0 20px;max-width:66ch}
+
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding-block:12px;margin-top:22px;border-bottom:1px solid var(--line)}
+.tabs a{white-space:nowrap;text-decoration:none;color:var(--ink-2);font-size:13.5px;font-weight:600;padding:6px 12px;border-radius:999px}
+.tabs a:hover{background:var(--surface-2);color:var(--ink)}
+section{padding-top:52px;scroll-margin-top:56px}
+
+/* hubs */
+.hubs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.hub{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px}
+.hub .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.hub h3{font-family:var(--serif);font-size:20px;font-weight:600}
+.hub p{margin:0;color:var(--ink-2);font-size:13.5px}
+.hub .mono{color:var(--emerald);margin-top:auto;padding-top:6px}
+@media (max-width:860px){.hubs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.hubs{grid-template-columns:1fr}}
+
+/* main flow: stage lanes */
+.scroll{overflow-x:auto;padding-bottom:6px}
+.lanes{display:grid;grid-template-columns:repeat(4,minmax(210px,1fr));gap:0;min-width:880px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.lane{padding:18px 16px 20px;display:flex;flex-direction:column;gap:0;border-left:1px dashed var(--line)}
+.lane:first-child{border-left:0}
+.lane-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:14px}
+.lane-h b{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.tag.free{background:var(--emerald-soft);color:var(--emerald)}
+.tag.paid{background:var(--rose-soft);color:var(--rose)}
+.node{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.node.key{border-color:var(--emerald);box-shadow:inset 3px 0 0 var(--emerald)}
+.node.paid{border-color:var(--rose);box-shadow:inset 3px 0 0 var(--rose)}
+.node.dec{border-style:dashed;background:transparent}
+.node .t{font-weight:700;font-size:14px;line-height:1.35}
+.node .d{font-size:12.5px;color:var(--ink-2);line-height:1.45;margin-top:2px}
+.node .u{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:4px;word-break:break-all}
+.down{display:flex;justify-content:center;height:22px;color:var(--ink-3)}
+.down svg{width:12px;height:22px}
+.fork{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fork .node{padding:8px 10px}
+.lane-foot{margin-top:auto;padding-top:14px;font-size:12px;color:var(--ink-3)}
+.handoff{font-size:12px;color:var(--emerald);font-weight:600;margin-top:10px}
+
+/* IA tree */
+.tree-root{display:flex;justify-content:center}
+.root-node{background:var(--ink);color:var(--surface);border-radius:14px;padding:10px 20px;font-family:var(--serif);font-weight:600;font-size:17px;text-align:center}
+.root-node small{display:block;font-family:var(--mono);font-size:11px;opacity:.7;font-weight:400}
+.tree-stem{width:1px;height:22px;background:var(--line);margin:0 auto}
+.groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border-top:1px solid var(--line);padding-top:22px;position:relative}
+.group{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0;position:relative}
+.group::before{content:"";position:absolute;top:-23px;left:50%;width:1px;height:22px;background:var(--line)}
+.group h3{font-size:13px;letter-spacing:.06em;margin-bottom:10px;display:flex;justify-content:space-between;gap:6px}
+.group h3 span.c{font-family:var(--mono);font-weight:400;color:var(--ink-3)}
+.page{display:grid;grid-template-columns:10px minmax(0,1fr);gap:8px;align-items:start;padding:6px 0;border-top:1px solid var(--grey-soft)}
+.page:first-of-type{border-top:0}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:5px;border:2px solid var(--emerald);background:var(--emerald)}
+.dot.sup{background:transparent}
+.dot.dev{border-color:var(--ink-3);background:transparent;border-style:dotted}
+.dot.clean{border-color:var(--rose);background:var(--rose)}
+.page .n{font-size:13.5px;font-weight:600;line-height:1.35}
+.page .u{font-family:var(--mono);font-size:11px;color:var(--ink-3);word-break:break-all}
+.page .x{font-size:11.5px;color:var(--rose)}
+.indent{padding-left:14px}
+@media (max-width:980px){.groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.groups{grid-template-columns:1fr}.group::before{display:none}.groups{border-top:0;padding-top:0}}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 18px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend .dot{margin-top:0}
+
+/* sub flows */
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.pair{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}
+.card h3{font-family:var(--serif);font-size:18px;font-weight:600;margin-bottom:4px}
+.card > p{margin:0 0 14px;color:var(--ink-2);font-size:13.5px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.steps li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;position:relative;padding-bottom:14px}
+.steps li:not(:last-child)::after{content:"";position:absolute;left:12px;top:26px;bottom:2px;width:1px;background:var(--line)}
+.steps .i{width:26px;height:26px;border-radius:50%;background:var(--emerald-soft);color:var(--emerald);font:700 12px var(--mono);display:grid;place-items:center}
+.steps .who{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.steps .t{font-weight:600;font-size:14px;line-height:1.4}
+.steps .d{font-size:12.5px;color:var(--ink-2)}
+.kinds{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.kinds span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--ink-2);background:var(--bg)}
+
+/* gates table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.tbl td:first-child{font-weight:600}
+
+/* cleanup */
+.clean-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.clean-list li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px}
+.pri{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:3px 0;text-align:center;align-self:start}
+.p1{background:var(--rose-soft);color:var(--rose)}
+.p2{background:var(--emerald-soft);color:var(--emerald)}
+.p3{background:var(--grey-soft);color:var(--ink-2)}
+.clean-list .t{font-weight:700;font-size:14.5px}
+.clean-list .d{font-size:13px;color:var(--ink-2);margin-top:2px}
+@media (max-width:520px){.clean-list li{grid-template-columns:1fr;gap:6px}.pri{justify-self:start;padding:3px 10px}}
+.internal{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);border:1px solid var(--rose);border-radius:999px;padding:2px 10px;margin-bottom:10px}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <div class="bar">
+    <span class="eyebrow"><span lang="ko">서비스 지도 · IA & 유저 플로우</span><span lang="en">Service map · IA & user flow</span></span>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" id="btn-ko" data-set="ko" aria-pressed="true">한국어</button>
+      <button type="button" id="btn-en" data-set="en" aria-pressed="false">English</button>
+    </div>
+  </div>
+
+  <h1><span lang="ko">Aha It's Me!는 이렇게 움직여요</span><span lang="en">How Aha It's Me! fits together</span></h1>
+  <p class="lede">
+    <span lang="ko">10문항 설문과 출생 정보로 ‘나’를 6가지 축으로 보여주고, 그 결과를 바탕으로 연인·친구·동료·가족과의 관계를 분석하는 서비스예요. 이 페이지는 사용자가 어떤 순서로 무엇을 거치는지, 그리고 서비스에 어떤 화면이 있는지를 한 장에 정리한 거예요.</span>
+    <span lang="en">Users answer a 10-question survey and add their birth details to get a six-axis picture of themselves, then use that profile to analyze their relationships with partners, friends, colleagues and family. This page shows the order users move through the product and every screen it has.</span>
+  </p>
+  <p class="meta">
+    <span lang="ko">기준: 코드 저장소 <code>main</code> @ <code>aef5224</code> · 2026년 9월 30일 · 한국어 사이트 <code>/kr</code>, 영어 사이트 <code>/</code> (화면 구조는 같아요)</span>
+    <span lang="en">Source: code repository <code>main</code> @ <code>aef5224</code> · Sep 30, 2026 · English site at <code>/</code>, Korean site at <code>/kr</code> (same screens)</span>
+  </p>
+
+  <nav class="tabs" aria-label="Sections">
+    <a href="#hubs"><span lang="ko">한눈에</span><span lang="en">Overview</span></a>
+    <a href="#flow"><span lang="ko">유저 플로우</span><span lang="en">User flow</span></a>
+    <a href="#ia"><span lang="ko">정보 구조(IA)</span><span lang="en">Information architecture</span></a>
+    <a href="#detail"><span lang="ko">세부 플로우</span><span lang="en">Sub-flows</span></a>
+    <a href="#gates"><span lang="ko">진입 조건</span><span lang="en">Access rules</span></a>
+    <a href="#cleanup"><span lang="ko">정리 후보</span><span lang="en">Cleanup list</span></a>
+  </nav>
+
+  <!-- HUBS -->
+  <section id="hubs">
+    <h2><span lang="ko">4개의 허브</span><span lang="en">Four hubs</span></h2>
+    <p class="sec-note"><span lang="ko">화면 하단 도크와 사이드 메뉴가 이 4곳을 오가게 해줘요. 나머지 화면은 모두 이 허브로 들어가거나 이 허브에서 나오는 길이에요.</span><span lang="en">The bottom dock and side menu move between these four places. Every other screen leads into or out of one of them.</span></p>
+    <div class="hubs">
+      <div class="hub"><span class="k"><span lang="ko">홈</span><span lang="en">Home</span></span><h3><span lang="ko">랜딩</span><span lang="en">Landing</span></h3><p><span lang="ko">서비스 소개와 [시작하기]. 로그인한 사용자는 결과가 있으면 바로 ‘나’로 이동해요.</span><span lang="en">Product intro and the Start button. Signed-in users with results skip straight to Me.</span></p><span class="mono">/</span></div>
+      <div class="hub"><span class="k"><span lang="ko">나</span><span lang="en">Me</span></span><h3><span lang="ko">블루프린트</span><span lang="en">Blueprint</span></h3><p><span lang="ko">6축 대시보드(무료). 지금의 나와 본래의 나를 비교하고, 유료 심화 리포트로 이어져요.</span><span lang="en">Six-axis dashboard (free). Compares current self with innate self and leads to the paid deep report.</span></p><span class="mono">/blueprint-preview</span></div>
+      <div class="hub"><span class="k"><span lang="ko">관계</span><span lang="en">Lab</span></span><h3><span lang="ko">관계 허브</span><span lang="en">Relationship Hub</span></h3><p><span lang="ko">내 사람들 지도와 목록. 초대하거나 직접 입력해서 관계 분석을 시작해요.</span><span lang="en">Map and list of your people. Invite someone or enter their details to start an analysis.</span></p><span class="mono">/relationships</span></div>
+      <div class="hub"><span class="k"><span lang="ko">결정</span><span lang="en">Choice</span></span><h3><span lang="ko">결정 저널</span><span lang="en">Decision Journal</span></h3><p><span lang="ko">고민되는 결정을 기록하고 돌아보는 곳. 기록은 사용자 기기에만 저장돼요.</span><span lang="en">Record and revisit decisions you're weighing. Entries stay on the user's device.</span></p><span class="mono">/decision</span></div>
+    </div>
+  </section>
+
+  <!-- MAIN FLOW -->
+  <section id="flow">
+    <h2><span lang="ko">핵심 유저 플로우</span><span lang="en">Core user flow</span></h2>
+    <p class="sec-note"><span lang="ko">처음 온 사용자가 결제까지 가는 기본 경로예요. 왼쪽에서 오른쪽으로 진행되고, 앞의 세 단계는 무료예요.</span><span lang="en">The default path a first-time visitor takes up to a purchase. It runs left to right, and the first three stages are free.</span></p>
+    <div class="scroll" tabindex="0" aria-label="Core user flow diagram">
+      <div class="lanes">
+        <!-- lane 1 -->
+        <div class="lane">
+          <div class="lane-h"><b><span lang="ko">1 · 들어오기</span><span lang="en">1 · Arrive</span></b><span class="tag free"><span lang="ko">무료</span><span lang="en">Free</span></span></div>
+          <div class="node key"><div class="t"><span lang="ko">랜딩</span><span lang="en">Landing</span></div><div class="d"><span lang="ko">히어로, 이용 방법, 샘플 리포트</span><span lang="en">Hero, how it works, sample reports</span></div><div class="u">/</div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="node dec"><div class="t"><span lang="ko">[시작하기] 선택</span><span lang="en">Tap Start</span></div><div class="d"><span lang="ko">무료 설문 시작 또는 로그인</span><span lang="en">Start the free survey or sign in</span></div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="fork">
+            <div class="node"><div class="t"><span lang="ko">새로 시작</span><span lang="en">New</span></div><div class="d"><span lang="ko">새 리포트 생성</span><span lang="en">Creates a report</span></div></div>
+            <div class="node"><div class="t"><span lang="ko">로그인</span><span lang="en">Sign in</span></div><div class="d"><span lang="ko">결과 있으면 ‘나’로</span><span lang="en">Results → Me</span></div></div>
+          </div>
+          <div class="lane-foot"><span lang="ko">초대·연결 링크로 온 사람도 여기서 시작해요.</span><span lang="en">People arriving from an invite or connect link also start here.</span></div>
+        </div>
+        <!-- lane 2 -->
+        <div class="lane">
+          <div class="lane-h"><b><span lang="ko">2 · 나를 알아보기</span><span lang="en">2 · Know yourself</span></b><span class="tag free"><span lang="ko">무료</span><span lang="en">Free</span></span></div>
+          <div class="node key"><div class="t"><span lang="ko">설문 10문항</span><span lang="en">10-question survey</span></div><div class="d"><span lang="ko">약 2분</span><span lang="en">About 2 minutes</span></div><div class="u">/survey-v2</div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="node key"><div class="t"><span lang="ko">출생 정보 입력</span><span lang="en">Birth details</span></div><div class="d"><span lang="ko">생년월일(필수)·시간·출생지. 시간 모름은 12:00으로 계산</span><span lang="en">Date (required), time, place. Unknown time is calculated as 12:00</span></div><div class="u">/survey-v2/complete</div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="node key"><div class="t"><span lang="ko">나의 블루프린트</span><span lang="en">My Blueprint</span></div><div class="d"><span lang="ko">6축 대시보드 · 지금의 나 vs 본래의 나</span><span lang="en">Six-axis dashboard · current vs innate self</span></div><div class="u">/blueprint-preview</div></div>
+          <div class="handoff"><span lang="ko">→ 유료: 본래의 나 심화 리포트</span><span lang="en">→ Paid: innate self deep report</span></div>
+        </div>
+        <!-- lane 3 -->
+        <div class="lane">
+          <div class="lane-h"><b><span lang="ko">3 · 관계 연결</span><span lang="en">3 · Connect others</span></b><span class="tag free"><span lang="ko">무료</span><span lang="en">Free</span></span></div>
+          <div class="node key"><div class="t"><span lang="ko">관계 허브</span><span lang="en">Relationship Hub</span></div><div class="d"><span lang="ko">내 사람들 지도·목록</span><span lang="en">Map and list of your people</span></div><div class="u">/relationships</div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="fork">
+            <div class="node"><div class="t"><span lang="ko">초대하기</span><span lang="en">Invite</span></div><div class="d"><span lang="ko">상대가 직접 설문</span><span lang="en">They take the survey</span></div></div>
+            <div class="node"><div class="t"><span lang="ko">직접 입력</span><span lang="en">Enter manually</span></div><div class="d"><span lang="ko">로그인 필요</span><span lang="en">Sign-in required</span></div></div>
+          </div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="node key"><div class="t"><span lang="ko">관계 유형 고르기 → 기본 분석</span><span lang="en">Pick relationship type → basic analysis</span></div><div class="d"><span lang="ko">설문 패턴 기반, 출생지 없어도 가능</span><span lang="en">Based on survey patterns; works without birthplace</span></div><div class="u">/relationship/[id]</div></div>
+        </div>
+        <!-- lane 4 -->
+        <div class="lane">
+          <div class="lane-h"><b><span lang="ko">4 · 관계 리포트</span><span lang="en">4 · Relationship report</span></b><span class="tag paid"><span lang="ko">유료</span><span lang="en">Paid</span></span></div>
+          <div class="node dec"><div class="t"><span lang="ko">심화 리포트 열기</span><span lang="en">Unlock the full report</span></div><div class="d"><span lang="ko">크레딧이 없으면 요금 안내로</span><span lang="en">No credits → pricing</span></div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="node paid"><div class="t"><span lang="ko">요금 선택 → 결제</span><span lang="en">Choose a plan → checkout</span></div><div class="d"><span lang="ko">한국·미국 지역별 가격, 환불 동의 후 결제</span><span lang="en">KR/US regional pricing; refund-policy consent before paying</span></div><div class="u">/pricing → /thank-you</div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 12 22"><path d="M6 0v17M1.5 13 6 19l4.5-6" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <div class="node paid"><div class="t"><span lang="ko">7-Scene 관계 리포트</span><span lang="en">7-Scene relationship report</span></div><div class="d"><span lang="ko">양쪽 생년월일·출생지 필요. 공유 링크로 상대에게 보낼 수 있어요</span><span lang="en">Needs both people's birth date and place. Can be sent via a share link</span></div><div class="u">/relationship/[id]</div></div>
+          <div class="lane-foot"><span lang="ko">결제 후 크레딧이 쌓이고, 리포트를 열 때 차감돼요.</span><span lang="en">A purchase adds credits; opening a report spends them.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IA -->
+  <section id="ia">
+    <h2><span lang="ko">정보 구조 (IA)</span><span lang="en">Information architecture</span></h2>
+    <p class="sec-note"><span lang="ko">사이트에 있는 모든 화면을 역할별로 묶었어요. 영어 사이트와 한국어 사이트(<code>/kr</code> 앞에 붙음)는 같은 구조예요.</span><span lang="en">Every screen on the site, grouped by role. The English and Korean sites (prefixed with <code>/kr</code>) share this structure.</span></p>
+    <div class="legend">
+      <span><i class="dot"></i><span lang="ko">핵심 화면</span><span lang="en">Core screen</span></span>
+      <span><i class="dot sup"></i><span lang="ko">보조 화면</span><span lang="en">Supporting screen</span></span>
+      <span><i class="dot clean"></i><span lang="ko">정리 후보</span><span lang="en">Cleanup candidate</span></span>
+      <span><i class="dot dev"></i><span lang="ko">개발 전용 (사용자에게 안 보임)</span><span lang="en">Dev only (hidden from users)</span></span>
+    </div>
+    <div class="tree-root"><div class="root-node">Aha It's Me!<small>ahaitsme.com · /kr</small></div></div>
+    <div class="tree-stem"></div>
+    <div class="groups">
+      <div class="group">
+        <h3><span><span lang="ko">시작 · 온보딩</span><span lang="en">Start · Onboarding</span></span><span class="c">5</span></h3>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">랜딩</span><span lang="en">Landing</span></div><div class="u">/</div></div></div>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">설문 10문항</span><span lang="en">10-question survey</span></div><div class="u">/survey-v2</div></div></div>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">분석 준비 · 출생 정보</span><span lang="en">Analysis intro · birth details</span></div><div class="u">/survey-v2/complete</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">출생 정보 수정</span><span lang="en">Edit birth details</span></div><div class="u">/onboarding/birth</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">약관 동의</span><span lang="en">Legal consent</span></div><div class="u">/onboarding/legal-consent</div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">나 (블루프린트)</span><span lang="en">Me (Blueprint)</span></span><span class="c">4</span></h3>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">6축 대시보드</span><span lang="en">Six-axis dashboard</span></div><div class="u">/blueprint-preview</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">지금의 나 상세</span><span lang="en">Current self detail</span></div><div class="u">…/[reportId]/current</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">본래의 나 상세</span><span lang="en">Innate self detail</span></div><div class="u">…/[reportId]/essence</div></div></div>
+        <div class="page indent"><i class="dot"></i><div><div class="n"><span lang="ko">본래의 나 심화 리포트 (유료)</span><span lang="en">Innate self deep report (paid)</span></div><div class="u">…/[reportId]/essence/deep</div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">관계</span><span lang="en">Relationships</span></span><span class="c">6</span></h3>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">관계 허브</span><span lang="en">Relationship Hub</span></div><div class="u">/relationships</div></div></div>
+        <div class="page indent"><i class="dot"></i><div><div class="n"><span lang="ko">관계 리포트 (기본 · 7-Scene)</span><span lang="en">Relationship report (basic · 7-Scene)</span></div><div class="u">/relationship/[id]</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">공유 링크 보기</span><span lang="en">Shared report viewer</span></div><div class="u">/relationship/share/[token]</div></div></div>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">초대 받기</span><span lang="en">Receive an invite</span></div><div class="u">/invite</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">초대받은 사람 출생 정보</span><span lang="en">Invitee birth details</span></div><div class="u">/invite-birth</div></div></div>
+        <div class="page"><i class="dot clean"></i><div><div class="n"><span lang="ko">개인 연결 링크</span><span lang="en">Personal connect link</span></div><div class="u">/connect</div><div class="x"><span lang="ko">초대와 역할이 겹침</span><span lang="en">Overlaps with invite</span></div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">결정</span><span lang="en">Choice</span></span><span class="c">2</span></h3>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">결정 저널 쓰기</span><span lang="en">Write a decision</span></div><div class="u">/decision</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">내 결정 기록</span><span lang="en">Decision history</span></div><div class="u">/decision/history</div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">결제 · 계정</span><span lang="en">Payment · Account</span></span><span class="c">8</span></h3>
+        <div class="page"><i class="dot"></i><div><div class="n"><span lang="ko">요금 안내 · 구매</span><span lang="en">Pricing · purchase</span></div><div class="u">/pricing</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">결제 완료</span><span lang="en">Thank you</span></div><div class="u">/thank-you</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">선물·테스터 코드 사용</span><span lang="en">Redeem a gift or tester code</span></div><div class="u">/redeem</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">로그인 · 회원가입</span><span lang="en">Sign in · sign up</span></div><div class="u">/sign-in · /sign-up</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">계정</span><span lang="en">Account</span></div><div class="u">/account</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">프로필 · 출생 정보</span><span lang="en">Profile · birth details</span></div><div class="u">/account/profile</div></div></div>
+        <div class="page indent"><i class="dot sup"></i><div><div class="n"><span lang="ko">결제 내역 · 크레딧</span><span lang="en">Billing · credits</span></div><div class="u">/account/billing</div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">소개 · 고객지원</span><span lang="en">About · Support</span></span><span class="c">4</span></h3>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">서비스 소개</span><span lang="en">About</span></div><div class="u">/about</div></div></div>
+        <div class="page"><i class="dot clean"></i><div><div class="n"><span lang="ko">이용 방법 (별도 페이지)</span><span lang="en">How it works (standalone page)</span></div><div class="u">/how-it-works</div><div class="x"><span lang="ko">랜딩 섹션과 중복</span><span lang="en">Duplicates the landing section</span></div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">자주 묻는 질문</span><span lang="en">FAQ</span></div><div class="u">/faq</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">문의하기</span><span lang="en">Contact</span></div><div class="u">/contact</div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">법적 고지</span><span lang="en">Legal</span></span><span class="c">4</span></h3>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">이용약관</span><span lang="en">Terms</span></div><div class="u">/terms</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">개인정보처리방침</span><span lang="en">Privacy</span></div><div class="u">/privacy</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">환불 규정</span><span lang="en">Refunds</span></div><div class="u">/refund</div></div></div>
+        <div class="page"><i class="dot sup"></i><div><div class="n"><span lang="ko">개인정보 판매 거부 (미국)</span><span lang="en">Do not sell (US)</span></div><div class="u">/do-not-sell</div></div></div>
+      </div>
+      <div class="group">
+        <h3><span><span lang="ko">개발 전용</span><span lang="en">Dev only</span></span><span class="c">6</span></h3>
+        <div class="page"><i class="dot dev"></i><div><div class="n"><span lang="ko">관계 리포트 렌더 리뷰</span><span lang="en">Relationship render review</span></div><div class="u">/dev/relationship-enrichment-review</div></div></div>
+        <div class="page"><i class="dot dev"></i><div><div class="n"><span lang="ko">동거·부부 처방 시각화</span><span lang="en">Cohabitation visual</span></div><div class="u">/dev/cohabitation-prescription</div></div></div>
+        <div class="page"><i class="dot dev"></i><div><div class="n"><span lang="ko">심리 항목 캡처</span><span lang="en">Psych capture debugger</span></div><div class="u">/dev/psych-capture</div></div></div>
+        <div class="page"><i class="dot dev"></i><div><div class="n"><span lang="ko">연인 리포트 v2·v4 시안</span><span lang="en">Romantic v2 · v4 prototypes</span></div><div class="u">/dev/romantic-v2-visual · v4-content-prototype</div></div></div>
+        <div class="page"><i class="dot dev"></i><div><div class="n"><span lang="ko">동료 리포트 데이터 확인</span><span lang="en">Work report view-model</span></div><div class="u">/dev/work-report-viewmodel</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUB FLOWS -->
+  <section id="detail">
+    <h2><span lang="ko">세부 플로우</span><span lang="en">Sub-flows</span></h2>
+    <p class="sec-note"><span lang="ko">핵심 플로우 안에서 두 사람 이상이 얽히는 부분과 돈이 오가는 부분만 따로 펼쳤어요.</span><span lang="en">The two parts of the core flow that involve a second person or a payment, laid out step by step.</span></p>
+    <div class="pair">
+      <div class="card">
+        <h3><span lang="ko">초대 플로우</span><span lang="en">Invite flow</span></h3>
+        <p><span lang="ko">상대방도 직접 설문을 하게 해서, 두 사람의 실제 데이터로 분석해요.</span><span lang="en">The other person takes the survey too, so the analysis uses both people's real data.</span></p>
+        <ol class="steps">
+          <li><span class="i">1</span><div><div class="who"><span lang="ko">나</span><span lang="en">Me</span></div><div class="t"><span lang="ko">관계 허브에서 초대 링크 만들기</span><span lang="en">Create an invite link in the hub</span></div></div></li>
+          <li><span class="i">2</span><div><div class="who"><span lang="ko">상대</span><span lang="en">Them</span></div><div class="t"><span lang="ko">링크 열기 → 랜딩에서 시작</span><span lang="en">Open the link → start from the landing page</span></div><div class="d mono">/invite?token= → /?token=</div></div></li>
+          <li><span class="i">3</span><div><div class="who"><span lang="ko">상대</span><span lang="en">Them</span></div><div class="t"><span lang="ko">설문 10문항 + 출생 정보</span><span lang="en">10-question survey + birth details</span></div></div></li>
+          <li><span class="i">4</span><div><div class="who"><span lang="ko">시스템</span><span lang="en">System</span></div><div class="t"><span lang="ko">두 사람을 하나의 관계로 연결</span><span lang="en">Links both people as one relationship</span></div><div class="d"><span lang="ko">내 허브에서 대기 중 → 연결됨으로 바뀌어요</span><span lang="en">My hub switches from waiting to connected</span></div></div></li>
+          <li><span class="i">5</span><div><div class="who"><span lang="ko">나 · 상대</span><span lang="en">Both</span></div><div class="t"><span lang="ko">관계 유형 고르고 분석 시작</span><span lang="en">Pick a relationship type and start the analysis</span></div>
+            <div class="kinds"><span lang="ko">연인</span><span lang="en">Romantic</span><span lang="ko">친구</span><span lang="en">Friend</span><span lang="ko">동료</span><span lang="en">Work</span><span lang="ko">가족</span><span lang="en">Family</span><span lang="ko">동거·부부</span><span lang="en">Cohabitation</span></div></div></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3><span lang="ko">결제 · 크레딧 플로우</span><span lang="en">Payment · credit flow</span></h3>
+        <p><span lang="ko">결제하면 크레딧이 쌓이고, 유료 리포트를 열 때 크레딧이 쓰여요.</span><span lang="en">Buying adds credits; opening a paid report spends them.</span></p>
+        <ol class="steps">
+          <li><span class="i">1</span><div><div class="t"><span lang="ko">유료 리포트 열기 시도</span><span lang="en">Try to open a paid report</span></div><div class="d"><span lang="ko">관계 7-Scene 리포트 또는 본래의 나 심화 리포트</span><span lang="en">7-Scene relationship report or innate self deep report</span></div></div></li>
+          <li><span class="i">2</span><div><div class="t"><span lang="ko">크레딧 부족 → 구매 선택 화면</span><span lang="en">Not enough credits → purchase selector</span></div><div class="d mono">/pricing</div></div></li>
+          <li><span class="i">3</span><div><div class="t"><span lang="ko">지역별 가격 확인 → 환불 규정 동의 → 결제</span><span lang="en">See regional price → accept refund policy → pay</span></div><div class="d"><span lang="ko">정식 결제사는 선정 중이고, 지금은 테스트 결제로 운영해요</span><span lang="en">The live payment provider is being selected; checkout runs in test mode for now</span></div></div></li>
+          <li><span class="i">4</span><div><div class="t"><span lang="ko">결제 완료 → 3초 후 원래 화면으로</span><span lang="en">Thank-you page → back to where you were after 3 seconds</span></div><div class="d mono">/thank-you</div></div></li>
+          <li><span class="i">5</span><div><div class="t"><span lang="ko">크레딧 차감 → 리포트 열림</span><span lang="en">Credit spent → report unlocks</span></div><div class="d"><span lang="ko">선물·테스터 코드(<code>/redeem</code>)로도 열 수 있어요</span><span lang="en">Gift or tester codes (<code>/redeem</code>) also unlock reports</span></div></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- GATES -->
+  <section id="gates">
+    <h2><span lang="ko">화면별 진입 조건</span><span lang="en">Access rules by screen</span></h2>
+    <p class="sec-note"><span lang="ko">조건이 안 맞으면 사용자를 앞 단계로 돌려보내요. 신입 개발자가 “왜 여기로 튕기지?” 할 때 보는 표예요.</span><span lang="en">If a condition isn't met, the user is sent back a step. This is the table to check when a new developer asks why a page bounced them.</span></p>
+    <div class="scroll">
+      <table class="tbl">
+        <thead><tr><th><span lang="ko">화면</span><span lang="en">Screen</span></th><th><span lang="ko">필요한 것</span><span lang="en">Requires</span></th><th><span lang="ko">없으면 이동</span><span lang="en">Otherwise goes to</span></th></tr></thead>
+        <tbody>
+          <tr><td><span lang="ko">설문</span><span lang="en">Survey</span></td><td><span lang="ko">리포트 ID (시작하기로 생성)</span><span lang="en">A report ID (created by Start)</span></td><td class="mono">/</td></tr>
+          <tr><td><span lang="ko">출생 정보</span><span lang="en">Birth details</span></td><td><span lang="ko">설문 10문항 완료</span><span lang="en">All 10 survey answers</span></td><td class="mono">/survey-v2</td></tr>
+          <tr><td><span lang="ko">블루프린트</span><span lang="en">Blueprint</span></td><td><span lang="ko">설문 완료 + 생년월일</span><span lang="en">Survey done + birth date</span></td><td class="mono">/survey-v2 · /survey-v2/complete</td></tr>
+          <tr><td><span lang="ko">관계 허브</span><span lang="en">Relationship Hub</span></td><td><span lang="ko">내 블루프린트 결과</span><span lang="en">My Blueprint result</span></td><td><span lang="ko">블루프린트 완료 안내</span><span lang="en">Prompt to finish Blueprint</span></td></tr>
+          <tr><td><span lang="ko">직접 입력</span><span lang="en">Manual entry</span></td><td><span lang="ko">로그인</span><span lang="en">Signed in</span></td><td><span lang="ko">로그인 창</span><span lang="en">Sign-in dialog</span></td></tr>
+          <tr><td><span lang="ko">7-Scene 관계 리포트</span><span lang="en">7-Scene relationship report</span></td><td><span lang="ko">크레딧 + 양쪽 생년월일·출생지</span><span lang="en">Credits + both birth dates and places</span></td><td><span lang="ko">구매 화면 / 출생 정보 안내</span><span lang="en">Purchase selector / birth-details prompt</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CLEANUP -->
+  <section id="cleanup">
+    <span class="internal"><span lang="ko">내부용</span><span lang="en">Internal</span></span>
+    <h2><span lang="ko">정리 후보</span><span lang="en">Cleanup candidates</span></h2>
+    <p class="sec-note"><span lang="ko">이 지도를 만들면서 찾은, 안 쓰거나 겹치는 것들이에요. 아직 아무것도 지우지 않았어요. 위에서부터 위험이 적고 효과가 큰 순서예요.</span><span lang="en">Unused or overlapping items found while making this map. Nothing has been removed yet. Ordered from low-risk, high-payoff down.</span></p>
+    <ul class="clean-list">
+      <li><span class="pri p1"><span lang="ko">먼저</span><span lang="en">First</span></span><div><div class="t"><span lang="ko">IA·플로우 문서 3개를 하나로</span><span lang="en">Merge three IA / flow documents into one</span></div><div class="d"><span lang="ko"><code>01_IA_MAP.md</code>(9월), <code>01_IA_AND_USER_JOURNEY.md</code>(7월, 옛 경로 <code>innate</code> 사용), <code>dev-flow-current.md</code>가 같은 내용을 다르게 적고 있어요. 이 페이지를 기준으로 하나만 남기면 돼요.</span><span lang="en"><code>01_IA_MAP.md</code> (Sep), <code>01_IA_AND_USER_JOURNEY.md</code> (Jul, uses the old <code>innate</code> paths) and <code>dev-flow-current.md</code> describe the same thing differently. Keep one, based on this page.</span></div></div></li>
+      <li><span class="pri p1"><span lang="ko">먼저</span><span lang="en">First</span></span><div><div class="t"><span lang="ko">윈도우 줄바꿈 설정 추가</span><span lang="en">Add a line-ending setting</span></div><div class="d"><span lang="ko">내 컴퓨터에서 파일 1,400여 개가 ‘수정됨’으로 보이는 원인이에요. <code>.gitattributes</code> 한 줄로 해결돼요.</span><span lang="en">This is why about 1,400 files show as modified on the Windows machine. One line in <code>.gitattributes</code> fixes it.</span></div></div></li>
+      <li><span class="pri p2"><span lang="ko">다음</span><span lang="en">Next</span></span><div><div class="t"><span lang="ko"><code>/how-it-works</code> 별도 페이지</span><span lang="en">Standalone <code>/how-it-works</code> page</span></div><div class="d"><span lang="ko">메뉴는 이미 랜딩의 이용 방법 섹션을 가리켜요. 페이지를 랜딩 섹션으로 연결(리다이렉트)하면 관리할 곳이 하나 줄어요.</span><span lang="en">The menu already points to the landing section. Redirecting the page there leaves one less thing to maintain.</span></div></div></li>
+      <li><span class="pri p2"><span lang="ko">다음</span><span lang="en">Next</span></span><div><div class="t"><span lang="ko"><code>/connect</code>와 <code>/invite</code> 역할 정리</span><span lang="en">Decide between <code>/connect</code> and <code>/invite</code></span></div><div class="d"><span lang="ko">둘 다 링크로 상대를 설문으로 데려오는 화면이에요. 개인 연결 링크를 계속 쓸지 결정이 필요해요.</span><span lang="en">Both bring someone into the survey through a link. Needs a decision on whether to keep the personal connect link.</span></div></div></li>
+      <li><span class="pri p2"><span lang="ko">다음</span><span lang="en">Next</span></span><div><div class="t"><span lang="ko">루트 폴더 정리</span><span lang="en">Tidy the repository root</span></div><div class="d"><span lang="ko"><code>test-saju.js</code>, <code>*_GOLDEN_BASELINE.md</code> 3개, <code>ROMANTIC_HEADLINE_EN.md</code> 등을 <code>docs/</code>·<code>tests/</code>로 옮기기. <code>scratch/</code> 디버그 스크립트 정리.</span><span lang="en">Move <code>test-saju.js</code>, the three <code>*_GOLDEN_BASELINE.md</code> files, <code>ROMANTIC_HEADLINE_EN.md</code> and similar into <code>docs/</code> or <code>tests/</code>. Clear out the <code>scratch/</code> debug scripts.</span></div></div></li>
+      <li><span class="pri p3"><span lang="ko">나중</span><span lang="en">Later</span></span><div><div class="t"><span lang="ko">개발 전용 화면 6개</span><span lang="en">Six dev-only screens</span></div><div class="d"><span lang="ko">사용자에게는 이미 안 보여요. 연인 v2·v4 시안처럼 끝난 실험만 골라 지우면 돼요.</span><span lang="en">Already hidden from users. Remove only finished experiments such as the romantic v2 and v4 prototypes.</span></div></div></li>
+      <li><span class="pri p3"><span lang="ko">나중</span><span lang="en">Later</span></span><div><div class="t"><span lang="ko">기존 결제 연동 코드</span><span lang="en">Existing checkout integration code</span></div><div class="d"><span lang="ko">지금 테스트 결제가 이 코드로 돌아가서 유지해요. 새 결제사가 확정되면 그때 교체하면서 정리해요. 크레딧 데이터는 그대로 둬요.</span><span lang="en">Test checkout still runs on it, so it stays. Replace it once the new provider is confirmed, keeping credit data as is.</span></div></div></li>
+    </ul>
+  </section>
+
+  <footer>
+    <span lang="ko">코드 기준으로 정리했어요 (<code>constants/routes.ts</code>, <code>app/</code> 라우트, 내비게이션). 화면이 바뀌면 이 페이지도 함께 업데이트해요.</span>
+    <span lang="en">Compiled from the code (<code>constants/routes.ts</code>, <code>app/</code> routes, navigation). Update this page when screens change.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  function set(l){
+    root.setAttribute('data-lang',l); root.lang=l==='ko'?'ko':'en';
+    document.getElementById('btn-ko').setAttribute('aria-pressed',l==='ko');
+    document.getElementById('btn-en').setAttribute('aria-pressed',l==='en');
+    try{localStorage.setItem('map-lang',l)}catch(e){}
+  }
+  var init='ko';
+  if(location.hash==='#en') init='en'; else if(location.hash==='#ko') init='ko';
+  else { try{var s=localStorage.getItem('map-lang'); if(s==='en'||s==='ko') init=s;}catch(e){} }
+  set(init);
+  document.querySelectorAll('[data-set]').forEach(function(b){b.addEventListener('click',function(){set(b.getAttribute('data-set'))})});
+})();
+</script>
+</body></html>

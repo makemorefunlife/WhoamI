@@ -35,7 +35,7 @@
 | `tests/unit/security-flow.test.mjs` | 92–99, 347–348, 374 | strip/create 소스에 레거시 필드 존재 assert |
 | `tests/unit/security-ownership.test.mjs` | 141, 148 | create가 client `payment_status` 무시하는지 코멘트/검증 |
 
-**참고(문서만, 런타임 아님):** `README.md`, `docs/dev-flow-current.md`, `docs/ARCHITECTURE_MASTER.md`, `docs/dev/02_DATASET_SPECIFICATION.md`, draft RLS `supabase/migrations/20260714120000_reports_rls_fail_closed_draft.sql` 등.
+**참고(문서만, 런타임 아님):** `README.md`, `docs/dev/archive/2026-05_dev-flow-current.md`, `docs/ARCHITECTURE_MASTER.md`, `docs/dev/02_DATASET_SPECIFICATION.md`, draft RLS `supabase/migrations/20260714120000_reports_rls_fail_closed_draft.sql` 등.
 
 ---
 
@@ -112,7 +112,7 @@
 | **앱/lib TS·JS** | `.from("saju_charts")` **현재 없음** |
 | `app/api/saju/route.ts` | 전 구간 — `calculateSajuBundle`만; DB insert 없음 (과거 docs가 말한 write-only는 제거된 상태로 보임) |
 
-**문서·구 마이그레이션만 언급:** `docs/ARCHITECTURE_MASTER.md`, `docs/dev-flow-current.md`, `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`, `20260519120000_enable_rls_remediation.sql` 등.
+**문서·구 마이그레이션만 언급:** `docs/ARCHITECTURE_MASTER.md`, `docs/dev/archive/2026-05_dev-flow-current.md`, `docs/dev/DEVELOPER_HANDBOOK_2026-07-08.md`, `20260519120000_enable_rls_remediation.sql` 등.
 
 → **정렬 작업 대상 코드는 사실상 0.** Dev에 테이블 안 만들어도 앱 동작과 무관.
 

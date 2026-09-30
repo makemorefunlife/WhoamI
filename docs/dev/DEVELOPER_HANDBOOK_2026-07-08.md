@@ -3,7 +3,7 @@
 > **작성일:** 2026-07-08  
 > **브랜치 기준:** `main` @ `7db70e0`  
 > **목적:** 유저 플로우·IA·DB·참조 파일을 한곳에 모아, 로직 꼬임 방지용 SSOT  
-> **기존 문서:** `docs/v2/PRD/00_Master_PRD.md`, `docs/v2/guide/01_Core_User_Flow.md`, `docs/dev-flow-current.md` 와 **병행** — 이 문서는 **현재 구현(Stitch UI)** 에 맞춘 실전판
+> **기존 문서:** `docs/v2/PRD/00_Master_PRD.md`, `docs/v2/guide/01_Core_User_Flow.md`, `docs/dev/archive/2026-05_dev-flow-current.md` 와 **병행** — 이 문서는 **현재 구현(Stitch UI)** 에 맞춘 실전판
 
 ---
 
@@ -271,7 +271,7 @@ node -e "(async()=>{require('dotenv').config({path:'.env.local'});const {createC
 |------|------|
 | 제품 비전·MVP | `docs/v2/PRD/00_Master_PRD.md` |
 | 이상적 유저 플로우 | `docs/v2/guide/01_Core_User_Flow.md` |
-| 레거시 리포트 파이프라인 | `docs/dev-flow-current.md` |
+| 레거시 리포트 파이프라인 | `docs/dev/archive/2026-05_dev-flow-current.md` |
 | 설문 정본 | `docs/v2/survey/02_Survey_Questions.md` |
 | 사주 스키마 | `docs/v2/saju/02_Saju_Input_Schema.md` |
 | 관계 아키텍처 | `docs/v2/relationship/01_Relationship_Architecture.md` |

@@ -64,7 +64,9 @@ AI는 **`00_Status.md` → `PROJECT_RULES.md` → 최근 `daily/`** 순으로 �
 
 | 문서 | 용도 |
 |------|------|
-| `docs/dev-flow-current.md` | 유료/무료 리포트 **실제 데이터 흐름** 맵 |
+| `docs/dev/01_IA_MAP.md` | **IA·유저 플로우 SSOT** (화면 구조, 플로우, 진입 조건, API 지도) |
+| `docs/dev/service-map.html` | 위 내용의 공유용 시각 버전 (KR/EN, 브라우저로 열기) |
+| `docs/dev/archive/` | 예전 IA·데이터 흐름 문서 (기록용) |
 | `docs/v2/` | 초기 v2 설계 스펙 (많은 deep 파이프라인은 **폐기·삭제 후보**) |
 | `tests/regression/` | API 회귀 수동 검증 가이드 |
 
