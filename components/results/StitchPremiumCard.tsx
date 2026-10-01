@@ -95,7 +95,7 @@ export default function StitchPremiumCard({
       {/* Feature Line / Chips */}
       <div className="mt-6 flex flex-wrap items-center gap-2 text-xs font-medium text-primary/80">
         <span className="rounded-lg bg-surface-container-lowest/80 border border-outline-variant/30 px-3 py-1.5 shadow-2xs">
-          {isKo ? "현재의 나 · 본래의 나" : "Current Self · Innate Baseline"}
+          {isKo ? "현재의 나 · 본래의 나" : "Current Patterns · Natural Tendencies"}
         </span>
         <span className="rounded-lg bg-surface-container-lowest/80 border border-outline-variant/30 px-3 py-1.5 shadow-2xs">
           {isKo ? "차이와 정렬 · 지금까지의 이야기" : "Alignment · Life Story"}

@@ -117,13 +117,18 @@ export async function POST(req: Request) {
         const generationIsCurrent =
           structured === null ||
           storedGenerationVersion >= PERSONAL_V2_STRUCTURED_GENERATION_VERSION;
-        if (
-          parsed.locale === locale &&
-          parsed.slim_v1 &&
-          structuredIsTrustworthy &&
-          generationIsCurrent
-        ) {
-          return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 });
+        // A placeholder fallback (llm_source "fallback": no LLM output) is
+        // never a completed report, so it is never reused from the cache.
+        const storedIsPlaceholderFallback = parsed.slim_v1?.llm_source === "fallback";
+        if (!storedIsPlaceholderFallback) {
+          if (
+            parsed.locale === locale &&
+            parsed.slim_v1 &&
+            structuredIsTrustworthy &&
+            generationIsCurrent
+          ) {
+            return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 });
+          }
         }
       } catch (e) {
         logServerError("v2/deep/essence:stored_parse", e, "invalid_json");
@@ -202,6 +207,20 @@ export async function POST(req: Request) {
         return NextResponse.json(
           { error: messages.errors.analysisFailed },
           { status: 500 },
+        );
+      }
+
+      // Placeholder fallback (no API key / LLM failure) is not a real report:
+      // don't persist it, don't charge a credit (finally{} releases it).
+      if (slim_v1.llm_source === "fallback") {
+        logServerError(
+          "v2/deep/essence:",
+          new Error("LLM fallback result not persisted"),
+          "llm_fallback",
+        );
+        return NextResponse.json(
+          { error: messages.errors.analysisFailed },
+          { status: 502 },
         );
       }
 

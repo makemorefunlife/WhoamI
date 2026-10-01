@@ -77,8 +77,8 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
   "en-US": {
     title: "Privacy Policy",
     description:
-      'Aha It\'s me ("we," "us," or "the Company") provides behavioral-psychology and Saju-based self-insight analyses, and processes personal data in accordance with applicable law, including the Korean Personal Information Protection Act (PIPA), the EU General Data Protection Regulation (GDPR) where applicable, and the California Consumer Privacy Act (CCPA).',
-    lastUpdated: "2026-09-29",
+      'Aha It\'s me ("we," "us," or "the Company") provides self-insight reports that combine a behavioral self-assessment with Saju (Four Pillars) and astrology calculations, and processes personal data in accordance with applicable law, including the Korean Personal Information Protection Act (PIPA), the EU General Data Protection Regulation (GDPR) where applicable, and the California Consumer Privacy Act (CCPA).',
+    lastUpdated: "2026-10-01",
     sections: [
       {
         id: "collect",
@@ -88,9 +88,9 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         ],
         listItems: [
           "Account & Authentication Information (processed via Clerk): email address, and sign-in/session activity.",
-          "Personal & Relationship Service Input: your name, date of birth, time of birth, and gender, where you provide them, used to generate your Personal and Relationship analyses.",
+          "Personal & Relationship Service Input: your name, date of birth, time and place of birth, and gender, where you provide them, used to generate your Personal and Relationship analyses.",
           "Behavioral Psychology Questionnaire Responses: your answers to our behavioral survey, used alongside your birth information to generate your analysis.",
-          "Third-Party Data (Relationship Analysis): information you submit about another person -- such as their name, date of birth, time of birth, or gender -- in order to generate a Relationship analysis involving them. See Section 2 below for the responsibility this places on you.",
+          "Third-Party Data (Relationship Analysis): information you submit about another person -- such as their name, date of birth, time and place of birth, or gender -- in order to generate a Relationship analysis involving them. See Section 2 below for the responsibility this places on you.",
           "Payment & Transaction Information: we do not collect or store your full card number or other payment credentials. Our third-party payment service provider collects your payment details directly and shares limited transaction data back with us -- a transaction identifier, the product purchased, the price/currency, and transaction status.",
           "Automatically Collected Technical & Usage Information: IP address, browser/device information, and usage/analytics events, collected via cookies and Google Tag Manager (currently configured for GA4 analytics only -- see Section 6).",
           "Decision Journal entries are currently stored locally on your device and are not transmitted to our servers unless a future feature explicitly informs you otherwise.",
@@ -111,7 +111,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         ],
         listItems: [
           "To generate your Personal analysis, Relationship analysis, and to support the Decision Journal feature (which, as noted above, is stored on your device, not ours).",
-          "To combine your behavioral psychology questionnaire responses with Saju-derived contextual signals from your birth information, producing an AI-assisted, self-insight report -- not a fortune-telling or future-prediction service, and not a substitute for professional advice (see Section 4).",
+          "To combine your behavioral psychology questionnaire responses with Saju- and astrology-derived signals from your birth information, producing a self-insight report -- not a fortune-telling or future-prediction service, and not a substitute for professional advice (see Section 4).",
           "To process payments and manage your purchases through our third-party payment service provider.",
           "To communicate with you about your account, service updates, or customer support requests.",
           "To maintain the security of the Service and to improve it over time.",

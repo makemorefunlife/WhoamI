@@ -515,7 +515,8 @@ export function polishDeepEssenceStructuredReport(
   let optimalList = mapStrList(report.energy.optimal, loc);
 
   let closingText = cleanClosingText(report.closing, loc);
-  if (primaryFamily && FAMILY_CLOSING_MOTIFS[primaryFamily]) {
+  // Korean-only deterministic closing fallback: never overwrite en-US prose with Korean.
+  if (loc === "ko-KR" && primaryFamily && FAMILY_CLOSING_MOTIFS[primaryFamily]) {
     const motifRegex = FAMILY_CLOSING_MOTIFS[primaryFamily];
     const hasBannedTemplate = BANNED_CLOSING_TEMPLATES.some((r) => r.test(closingText));
     if ((!motifRegex.test(closingText) || hasBannedTemplate) && FAMILY_CLOSING_FALLBACKS[primaryFamily]) {
@@ -523,7 +524,8 @@ export function polishDeepEssenceStructuredReport(
     }
   }
 
-  if (fitPlan) {
+  // Korean-only: fitPlan.environmentFitDirection and motif regexes are Korean strings.
+  if (loc === "ko-KR" && fitPlan) {
     const pKey = fitPlan.primaryFit.key;
     const sKey = fitPlan.secondaryFit.key;
     const pMotifs = FIT_NEED_SEMANTIC_MOTIFS[pKey];
@@ -545,7 +547,8 @@ export function polishDeepEssenceStructuredReport(
     steady: polishProse(row.steady, loc),
   }));
 
-  if (fitPlan) {
+  // Korean-only: Korean ban patterns, spoken-dialogue check and Korean fallback pairs.
+  if (loc === "ko-KR" && fitPlan) {
     const BANNED_COACHING_PATTERNS = [
       /어떤 배움을.*기대/,
       /성장을 응원/,

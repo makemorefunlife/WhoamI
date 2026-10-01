@@ -273,7 +273,7 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — adaptation_story additiv
     const { buildPart04ExpertSynthesisUserPrompt } = await import("../../lib/prompts/deepEssenceStructured.ts");
     const packet = buildFixturePacket("known_time");
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     const partAPrompt = buildDeepEssenceStructuredPartAUserPrompt({
       ...BASE_PROMPT_INPUT,
@@ -295,7 +295,7 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — adaptation_story additiv
     const { buildPart04ExpertSynthesisUserPrompt } = await import("../../lib/prompts/deepEssenceStructured.ts");
     const packet = buildFixturePacket("known_time");
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     if (plan) {
       for (const locale of ["ko-KR", "en-US"]) {

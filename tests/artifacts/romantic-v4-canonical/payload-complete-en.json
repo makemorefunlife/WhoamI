@@ -1,0 +1,40 @@
+{
+  "locale": "en-US",
+  "validation": {
+    "ok": true,
+    "issues": []
+  },
+  "hidden": [
+    {
+      "chapterId": "c11_year_flow",
+      "reason": "실제 연도 timing evidence가 없어 월별/연도 예측을 생성하지 않음"
+    }
+  ],
+  "titles": [
+    "우리 관계의 세 가지 얼굴",
+    "우리는 어떤 커플인가",
+    "왜 서로에게 끌렸는가",
+    "실제로 자주 부딪히는 순간",
+    "그 흐름이 생기는 이유",
+    "함께라서 강해지는 것과 취약해지는 것",
+    "이 둘만의 특별한 케미",
+    "마음이 잘못 전달되는 순간",
+    "다시 가까워지는 방법",
+    "현실에서 적용하는 방법",
+    "올해 우리 관계의 흐름",
+    "이해한 뒤 우리가 선택할 것"
+  ],
+  "visible": [
+    "c1_three_faces",
+    "c2_who_we_are",
+    "c3_why_attracted",
+    "c4_friction_moments",
+    "c5_why_flow",
+    "c6_strength_vulnerability",
+    "c7_unique_chemistry",
+    "c8_misread_heart",
+    "c9_repair",
+    "c10_real_life",
+    "c12_choices"
+  ]
+}

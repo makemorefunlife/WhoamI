@@ -93,6 +93,15 @@ import type {
 import { buildPersonalPart04StoryPlan } from "./buildPersonalPart04StoryPlan";
 import { selectAxisHighlights, type AxisComparison } from "@/lib/v2/analysis/axisComparison";
 import type { PrimaryAxisKey } from "@/lib/v2/survey/types";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import {
+  ACTION_FALLBACK_EN,
+  ENERGY_MECHANISM_SPECS_EN,
+  FAMILY_CLOSING_FRAMES_EN,
+  FIT_CATEGORY_SPECS_EN,
+  buildActionDirectionsEn,
+  sajuBehavioralNoteEn,
+} from "@/lib/report/part01EvidenceEn";
 
 function evidenceKey(ref: Part01EvidenceRef): string {
   return ref.fact_path;
@@ -585,7 +594,12 @@ const ENERGY_MECHANISM_SPECS: Record<EnergyMechanismKey, EnergyMechanismSpec> = 
   },
 };
 
-export function selectEnergyMechanisms(packet: Part01IdentityEvidencePacket): DeterministicEnergyPlan {
+export function selectEnergyMechanisms(
+  packet: Part01IdentityEvidencePacket,
+  locale?: Locale | string,
+): DeterministicEnergyPlan {
+  const ENERGY_SPECS =
+    normalizeLocale(locale) === "en-US" ? ENERGY_MECHANISM_SPECS_EN : ENERGY_MECHANISM_SPECS;
   const scores: Record<EnergyMechanismKey, number> = {
     DECISION_LOAD: 0,
     CONTROL_LOAD: 0,
@@ -656,8 +670,8 @@ export function selectEnergyMechanisms(packet: Part01IdentityEvidencePacket): De
   }
 
   return {
-    primary: ENERGY_MECHANISM_SPECS[primaryKey],
-    secondary: ENERGY_MECHANISM_SPECS[secondaryKey],
+    primary: ENERGY_SPECS[primaryKey],
+    secondary: ENERGY_SPECS[secondaryKey],
   };
 }
 
@@ -673,7 +687,7 @@ const ENERGY_RELEVANT_DIMENSION_KEYS: readonly string[] = [
 const ENERGY_RELEVANT_SECONDARY_KEYS = ["energy_style", "resilience", "conflict_style", "recognition"] as const;
 
 /** Builds Energy grounding text + the exact key set shown for it (Part 02 Batch 1 / Batch 5). */
-function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
+function buildEnergyEvidence(packet: Part01IdentityEvidencePacket, locale?: Locale | string): {
   text: string;
   knownKeys: Set<string>;
 } {
@@ -687,8 +701,8 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
     }
   };
 
-  const plan = selectEnergyMechanisms(packet);
-  const fitPlan = selectFitPlan(packet);
+  const plan = selectEnergyMechanisms(packet, locale);
+  const fitPlan = selectFitPlan(packet, locale);
   lines.push("DETERMINISTIC PRIMARY & SECONDARY ENERGY MECHANISMS FOR THIS PROFILE (MANDATORY ANCHORS):");
   lines.push(`- [PRIMARY MECHANISM]: ${plan.primary.key} (${plan.primary.label})`);
   lines.push(`  Burden Description: ${plan.primary.description}`);
@@ -901,7 +915,12 @@ const FIT_CATEGORY_SPECS: Record<FitCategoryKey, FitCategorySpec> = {
   },
 };
 
-export function selectFitPlan(packet: Part01IdentityEvidencePacket): DeterministicFitPlan {
+export function selectFitPlan(
+  packet: Part01IdentityEvidencePacket,
+  locale?: Locale | string,
+): DeterministicFitPlan {
+  const FIT_SPECS =
+    normalizeLocale(locale) === "en-US" ? FIT_CATEGORY_SPECS_EN : FIT_CATEGORY_SPECS;
   const scores: Record<FitCategoryKey, number> = {
     AUTONOMY: 0,
     STRUCTURE: 0,
@@ -976,8 +995,8 @@ export function selectFitPlan(packet: Part01IdentityEvidencePacket): Determinist
   }
 
   return {
-    primaryFit: FIT_CATEGORY_SPECS[primaryKey],
-    secondaryFit: FIT_CATEGORY_SPECS[secondaryKey],
+    primaryFit: FIT_SPECS[primaryKey],
+    secondaryFit: FIT_SPECS[secondaryKey],
   };
 }
 
@@ -1014,7 +1033,9 @@ export type DeterministicActionPlan = {
 
 export function selectActionPlan(
   packet: RawPart01EvidencePacket | null | undefined,
+  locale?: Locale | string,
 ): DeterministicActionPlan {
+  const isEn = normalizeLocale(locale) === "en-US";
   const fallbackScores: Record<ActionCandidateFamily, number> = {
     DECISION: 50,
     BOUNDARY: 30,
@@ -1031,22 +1052,22 @@ export function selectActionPlan(
       primaryFamily: "DECISION",
       secondaryFamily: "BOUNDARY",
       familyScores: fallbackScores,
-      doDirections: [
+      doDirections: isEn ? [...ACTION_FALLBACK_EN.doDirections] : [
         "중요한 결정을 앞두고 다른 사람의 반응을 살피기 전에 내 내면의 우선순위를 먼저 한 줄로 정하기",
         "자신이 선택한 방향을 일정 시간 실험해보고 결과를 데이터로 복기하는 루틴 유지하기",
         "서로의 자율권을 존중하고 독립적 판단 시간을 주는 관계에 우선순위 두기",
       ],
-      dontDirections: [
+      dontDirections: isEn ? [...ACTION_FALLBACK_EN.dontDirections] : [
         "모든 사람이 완전히 만족할 때까지 결정을 지연시키거나 재확인을 반복하지 않기",
         "상대의 기대에 맞춘다는 이유로 내 영역의 결정권까지 일방적으로 내주지 않기",
         "한 번 내린 결정을 작은 변수가 생길 때마다 다시 개방하여 판을 흔들지 않기",
       ],
-      decisionRuleDirections: [
+      decisionRuleDirections: isEn ? [...ACTION_FALLBACK_EN.decisionRuleDirections] : [
         "이 선택을 내가 진심으로 원하는가, 아니면 갈등을 피하기 위해 받아들이는가 구분하기",
         "지금 필요한 것이 더 많은 정보인가, 이미 충분한데 확신만 기다리는 것인가 구분하기",
         "이 방식을 오랫동안 유지해도 내 에너지가 고갈되지 않는가까지 보기",
       ],
-      closingFrame: {
+      closingFrame: isEn ? ACTION_FALLBACK_EN.closingFrame : {
         primaryFamily: "DECISION",
         strengthTruth: "독립적 판단과 내면의 판단 기준을 세우는 힘",
         overuseTruth: "타인의 과도한 동의를 기다리거나 모든 결과를 혼자 짊어지려는 부담",
@@ -1058,8 +1079,8 @@ export function selectActionPlan(
     };
   }
 
-  const energyPlan = selectEnergyMechanisms(packet);
-  const fitPlan = selectFitPlan(packet);
+  const energyPlan = selectEnergyMechanisms(packet, locale);
+  const fitPlan = selectFitPlan(packet, locale);
   const primary = packet.currentBehavior.primaryAxes;
 
   const familyScores: Record<ActionCandidateFamily, number> = {
@@ -1191,6 +1212,13 @@ export function selectActionPlan(
     decisionRuleDirections.push("이 결정을 오랫동안 유지해도 내 에너지가 고갈되지 않고 지속 가능한가까지 고려하기");
   }
 
+  if (isEn) {
+    const en = buildActionDirectionsEn(primaryFamily, secondaryFamily);
+    doDirections.splice(0, doDirections.length, ...en.doDirections);
+    dontDirections.splice(0, dontDirections.length, ...en.dontDirections);
+    decisionRuleDirections.splice(0, decisionRuleDirections.length, ...en.decisionRuleDirections);
+  }
+
   const practiceEligible = Boolean(
     packet.growthEdgeCandidates?.primaryGapAxis ||
     packet.axisComparisons?.some((a) => a.innate_higher && Math.abs(a.innate - a.current) >= 15)
@@ -1211,7 +1239,13 @@ export function selectActionPlan(
     }
   }
 
-  const FAMILY_CLOSING_FRAMES: Record<ActionCandidateFamily, ActionClosingFrame> = {
+  if (isEn && packet.astrology?.stars) {
+    sajuBehavioralNote = sajuBehavioralNoteEn(
+      packet.astrology.stars.map((s: { name_ko: string }) => s.name_ko),
+    );
+  }
+
+  const KO_FAMILY_CLOSING_FRAMES: Record<ActionCandidateFamily, ActionClosingFrame> = {
     DECISION: {
       primaryFamily: "DECISION",
       strengthTruth: "스스로 판단하고 내면의 기준을 바로 세우는 독립적인 선택의 힘",
@@ -1262,6 +1296,7 @@ export function selectActionPlan(
     },
   };
 
+  const FAMILY_CLOSING_FRAMES = isEn ? FAMILY_CLOSING_FRAMES_EN : KO_FAMILY_CLOSING_FRAMES;
   const closingFrame = FAMILY_CLOSING_FRAMES[primaryFamily] || FAMILY_CLOSING_FRAMES.DECISION;
 
   return {
@@ -1296,14 +1331,14 @@ const RELATIONSHIP_RELEVANT_DIMENSION_KEYS: readonly string[] = [
 const RELATIONSHIP_RELEVANT_SECONDARY_KEYS = ["empathy", "conflict_style", "recognition"] as const;
 
 /** Builds Relationship grounding text + the exact key set shown for it (Part 03 Batch 1 / Batch 6). */
-function buildRelationshipEvidence(packet: Part01IdentityEvidencePacket): {
+function buildRelationshipEvidence(packet: Part01IdentityEvidencePacket, locale?: Locale | string): {
   text: string;
   knownKeys: Set<string>;
 } {
   const knownKeys = new Set<string>();
   const lines: string[] = [];
 
-  const fitPlan = selectFitPlan(packet);
+  const fitPlan = selectFitPlan(packet, locale);
   lines.push("DETERMINISTIC PRIMARY & SECONDARY FIT NEEDS FOR THIS PROFILE (MANDATORY ANCHORS):");
   lines.push(`- [PRIMARY FIT NEED]: ${fitPlan.primaryFit.key} (${fitPlan.primaryFit.label})`);
   lines.push(`  People Fit Direction: ${fitPlan.primaryFit.peopleFitDirection}`);
@@ -1408,7 +1443,7 @@ function buildPracticeEvidence(packet: Part01IdentityEvidencePacket): {
  * has nothing to "recover" from. Both slots are reused from
  * selectAxisHighlights(), never re-decided.
  */
-function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
+function buildFutureEvidence(packet: Part01IdentityEvidencePacket, locale?: Locale | string): {
   text: string;
   knownKeys: Set<string>;
 } {
@@ -1440,7 +1475,7 @@ function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
     );
   }
 
-  const actionPlan = selectActionPlan(packet);
+  const actionPlan = selectActionPlan(packet, locale);
   lines.push("");
   lines.push("DETERMINISTIC ACTION PLAN DIRECTIONS FOR PART 07 (PERSONAL OPERATING PLAYBOOK):");
   lines.push(`- [PRIMARY ACTION FAMILY]: ${actionPlan.primaryFamily}`);
@@ -1535,16 +1570,17 @@ export function hasAdaptationStoryEvidence(
  */
 export function formatPart01EvidenceForPrompt(
   packet: Part01IdentityEvidencePacket | null | undefined,
+  locale?: Locale | string,
 ): Part01PromptEvidence | null {
   if (!packet) return null;
   const coreMode = buildCoreModeEvidence(packet);
   const growthEdge = buildGrowthEdgeEvidence(packet);
   const strengthsWatchouts = buildStrengthsWatchoutsEvidence(packet);
   const axisInterpretation = buildAxisInterpretationEvidence(packet);
-  const energy = buildEnergyEvidence(packet);
-  const relationship = buildRelationshipEvidence(packet);
+  const energy = buildEnergyEvidence(packet, locale);
+  const relationship = buildRelationshipEvidence(packet, locale);
   const practice = buildPracticeEvidence(packet);
-  const future = buildFutureEvidence(packet);
+  const future = buildFutureEvidence(packet, locale);
   const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
     packet.layeredIdentityCandidates;
   const layeredIdentityBuckets = {

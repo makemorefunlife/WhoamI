@@ -11,6 +11,7 @@
  * - Restricts evidence_refs to selected keys only for strict provenance.
  */
 
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 import type { Part01IdentityEvidencePacket } from "@/lib/v1/slim/part01IdentityEvidence";
 import type { Part01PromptEvidence, EvidenceFamily } from "@/lib/report/formatPart01EvidenceForPrompt";
 
@@ -95,7 +96,9 @@ export function buildPersonalPart04StoryPlan(
   packet: Part01IdentityEvidencePacket | null | undefined,
   promptEvidence: Part01PromptEvidence | null | undefined,
   partAContext?: PartASemanticContext | null,
+  locale?: Locale | string,
 ): PersonalPart04StoryPlan | null {
+  const isEn = normalizeLocale(locale) === "en-US";
   if (!packet || !promptEvidence || !promptEvidence.adaptationStoryEligible) {
     return null;
   }
@@ -115,7 +118,14 @@ export function buildPersonalPart04StoryPlan(
     promptEvidence.adaptationStoryKnownKeys.has(k),
   );
 
-  const axisLabelMap: Record<string, string> = {
+  const axisLabelMap: Record<string, string> = isEn ? {
+    autonomy: "autonomy and independent judgment",
+    connection: "emotional connection and relational harmony",
+    stability: "predictability and stability",
+    growth: "growth and taking on new challenges",
+    structure: "systematic planning and order",
+    adaptability: "flexible adaptation to situations",
+  } : {
     autonomy: "자율성과 주체적 판단",
     connection: "정서적 교감과 관계 조화",
     stability: "예측 가능성과 안정감",
@@ -126,11 +136,11 @@ export function buildPersonalPart04StoryPlan(
   const humanAxisConcept = axisLabelMap[primaryGap.axis] || primaryGap.axis;
 
   const innateBaselineText = partAContext?.primaryGapProse?.naturalTendency ||
-    `본래 ${humanAxisConcept}을(를) 우선시하는 성향`;
+    (isEn ? `a natural lean toward prioritizing ${humanAxisConcept}` : `본래 ${humanAxisConcept}을(를) 우선시하는 성향`);
   const currentModeText = partAContext?.primaryGapProse?.currentPattern ||
     (primaryGap.delta < 0
-      ? `현실에서 타인과의 관계 및 상황적 안정성을 위해 상대적으로 조절하게 된 방식`
-      : `현실적 필요로 인해 ${humanAxisConcept}의 비중을 높인 방식`);
+      ? (isEn ? `a way you have learned to tone this down for the sake of relationships and situational stability` : `현실에서 타인과의 관계 및 상황적 안정성을 위해 상대적으로 조절하게 된 방식`)
+      : (isEn ? `a way you have turned up ${humanAxisConcept} because real life required it` : `현실적 필요로 인해 ${humanAxisConcept}의 비중을 높인 방식`));
 
   const primaryAdaptation = {
     axis: primaryGap.axis,
@@ -158,7 +168,7 @@ export function buildPersonalPart04StoryPlan(
       secondaryContrast = {
         kind: "layer_contrast",
         key: "relational_distance_shift",
-        description: partAContext?.layeredIdentitySynthesis || "대외적 관계 방식과 가까운 관계/내면 욕구 사이의 온도 차이",
+        description: partAContext?.layeredIdentitySynthesis || (isEn ? "the difference in temperature between how you come across socially and your needs in close relationships" : "대외적 관계 방식과 가까운 관계/내면 욕구 사이의 온도 차이"),
         evidenceRefs: layerRefs,
       };
     }
@@ -171,7 +181,7 @@ export function buildPersonalPart04StoryPlan(
     secondaryContrast = {
       kind: "secondary_gap",
       key: `axis:${secGap.axis}`,
-      description: `${secAxisName} 축에서의 적응 변화`,
+      description: isEn ? `how you have adapted on the ${secAxisName} axis` : `${secAxisName} 축에서의 적응 변화`,
       evidenceRefs: [`axis:${secGap.axis}`, ...secGap.currentKnownKeys.slice(0, 1)].filter((k) =>
         promptEvidence.adaptationStoryKnownKeys.has(k),
       ),
@@ -183,7 +193,7 @@ export function buildPersonalPart04StoryPlan(
     secondaryContrast = {
       kind: "alignment",
       key: `axis:${align.axis}`,
-      description: `${alignAxisName} 축에서의 본래 성향 유지를 통한 안정적 기반`,
+      description: isEn ? `a steady foundation from staying true to your natural tendency on the ${alignAxisName} axis` : `${alignAxisName} 축에서의 본래 성향 유지를 통한 안정적 기반`,
       evidenceRefs: [`axis:${align.axis}`, ...align.currentKnownKeys.slice(0, 1)].filter((k) =>
         promptEvidence.adaptationStoryKnownKeys.has(k),
       ),
@@ -201,7 +211,7 @@ export function buildPersonalPart04StoryPlan(
     if (promptEvidence.adaptationStoryKnownKeys.has(dimKey)) {
       currentMechanism = {
         key: dimKey,
-        label: `${topDim.dimension} 대처 기제`,
+        label: isEn ? `${topDim.dimension} coping mechanism` : `${topDim.dimension} 대처 기제`,
         evidenceRefs: [dimKey],
       };
     }
@@ -217,7 +227,7 @@ export function buildPersonalPart04StoryPlan(
   if (selectedSajuKey && promptEvidence.adaptationStoryKnownKeys.has(selectedSajuKey)) {
     supportingInnateStructure = {
       key: selectedSajuKey,
-      label: `본래 구조적 경향`,
+      label: isEn ? `natural structural tendency` : `본래 구조적 경향`,
       evidenceRefs: [selectedSajuKey],
     };
   }
@@ -226,12 +236,12 @@ export function buildPersonalPart04StoryPlan(
   const rawGives = primaryGap.givesYouText;
   const cleanGives = (rawGives && !rawGives.includes("undefined") && !rawGives.includes("null") && !rawGives.includes("score="))
     ? rawGives
-    : (partAContext?.primaryGapProse?.gainedStrength || "상황 적응 및 종합적 수용 능력");
+    : (partAContext?.primaryGapProse?.gainedStrength || (isEn ? "the ability to adapt to situations and take them in as a whole" : "상황 적응 및 종합적 수용 능력"));
 
   const rawCost = primaryGap.mayCostText;
   const cleanCost = (rawCost && !rawCost.includes("undefined") && !rawCost.includes("null") && !rawCost.includes("score="))
     ? rawCost
-    : (partAContext?.primaryGapProse?.hiddenCost || "의사결정 에너지 소모 및 내면 요구 감수");
+    : (partAContext?.primaryGapProse?.hiddenCost || (isEn ? "the decision-making energy it uses up and the inner needs you set aside" : "의사결정 에너지 소모 및 내면 요구 감수"));
 
   const gainedCapabilityFocus = {
     concept: cleanGives,
@@ -278,11 +288,15 @@ export function buildPersonalPart04StoryPlan(
   const evidenceFamilies = [...familySet];
 
   // 7. Synthesis Frame Question & Tension (Fully sanitized human text)
-  const contrastDesc = secondaryContrast ? secondaryContrast.description : "관계 및 환경 속에서의 역할 수행";
+  const contrastDesc = secondaryContrast ? secondaryContrast.description : (isEn ? "the roles you play in relationships and environments" : "관계 및 환경 속에서의 역할 수행");
   
   const synthesisFrame = {
-    targetTension: `본래 ${humanAxisConcept} 성향과 현재 삶에서의 적응 방식이 ${contrastDesc}와 함께 공존하면서 발생하는 역동`,
-    question: `본래 ${humanAxisConcept} 성향이 현실에서 변모하게 된 까닭은 무엇이며, 이 변화가 ${contrastDesc}와 결합하여 얻게 된 강점(${gainedCapabilityFocus.concept})과 에너지 비용(${hiddenCostFocus.concept})의 공존 논리를 설명하라.`,
+    targetTension: isEn
+      ? `the tension between your natural lean toward ${humanAxisConcept} and the way you adapt in your current life, alongside ${contrastDesc}`
+      : `본래 ${humanAxisConcept} 성향과 현재 삶에서의 적응 방식이 ${contrastDesc}와 함께 공존하면서 발생하는 역동`,
+    question: isEn
+      ? `Explain why your natural lean toward ${humanAxisConcept} changed shape in real life, and how that change, combined with ${contrastDesc}, lets the strength (${gainedCapabilityFocus.concept}) and the energy cost (${hiddenCostFocus.concept}) coexist.`
+      : `본래 ${humanAxisConcept} 성향이 현실에서 변모하게 된 까닭은 무엇이며, 이 변화가 ${contrastDesc}와 결합하여 얻게 된 강점(${gainedCapabilityFocus.concept})과 에너지 비용(${hiddenCostFocus.concept})의 공존 논리를 설명하라.`,
   };
 
   return {

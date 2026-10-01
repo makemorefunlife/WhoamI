@@ -157,13 +157,15 @@ export async function runSlimIntegratedReport(
 
 
 
-  const survey = buildSurveyAnalysisForSlimV1(v2Profile);
+  const survey = buildSurveyAnalysisForSlimV1(v2Profile, locale);
 
 
 
   const essenceAnalysisSummary = formatEssenceAnalysisForIntegrated(
 
     toV1SajuApiPayload(bundle),
+
+    locale,
 
   );
 

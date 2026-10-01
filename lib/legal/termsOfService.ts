@@ -15,13 +15,13 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
     title: "Terms of Service",
     description:
       "Terms governing use of Aha It's me, including AI reports, third-party data, payments, and dispute resolution.",
-    lastUpdated: "2026-09-29",
+    lastUpdated: "2026-10-01",
     sections: [
       {
         id: "about",
         title: "1. About the Service",
         paragraphs: [
-          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea, provides an online service offering personality and relationship analysis based on astrology, behavioral psychology, and related frameworks, including AI-generated reports and decision-support tools (the "Service").',
+          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea, provides a self-serve online application that generates personality and relationship insights from the survey answers and birth information you provide. The Service combines a behavioral self-assessment, Saju (Four Pillars) and astrology calculations, and AI-generated written interpretation, and includes decision-support tools (the "Service"). Results are generated through the platform.',
         ],
       },
       {
@@ -44,9 +44,10 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "ai-disclaimer",
         title: "4. AI-Generated Content & Disclaimer",
         paragraphs: [
-          "1. Reports and analyses are generated using artificial intelligence (including OpenAI technology) and are provided for informational and entertainment purposes only.",
+          "1. Reports and analyses are produced by the Service's analysis framework, which calculates patterns from your inputs (including Saju and astrology calculations) and uses artificial intelligence (including OpenAI technology) to generate the written interpretation. They are provided for informational and entertainment purposes only.",
           "2. The Service does not provide professional psychological counseling, medical, legal, or financial advice. Consult a qualified professional before making significant decisions.",
-          "3. We do not guarantee the accuracy, reliability, or completeness of AI-generated content and disclaim liability for outcomes resulting from reliance on it, except where caused by our gross negligence or willful misconduct.",
+          "3. The Service does not provide consultations or manual or personal readings, and reports are not prepared or reviewed by a human consultant, counselor, or analyst. The Service does not provide predictions of future events.",
+          "4. We do not guarantee the accuracy, reliability, or completeness of AI-generated content and disclaim liability for outcomes resulting from reliance on it, except where caused by our gross negligence or willful misconduct.",
         ],
       },
       {
@@ -56,6 +57,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
           "1. Global payment and refund processing may be handled through third-party payment service providers, which may act as the seller or Merchant of Record for an order and handle payment-related customer service inquiries and returns. The merchant name shown on your billing statement and the applicable provider’s own terms and privacy policy are presented at checkout and in your payment receipt; by placing an order, you agree to them.",
           "2. Subscriptions renew automatically unless cancelled through your account settings or by contacting support@ahaitsme.com at least 24 hours before the renewal date.",
           "3. All refund requests are handled in accordance with our standalone Refund Policy and the applicable payment service provider’s terms.",
+          "4. During the Beta, checkout runs in a test environment and no real charges are made.",
         ],
       },
       {

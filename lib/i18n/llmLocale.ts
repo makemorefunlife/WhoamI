@@ -71,6 +71,7 @@ ${KOREAN_TONE_LAW}`.trim();
 - Write ALL user-facing JSON string values in natural North American English (en-US).
 - Clear, warm, specific — not generic self-help fluff.
 - Keep JSON keys, enums, scores, and schema exactly as specified.
+- ENGLISH ONLY: never output Hangul (Korean characters) in any user-facing string. Any Korean text in these instructions (examples, forbidden-phrase lists, tone notes) or in the evidence/input material is internal reference only — never copy or quote it; express the same meaning in natural English instead. Translate traditional Korean Saju terms into plain English behavior descriptions.
 
 ${ENGLISH_TONE_LAW}`.trim();
 }

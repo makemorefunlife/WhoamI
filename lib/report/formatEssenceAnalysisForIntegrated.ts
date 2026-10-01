@@ -1,3 +1,6 @@
+import { formatEssenceAnalysisForIntegratedEn } from "@/lib/report/formatEssenceAnalysisEn";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+
 /** `/api/saju` 응답 또는 toV1SajuApiPayload 형태 */
 export type SajuDataForIntegrated = {
   saju?: {
@@ -87,7 +90,12 @@ function formatShinsalSection(
  */
 export function formatEssenceAnalysisForIntegrated(
   data: SajuDataForIntegrated | null | undefined,
+  locale?: Locale | string,
 ): string {
+  // Explicit en-US only: callers that pass no locale keep the Korean summary.
+  if (locale !== undefined && normalizeLocale(locale) === "en-US") {
+    return formatEssenceAnalysisForIntegratedEn(data);
+  }
   if (!data) return "(Essence 분석 데이터 없음)";
 
   const pillars = data.saju

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "complete-ko-desktop-full",
+    "url": "http://localhost:3000/dev/romantic-v4-content-prototype?variant=complete&locale=ko-KR",
+    "screenshot": "C:\\dev\\WhoamI\\tests\\artifacts\\romantic-v4-prototype\\complete-ko-desktop-full.png",
+    "title": "ahaitsme — Know yourself",
+    "hasKorean": true,
+    "hasTOC": true,
+    "hasAxis": true,
+    "hasOwnership": false
+  },
+  {
+    "id": "complete-ko-mobile-full",
+    "url": "http://localhost:3000/dev/romantic-v4-content-prototype?variant=complete&locale=ko-KR",
+    "screenshot": "C:\\dev\\WhoamI\\tests\\artifacts\\romantic-v4-prototype\\complete-ko-mobile-full.png",
+    "title": "ahaitsme — Know yourself",
+    "hasKorean": true,
+    "hasTOC": true,
+    "hasAxis": true,
+    "hasOwnership": false
+  },
+  {
+    "id": "complete-en-smoke-desktop",
+    "url": "http://localhost:3000/dev/romantic-v4-content-prototype?variant=complete&locale=en-US",
+    "screenshot": "C:\\dev\\WhoamI\\tests\\artifacts\\romantic-v4-prototype\\complete-en-smoke-desktop.png",
+    "title": "ahaitsme — Know yourself",
+    "hasKorean": false,
+    "hasTOC": true,
+    "hasAxis": true,
+    "hasOwnership": false
+  },
+  {
+    "id": "tension-ko-check-desktop",
+    "url": "http://localhost:3000/dev/romantic-v4-content-prototype?variant=tension&locale=ko-KR",
+    "screenshot": "C:\\dev\\WhoamI\\tests\\artifacts\\romantic-v4-prototype\\tension-ko-check-desktop.png",
+    "title": "ahaitsme — Know yourself",
+    "hasKorean": true,
+    "hasTOC": false,
+    "hasAxis": false,
+    "hasOwnership": false
+  },
+  {
+    "id": "minimal-ko-check-desktop",
+    "url": "http://localhost:3000/dev/romantic-v4-content-prototype?variant=minimal&locale=ko-KR",
+    "screenshot": "C:\\dev\\WhoamI\\tests\\artifacts\\romantic-v4-prototype\\minimal-ko-check-desktop.png",
+    "title": "ahaitsme — Know yourself",
+    "hasKorean": true,
+    "hasTOC": false,
+    "hasAxis": false,
+    "hasOwnership": false
+  }
+]

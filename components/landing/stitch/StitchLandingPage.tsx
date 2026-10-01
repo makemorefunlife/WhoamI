@@ -227,7 +227,7 @@ export default function StitchLandingPage({
                 <div className="grid gap-8 sm:grid-cols-2">
                   <div className="border-t-2 border-accent-rose/70 pt-5">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-rose">
-                      {messages.landing.personalInnateEyebrow || "INNATE"}
+                      {messages.landing.personalInnateEyebrow || "NATURAL"}
                     </p>
                     <h4 className="mt-2 text-xl font-semibold text-primary">
                       {messages.landing.personalInnateTitle}

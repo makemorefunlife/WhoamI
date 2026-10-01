@@ -267,7 +267,8 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — Batch 8 additive contrac
     });
     assert.ok(grounded.includes("Direction fact"));
     assert.ok(grounded.toLowerCase().includes("true self"));
-    assert.ok(grounded.includes("진짜 나"));
+    // en-US prompt shows the English gloss of the forbidden phrase, not the Korean.
+    assert.ok(grounded.includes("the real you"));
     assert.ok(grounded.toLowerCase().includes("never frame the gap"));
   });
 });
@@ -409,11 +410,11 @@ describe("coerceDeepEssencePartA — Batch 8 axis_interpretations (gap_deep_dive
         part01Evidence: groundedEvidenceInput(promptEvidence),
       });
 
-      assert.ok(userPrompt.includes('natural_tendency ("본래 더 편한 방식")'));
-      assert.ok(userPrompt.includes('current_pattern ("현실에서 익숙해진 방식")'));
-      assert.ok(userPrompt.includes('gives_you ("그 과정에서 얻은 힘")'));
-      assert.ok(userPrompt.includes('may_cost ("대신 더 많이 쓰게 된 에너지")'));
-      assert.ok(userPrompt.includes('why_it_feels_easy ("그래서 힘을 덜 들이고 잘 쓰는 부분")'));
+      assert.ok(userPrompt.includes('natural_tendency ("The way that comes more naturally")'));
+      assert.ok(userPrompt.includes('current_pattern ("The way real life made familiar")'));
+      assert.ok(userPrompt.includes('gives_you ("The strength gained along the way")'));
+      assert.ok(userPrompt.includes('may_cost ("The energy it costs")'));
+      assert.ok(userPrompt.includes('why_it_feels_easy ("What you do well with less effort")'));
     });
 
     it("B. Prompt forbids advice, traditional Saju jargon, true-self/fake-self, invented biography, and repetition", () => {

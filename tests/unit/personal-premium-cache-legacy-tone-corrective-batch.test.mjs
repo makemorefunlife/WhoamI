@@ -40,8 +40,8 @@ describe("Verification 1 & 2 — generation version 1 is stale, current version 
     return stored >= PERSONAL_V2_STRUCTURED_GENERATION_VERSION;
   }
 
-  it("PERSONAL_V2_STRUCTURED_GENERATION_VERSION is now 9 (Batch 7 bump)", () => {
-    assert.equal(PERSONAL_V2_STRUCTURED_GENERATION_VERSION, 9);
+  it("PERSONAL_V2_STRUCTURED_GENERATION_VERSION is now 10 (en-US Korean-leak hardening bump)", () => {
+    assert.equal(PERSONAL_V2_STRUCTURED_GENERATION_VERSION, 10);
   });
 
   it("a stored row stamped with an old version (1..8) is treated as stale against the new gate", () => {
@@ -55,8 +55,8 @@ describe("Verification 1 & 2 — generation version 1 is stale, current version 
     assert.equal(generationIsCurrent(8), false);
   });
 
-  it("a stored row stamped with the current version (9) is treated as reusable", () => {
-    assert.equal(generationIsCurrent(9), true);
+  it("a stored row stamped with the current version (10) is treated as reusable", () => {
+    assert.equal(generationIsCurrent(10), true);
   });
 
   it("an unstamped legacy row (undefined) is treated as stale", () => {
@@ -67,8 +67,8 @@ describe("Verification 1 & 2 — generation version 1 is stale, current version 
 // ── 3. Client-side localStorage cache invalidation ─────────────────────────
 
 describe("Verification 3 — local browser cache invalidation", () => {
-  it("SLIM_INTEGRATED_CACHE_VERSION was bumped to 12 (Batch 7 bump)", () => {
-    assert.equal(SLIM_INTEGRATED_CACHE_VERSION, 12);
+  it("SLIM_INTEGRATED_CACHE_VERSION was bumped to 13 (en-US Korean-leak hardening bump)", () => {
+    assert.equal(SLIM_INTEGRATED_CACHE_VERSION, 13);
   });
 
   it("the storage key embeds the new version, so a v11-keyed browser entry cannot be read as a hit", () => {

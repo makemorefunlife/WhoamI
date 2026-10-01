@@ -204,7 +204,7 @@ export async function runDeepEssenceStructuredLlm(
   const wallClockStart = Date.now();
 
   try {
-    const promptEvidence = formatPart01EvidenceForPrompt(input.part01Evidence);
+    const promptEvidence = formatPart01EvidenceForPrompt(input.part01Evidence, input.locale);
 
     // ── STEP 1: Part A Generation (everything EXCEPT adaptation_story) ──────
     const userA = buildDeepEssenceStructuredPartAUserPrompt({
@@ -401,7 +401,7 @@ export async function runDeepEssenceStructuredLlm(
       ? (input.part01Evidence as Part01IdentityEvidencePacket)
       : null;
 
-    const finalStoryPlan = buildPersonalPart04StoryPlan(packet, promptEvidence, partAContext);
+    const finalStoryPlan = buildPersonalPart04StoryPlan(packet, promptEvidence, partAContext, input.locale);
 
     // ── STEP 3 & STEP 4: Parallel Part 04 Synthesis + Part B Execution ──────
     let part04Result: { narrative: string; evidence_refs: string[] } | null = null;
@@ -597,8 +597,8 @@ export async function runDeepEssenceStructuredLlm(
       ),
     };
 
-    const fitPlan = input.part01Evidence ? selectFitPlan(input.part01Evidence) : null;
-    const actionPlan = input.part01Evidence ? selectActionPlan(input.part01Evidence) : null;
+    const fitPlan = input.part01Evidence ? selectFitPlan(input.part01Evidence, input.locale) : null;
+    const actionPlan = input.part01Evidence ? selectActionPlan(input.part01Evidence, input.locale) : null;
     const structured = polishDeepEssenceStructuredReport(
       withClampedRadar,
       input.locale,

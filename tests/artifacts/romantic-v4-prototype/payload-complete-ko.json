@@ -1,0 +1,5404 @@
+{
+  "locale": "ko-KR",
+  "variant": "complete",
+  "pair": {
+    "personA": "지민",
+    "personB": "정우",
+    "perspective": "A"
+  },
+  "routeLabel": "/dev/romantic-v4-content-prototype?variant=complete&locale=ko-KR",
+  "preNarrativeContract": {
+    "locale": "ko-KR",
+    "names": {
+      "a": "지민",
+      "b": "정우"
+    },
+    "siblingInputs": {
+      "individualCeA": {
+        "source": "person_core_blueprint.individual_saju_json(A)",
+        "output": {
+          "status": "available",
+          "value": {
+            "engine": {
+              "schema_version": "individual_saju_chart_v1",
+              "engine_id": "individual_saju_chart_v1",
+              "manseryeok_package": "@fullstackfamily/manseryeok@^1.0.8",
+              "ref_data_fingerprint": "a2186a4b00e8895b2ef7c0bbdeab2162b4e7477459ec631746336bbf8c9b5b1c",
+              "built_at": "2026-07-30T08:45:20.563Z",
+              "input_fingerprint": "{\"birth_date\":\"1990-05-15\",\"birth_time\":\"14:30\",\"birth_time_unknown\":false}"
+            },
+            "birth": {
+              "report_id": "a",
+              "birth_date": "1990-05-15",
+              "birth_time_raw": "14:30",
+              "chart_time": "14:30",
+              "birth_time_unknown": false
+            },
+            "calendar": {
+              "input_calendar": "gregorian",
+              "birth_local_date": "1990-05-15",
+              "birth_local_time": "14:30",
+              "birth_time_unknown": false,
+              "lunar_date": null,
+              "solar_term": null,
+              "true_solar_time": null,
+              "timezone_offset_hours": null,
+              "place_affects_saju": false,
+              "notes": []
+            },
+            "pillars": [
+              {
+                "slot": "year",
+                "label_ko": "년주",
+                "pillar_hangul": "경오",
+                "stem": {
+                  "code": "gyeong",
+                  "element": "metal",
+                  "yin_yang": "yang",
+                  "reference_id": "stem:gyeong"
+                },
+                "branch": {
+                  "code": "o",
+                  "element": "fire",
+                  "yin_yang": "yang",
+                  "season": "summer",
+                  "reference_id": "branch:o"
+                },
+                "stem_ten_god": {
+                  "code": "bigyeon",
+                  "category": "self",
+                  "reference_id": "ten_god:bigyeon"
+                },
+                "branch_ten_god": {
+                  "code": "jeonggwan",
+                  "category": "power",
+                  "reference_id": "ten_god:jeonggwan"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "mogyok",
+                  "energy_level": "rising",
+                  "reference_id": "twelve_stage:mogyok",
+                  "branch_code": "o"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "year",
+                    "branch_code": "o",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "gi",
+                      "element": "earth",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:gi"
+                    },
+                    "ten_god": {
+                      "code": "jeongin",
+                      "category": "resource",
+                      "reference_id": "ten_god:jeongin"
+                    },
+                    "reference_id": "hidden_stem:o:gi:residual"
+                  },
+                  {
+                    "pillar_slot": "year",
+                    "branch_code": "o",
+                    "order": 1,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "byeong",
+                      "element": "fire",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:byeong"
+                    },
+                    "ten_god": {
+                      "code": "pyeongwan",
+                      "category": "power",
+                      "reference_id": "ten_god:pyeongwan"
+                    },
+                    "reference_id": "hidden_stem:o:byeong:residual"
+                  },
+                  {
+                    "pillar_slot": "year",
+                    "branch_code": "o",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "jeong",
+                      "element": "fire",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:jeong"
+                    },
+                    "ten_god": {
+                      "code": "jeonggwan",
+                      "category": "power",
+                      "reference_id": "ten_god:jeonggwan"
+                    },
+                    "reference_id": "hidden_stem:o:jeong:main"
+                  }
+                ]
+              },
+              {
+                "slot": "month",
+                "label_ko": "월주",
+                "pillar_hangul": "신사",
+                "stem": {
+                  "code": "sin",
+                  "element": "metal",
+                  "yin_yang": "yin",
+                  "reference_id": "stem:sin"
+                },
+                "branch": {
+                  "code": "sa",
+                  "element": "fire",
+                  "yin_yang": "yin",
+                  "season": "summer",
+                  "reference_id": "branch:sa"
+                },
+                "stem_ten_god": {
+                  "code": "geopjae",
+                  "category": "self",
+                  "reference_id": "ten_god:geopjae"
+                },
+                "branch_ten_god": {
+                  "code": "pyeongwan",
+                  "category": "power",
+                  "reference_id": "ten_god:pyeongwan"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "jangsaeng",
+                  "energy_level": "rising",
+                  "reference_id": "twelve_stage:jangsaeng",
+                  "branch_code": "sa"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "month",
+                    "branch_code": "sa",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "gyeong",
+                      "element": "metal",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:gyeong"
+                    },
+                    "ten_god": {
+                      "code": "bigyeon",
+                      "category": "self",
+                      "reference_id": "ten_god:bigyeon"
+                    },
+                    "reference_id": "hidden_stem:sa:gyeong:residual"
+                  },
+                  {
+                    "pillar_slot": "month",
+                    "branch_code": "sa",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "mu",
+                      "element": "earth",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:mu"
+                    },
+                    "ten_god": {
+                      "code": "pyeonin",
+                      "category": "resource",
+                      "reference_id": "ten_god:pyeonin"
+                    },
+                    "reference_id": "hidden_stem:sa:mu:middle"
+                  },
+                  {
+                    "pillar_slot": "month",
+                    "branch_code": "sa",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "byeong",
+                      "element": "fire",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:byeong"
+                    },
+                    "ten_god": {
+                      "code": "pyeongwan",
+                      "category": "power",
+                      "reference_id": "ten_god:pyeongwan"
+                    },
+                    "reference_id": "hidden_stem:sa:byeong:main"
+                  }
+                ]
+              },
+              {
+                "slot": "day",
+                "label_ko": "일주",
+                "pillar_hangul": "경진",
+                "stem": {
+                  "code": "gyeong",
+                  "element": "metal",
+                  "yin_yang": "yang",
+                  "reference_id": "stem:gyeong"
+                },
+                "branch": {
+                  "code": "jin",
+                  "element": "earth",
+                  "yin_yang": "yang",
+                  "season": "spring",
+                  "reference_id": "branch:jin"
+                },
+                "stem_ten_god": {
+                  "code": "bigyeon",
+                  "category": "self",
+                  "reference_id": "ten_god:bigyeon"
+                },
+                "branch_ten_god": {
+                  "code": "pyeonin",
+                  "category": "resource",
+                  "reference_id": "ten_god:pyeonin"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "yang",
+                  "energy_level": "rising",
+                  "reference_id": "twelve_stage:yang",
+                  "branch_code": "jin"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "day",
+                    "branch_code": "jin",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "eul",
+                      "element": "wood",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:eul"
+                    },
+                    "ten_god": {
+                      "code": "jeongjae",
+                      "category": "wealth",
+                      "reference_id": "ten_god:jeongjae"
+                    },
+                    "reference_id": "hidden_stem:jin:eul:residual"
+                  },
+                  {
+                    "pillar_slot": "day",
+                    "branch_code": "jin",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "gye",
+                      "element": "water",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:gye"
+                    },
+                    "ten_god": {
+                      "code": "sanggwan",
+                      "category": "output",
+                      "reference_id": "ten_god:sanggwan"
+                    },
+                    "reference_id": "hidden_stem:jin:gye:middle"
+                  },
+                  {
+                    "pillar_slot": "day",
+                    "branch_code": "jin",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "mu",
+                      "element": "earth",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:mu"
+                    },
+                    "ten_god": {
+                      "code": "pyeonin",
+                      "category": "resource",
+                      "reference_id": "ten_god:pyeonin"
+                    },
+                    "reference_id": "hidden_stem:jin:mu:main"
+                  }
+                ]
+              },
+              {
+                "slot": "hour",
+                "label_ko": "시주",
+                "pillar_hangul": "계미",
+                "stem": {
+                  "code": "gye",
+                  "element": "water",
+                  "yin_yang": "yin",
+                  "reference_id": "stem:gye"
+                },
+                "branch": {
+                  "code": "mi",
+                  "element": "earth",
+                  "yin_yang": "yin",
+                  "season": "summer",
+                  "reference_id": "branch:mi"
+                },
+                "stem_ten_god": {
+                  "code": "sanggwan",
+                  "category": "output",
+                  "reference_id": "ten_god:sanggwan"
+                },
+                "branch_ten_god": {
+                  "code": "jeongin",
+                  "category": "resource",
+                  "reference_id": "ten_god:jeongin"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "gwandae",
+                  "energy_level": "rising",
+                  "reference_id": "twelve_stage:gwandae",
+                  "branch_code": "mi"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "hour",
+                    "branch_code": "mi",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "jeong",
+                      "element": "fire",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:jeong"
+                    },
+                    "ten_god": {
+                      "code": "jeonggwan",
+                      "category": "power",
+                      "reference_id": "ten_god:jeonggwan"
+                    },
+                    "reference_id": "hidden_stem:mi:jeong:residual"
+                  },
+                  {
+                    "pillar_slot": "hour",
+                    "branch_code": "mi",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "eul",
+                      "element": "wood",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:eul"
+                    },
+                    "ten_god": {
+                      "code": "jeongjae",
+                      "category": "wealth",
+                      "reference_id": "ten_god:jeongjae"
+                    },
+                    "reference_id": "hidden_stem:mi:eul:middle"
+                  },
+                  {
+                    "pillar_slot": "hour",
+                    "branch_code": "mi",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "gi",
+                      "element": "earth",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:gi"
+                    },
+                    "ten_god": {
+                      "code": "jeongin",
+                      "category": "resource",
+                      "reference_id": "ten_god:jeongin"
+                    },
+                    "reference_id": "hidden_stem:mi:gi:main"
+                  }
+                ]
+              }
+            ],
+            "day_master": {
+              "stem": {
+                "code": "gyeong",
+                "element": "metal",
+                "yin_yang": "yang",
+                "reference_id": "stem:gyeong"
+              },
+              "day_branch": {
+                "code": "jin",
+                "element": "earth",
+                "yin_yang": "yang",
+                "season": "spring",
+                "reference_id": "branch:jin"
+              },
+              "day_pillar_hangul": "경진",
+              "element": "metal",
+              "yin_yang": "yang"
+            },
+            "five_elements": {
+              "surface_counts": {
+                "wood": 0,
+                "fire": 2,
+                "earth": 2,
+                "metal": 3,
+                "water": 1
+              },
+              "with_hidden_counts": {
+                "wood": 0.75,
+                "fire": 4.5,
+                "earth": 4.75,
+                "metal": 3.25,
+                "water": 1.5
+              },
+              "weighting_method": "hidden_layer_weights_v1",
+              "dominant": "metal",
+              "weakest": "wood",
+              "confidence": "deterministic",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "wood:0",
+                    "fire:2",
+                    "earth:2",
+                    "metal:3",
+                    "water:1"
+                  ],
+                  "detail": "surface_eight_characters"
+                }
+              ]
+            },
+            "johu": {
+              "heat_score": 33,
+              "moisture_score": 17,
+              "temperature_band": "cold",
+              "moisture_band": "dry",
+              "method": "element_ratio_v1",
+              "confidence": "heuristic",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "wood:0",
+                    "fire:2",
+                    "earth:2",
+                    "metal:3",
+                    "water:1"
+                  ],
+                  "detail": "element_ratio_v1"
+                }
+              ]
+            },
+            "strength": {
+              "label_code": "balanced",
+              "label_token": "jung_hwa",
+              "support_score": 5,
+              "drain_score": 3.4,
+              "margin_used": 2,
+              "method": "element_support_drain_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "heuristic",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "day_el:metal",
+                    "support:5",
+                    "drain:3.4"
+                  ],
+                  "detail": "element_support_drain_v1"
+                }
+              ]
+            },
+            "rootedness": {
+              "day_stem_rooted_in_day_branch": false,
+              "root_hits": [
+                {
+                  "pillar_slot": "month",
+                  "branch_code": "sa",
+                  "hidden_stem_code": "gyeong",
+                  "layer_type": "residual"
+                }
+              ],
+              "strong_stage_slots": [
+                "month",
+                "hour"
+              ],
+              "rootedness_index": 55,
+              "method": "day_branch_hidden_and_strong_stage_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "high",
+              "evidence": [
+                {
+                  "kind": "hidden_stem",
+                  "codes": [
+                    "month:gyeong"
+                  ],
+                  "detail": "day_branch_hidden_and_strong_stage_v1"
+                }
+              ]
+            },
+            "seasonal_strength": {
+              "month_branch_code": "sa",
+              "season": "summer",
+              "in_season": false,
+              "season_score": 30,
+              "method": "month_branch_season_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "heuristic",
+              "evidence": [
+                {
+                  "kind": "branch",
+                  "pillar_slot": "month",
+                  "codes": [
+                    "sa",
+                    "fire",
+                    "metal"
+                  ],
+                  "detail": "month_branch_season_v1"
+                }
+              ]
+            },
+            "favorable_elements": {
+              "yongsin": [
+                "wood"
+              ],
+              "huisin": [
+                "water"
+              ],
+              "gisin": [
+                "metal"
+              ],
+              "method": "element_weak_strong_heuristic_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "low",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "weak:wood",
+                    "strong:metal"
+                  ],
+                  "detail": "element_weak_strong_heuristic_v1"
+                }
+              ]
+            },
+            "relations_intra": [
+              {
+                "type_id": "branch_six_combine",
+                "reference_id": "relation:11",
+                "priority": 85,
+                "codes": [
+                  "o",
+                  "mi"
+                ],
+                "pillar_slots": [
+                  "year",
+                  "hour"
+                ],
+                "evidence": [
+                  {
+                    "kind": "relation",
+                    "codes": [
+                      "o",
+                      "mi"
+                    ],
+                    "detail": "branch_six_combine:11"
+                  }
+                ]
+              },
+              {
+                "type_id": "branch_direction_combine",
+                "reference_id": "relation:51",
+                "priority": 68,
+                "codes": [
+                  "sa",
+                  "o",
+                  "mi"
+                ],
+                "pillar_slots": [
+                  "year",
+                  "month",
+                  "hour"
+                ],
+                "evidence": [
+                  {
+                    "kind": "relation",
+                    "codes": [
+                      "sa",
+                      "o",
+                      "mi"
+                    ],
+                    "detail": "branch_direction_combine:sa_o_mi"
+                  }
+                ]
+              }
+            ],
+            "gongmang": {
+              "void_branch_codes": [
+                "sin",
+                "yu"
+              ],
+              "hit_pillars": [],
+              "method": "xunkong_by_day_pillar_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "deterministic",
+              "evidence": [
+                {
+                  "kind": "rule",
+                  "codes": [
+                    "gyeong",
+                    "jin",
+                    "sin",
+                    "yu"
+                  ],
+                  "detail": "xunkong_by_day_pillar_v1"
+                }
+              ]
+            },
+            "shinsal_hits": [
+              {
+                "reference_id": "shinsal:15",
+                "slug": "천을귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "천을귀인"
+                    ],
+                    "detail": "matched:천을귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:17",
+                "slug": "학당귀인",
+                "category": "career",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "학당귀인"
+                    ],
+                    "detail": "matched:학당귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:18",
+                "slug": "월덕귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "월덕귀인"
+                    ],
+                    "detail": "matched:월덕귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:19",
+                "slug": "천덕귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "천덕귀인"
+                    ],
+                    "detail": "matched:천덕귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:31",
+                "slug": "장성살",
+                "category": "career",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "장성살"
+                    ],
+                    "detail": "matched:장성살"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:39",
+                "slug": "천록귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "천록귀인"
+                    ],
+                    "detail": "matched:천록귀인"
+                  }
+                ]
+              }
+            ],
+            "nobles": {
+              "cheoneul_guin": true,
+              "munchang_guin": false,
+              "hakdang_guin": true,
+              "woldeok_guin": true,
+              "cheondeok_guin": true,
+              "taegeuk_guin": false,
+              "jaego_guin": false,
+              "cheonnok_guin": true,
+              "noble_hits": [
+                "cheoneul_guin",
+                "hakdang_guin",
+                "woldeok_guin",
+                "cheondeok_guin",
+                "cheonnok_guin"
+              ]
+            },
+            "special_signals": [
+              {
+                "signal_id": "dohwa",
+                "possessed": false,
+                "evidence": []
+              },
+              {
+                "signal_id": "yeokma",
+                "possessed": false,
+                "evidence": []
+              },
+              {
+                "signal_id": "wonjin",
+                "possessed": false,
+                "evidence": []
+              },
+              {
+                "signal_id": "guimun",
+                "possessed": false,
+                "evidence": []
+              }
+            ],
+            "luck_cycles": {
+              "gender_assumed": null,
+              "direction": null,
+              "major_cycles": [],
+              "method": "not_computed",
+              "computed": false,
+              "confidence": "heuristic",
+              "notes": [
+                "luck_cycles deferred to later batch"
+              ]
+            },
+            "validation": {
+              "ok": false,
+              "notes": [
+                "년주 팔자 형식이 올바르지 않습니다 (경오).",
+                "월주 팔자 형식이 올바르지 않습니다 (신사).",
+                "일주 팔자 형식이 올바르지 않습니다 (경진).",
+                "시주 팔자 형식이 올바르지 않습니다 (계미)."
+              ],
+              "checks": [
+                {
+                  "code": "pillars_present",
+                  "ok": true,
+                  "detail": "day_pillar_required"
+                },
+                {
+                  "code": "validation_bundle",
+                  "ok": false,
+                  "detail": "년주 팔자 형식이 올바르지 않습니다 (경오).;월주 팔자 형식이 올바르지 않습니다 (신사).;일주 팔자 형식이 올바르지 않습니다 (경진).;시주 팔자 형식이 올바르지 않습니다 (계미)."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "individualCeB": {
+        "source": "person_core_blueprint.individual_saju_json(B)",
+        "output": {
+          "status": "available",
+          "value": {
+            "engine": {
+              "schema_version": "individual_saju_chart_v1",
+              "engine_id": "individual_saju_chart_v1",
+              "manseryeok_package": "@fullstackfamily/manseryeok@^1.0.8",
+              "ref_data_fingerprint": "a2186a4b00e8895b2ef7c0bbdeab2162b4e7477459ec631746336bbf8c9b5b1c",
+              "built_at": "2026-07-30T08:45:20.573Z",
+              "input_fingerprint": "{\"birth_date\":\"1992-08-20\",\"birth_time\":\"09:00\",\"birth_time_unknown\":false}"
+            },
+            "birth": {
+              "report_id": "b",
+              "birth_date": "1992-08-20",
+              "birth_time_raw": "09:00",
+              "chart_time": "09:00",
+              "birth_time_unknown": false
+            },
+            "calendar": {
+              "input_calendar": "gregorian",
+              "birth_local_date": "1992-08-20",
+              "birth_local_time": "09:00",
+              "birth_time_unknown": false,
+              "lunar_date": null,
+              "solar_term": null,
+              "true_solar_time": null,
+              "timezone_offset_hours": null,
+              "place_affects_saju": false,
+              "notes": []
+            },
+            "pillars": [
+              {
+                "slot": "year",
+                "label_ko": "년주",
+                "pillar_hangul": "임신",
+                "stem": {
+                  "code": "im",
+                  "element": "water",
+                  "yin_yang": "yang",
+                  "reference_id": "stem:im"
+                },
+                "branch": {
+                  "code": "sin",
+                  "element": "metal",
+                  "yin_yang": "yang",
+                  "season": "autumn",
+                  "reference_id": "branch:sin"
+                },
+                "stem_ten_god": {
+                  "code": "pyeonjae",
+                  "category": "wealth",
+                  "reference_id": "ten_god:pyeonjae"
+                },
+                "branch_ten_god": {
+                  "code": "siksin",
+                  "category": "output",
+                  "reference_id": "ten_god:siksin"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "byeong",
+                  "energy_level": "falling",
+                  "reference_id": "twelve_stage:byeong",
+                  "branch_code": "sin"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "year",
+                    "branch_code": "sin",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "mu",
+                      "element": "earth",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:mu"
+                    },
+                    "ten_god": {
+                      "code": "bigyeon",
+                      "category": "self",
+                      "reference_id": "ten_god:bigyeon"
+                    },
+                    "reference_id": "hidden_stem:sin:mu:residual"
+                  },
+                  {
+                    "pillar_slot": "year",
+                    "branch_code": "sin",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "im",
+                      "element": "water",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:im"
+                    },
+                    "ten_god": {
+                      "code": "pyeonjae",
+                      "category": "wealth",
+                      "reference_id": "ten_god:pyeonjae"
+                    },
+                    "reference_id": "hidden_stem:sin:im:middle"
+                  },
+                  {
+                    "pillar_slot": "year",
+                    "branch_code": "sin",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "gyeong",
+                      "element": "metal",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:gyeong"
+                    },
+                    "ten_god": {
+                      "code": "siksin",
+                      "category": "output",
+                      "reference_id": "ten_god:siksin"
+                    },
+                    "reference_id": "hidden_stem:sin:gyeong:main"
+                  }
+                ]
+              },
+              {
+                "slot": "month",
+                "label_ko": "월주",
+                "pillar_hangul": "무신",
+                "stem": {
+                  "code": "mu",
+                  "element": "earth",
+                  "yin_yang": "yang",
+                  "reference_id": "stem:mu"
+                },
+                "branch": {
+                  "code": "sin",
+                  "element": "metal",
+                  "yin_yang": "yang",
+                  "season": "autumn",
+                  "reference_id": "branch:sin"
+                },
+                "stem_ten_god": {
+                  "code": "bigyeon",
+                  "category": "self",
+                  "reference_id": "ten_god:bigyeon"
+                },
+                "branch_ten_god": {
+                  "code": "siksin",
+                  "category": "output",
+                  "reference_id": "ten_god:siksin"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "byeong",
+                  "energy_level": "falling",
+                  "reference_id": "twelve_stage:byeong",
+                  "branch_code": "sin"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "month",
+                    "branch_code": "sin",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "mu",
+                      "element": "earth",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:mu"
+                    },
+                    "ten_god": {
+                      "code": "bigyeon",
+                      "category": "self",
+                      "reference_id": "ten_god:bigyeon"
+                    },
+                    "reference_id": "hidden_stem:sin:mu:residual"
+                  },
+                  {
+                    "pillar_slot": "month",
+                    "branch_code": "sin",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "im",
+                      "element": "water",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:im"
+                    },
+                    "ten_god": {
+                      "code": "pyeonjae",
+                      "category": "wealth",
+                      "reference_id": "ten_god:pyeonjae"
+                    },
+                    "reference_id": "hidden_stem:sin:im:middle"
+                  },
+                  {
+                    "pillar_slot": "month",
+                    "branch_code": "sin",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "gyeong",
+                      "element": "metal",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:gyeong"
+                    },
+                    "ten_god": {
+                      "code": "siksin",
+                      "category": "output",
+                      "reference_id": "ten_god:siksin"
+                    },
+                    "reference_id": "hidden_stem:sin:gyeong:main"
+                  }
+                ]
+              },
+              {
+                "slot": "day",
+                "label_ko": "일주",
+                "pillar_hangul": "무진",
+                "stem": {
+                  "code": "mu",
+                  "element": "earth",
+                  "yin_yang": "yang",
+                  "reference_id": "stem:mu"
+                },
+                "branch": {
+                  "code": "jin",
+                  "element": "earth",
+                  "yin_yang": "yang",
+                  "season": "spring",
+                  "reference_id": "branch:jin"
+                },
+                "stem_ten_god": {
+                  "code": "bigyeon",
+                  "category": "self",
+                  "reference_id": "ten_god:bigyeon"
+                },
+                "branch_ten_god": {
+                  "code": "bigyeon",
+                  "category": "self",
+                  "reference_id": "ten_god:bigyeon"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "gwandae",
+                  "energy_level": "rising",
+                  "reference_id": "twelve_stage:gwandae",
+                  "branch_code": "jin"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "day",
+                    "branch_code": "jin",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "eul",
+                      "element": "wood",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:eul"
+                    },
+                    "ten_god": {
+                      "code": "jeonggwan",
+                      "category": "power",
+                      "reference_id": "ten_god:jeonggwan"
+                    },
+                    "reference_id": "hidden_stem:jin:eul:residual"
+                  },
+                  {
+                    "pillar_slot": "day",
+                    "branch_code": "jin",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "gye",
+                      "element": "water",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:gye"
+                    },
+                    "ten_god": {
+                      "code": "jeongjae",
+                      "category": "wealth",
+                      "reference_id": "ten_god:jeongjae"
+                    },
+                    "reference_id": "hidden_stem:jin:gye:middle"
+                  },
+                  {
+                    "pillar_slot": "day",
+                    "branch_code": "jin",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "mu",
+                      "element": "earth",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:mu"
+                    },
+                    "ten_god": {
+                      "code": "bigyeon",
+                      "category": "self",
+                      "reference_id": "ten_god:bigyeon"
+                    },
+                    "reference_id": "hidden_stem:jin:mu:main"
+                  }
+                ]
+              },
+              {
+                "slot": "hour",
+                "label_ko": "시주",
+                "pillar_hangul": "병진",
+                "stem": {
+                  "code": "byeong",
+                  "element": "fire",
+                  "yin_yang": "yang",
+                  "reference_id": "stem:byeong"
+                },
+                "branch": {
+                  "code": "jin",
+                  "element": "earth",
+                  "yin_yang": "yang",
+                  "season": "spring",
+                  "reference_id": "branch:jin"
+                },
+                "stem_ten_god": {
+                  "code": "pyeonin",
+                  "category": "resource",
+                  "reference_id": "ten_god:pyeonin"
+                },
+                "branch_ten_god": {
+                  "code": "bigyeon",
+                  "category": "self",
+                  "reference_id": "ten_god:bigyeon"
+                },
+                "branch_ten_god_method": "branch_main_hidden_stem_v1",
+                "twelve_stage": {
+                  "code": "gwandae",
+                  "energy_level": "rising",
+                  "reference_id": "twelve_stage:gwandae",
+                  "branch_code": "jin"
+                },
+                "hidden_stems": [
+                  {
+                    "pillar_slot": "hour",
+                    "branch_code": "jin",
+                    "order": 0,
+                    "layer_type": "residual",
+                    "stem": {
+                      "code": "eul",
+                      "element": "wood",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:eul"
+                    },
+                    "ten_god": {
+                      "code": "jeonggwan",
+                      "category": "power",
+                      "reference_id": "ten_god:jeonggwan"
+                    },
+                    "reference_id": "hidden_stem:jin:eul:residual"
+                  },
+                  {
+                    "pillar_slot": "hour",
+                    "branch_code": "jin",
+                    "order": 1,
+                    "layer_type": "middle",
+                    "stem": {
+                      "code": "gye",
+                      "element": "water",
+                      "yin_yang": "yin",
+                      "reference_id": "stem:gye"
+                    },
+                    "ten_god": {
+                      "code": "jeongjae",
+                      "category": "wealth",
+                      "reference_id": "ten_god:jeongjae"
+                    },
+                    "reference_id": "hidden_stem:jin:gye:middle"
+                  },
+                  {
+                    "pillar_slot": "hour",
+                    "branch_code": "jin",
+                    "order": 2,
+                    "layer_type": "main",
+                    "stem": {
+                      "code": "mu",
+                      "element": "earth",
+                      "yin_yang": "yang",
+                      "reference_id": "stem:mu"
+                    },
+                    "ten_god": {
+                      "code": "bigyeon",
+                      "category": "self",
+                      "reference_id": "ten_god:bigyeon"
+                    },
+                    "reference_id": "hidden_stem:jin:mu:main"
+                  }
+                ]
+              }
+            ],
+            "day_master": {
+              "stem": {
+                "code": "mu",
+                "element": "earth",
+                "yin_yang": "yang",
+                "reference_id": "stem:mu"
+              },
+              "day_branch": {
+                "code": "jin",
+                "element": "earth",
+                "yin_yang": "yang",
+                "season": "spring",
+                "reference_id": "branch:jin"
+              },
+              "day_pillar_hangul": "무진",
+              "element": "earth",
+              "yin_yang": "yang"
+            },
+            "five_elements": {
+              "surface_counts": {
+                "wood": 0,
+                "fire": 1,
+                "earth": 4,
+                "metal": 2,
+                "water": 1
+              },
+              "with_hidden_counts": {
+                "wood": 0.5,
+                "fire": 1,
+                "earth": 6.5,
+                "metal": 4,
+                "water": 3
+              },
+              "weighting_method": "hidden_layer_weights_v1",
+              "dominant": "earth",
+              "weakest": "wood",
+              "confidence": "deterministic",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "wood:0",
+                    "fire:1",
+                    "earth:4",
+                    "metal:2",
+                    "water:1"
+                  ],
+                  "detail": "surface_eight_characters"
+                }
+              ]
+            },
+            "johu": {
+              "heat_score": 25,
+              "moisture_score": 14,
+              "temperature_band": "cold",
+              "moisture_band": "dry",
+              "method": "element_ratio_v1",
+              "confidence": "heuristic",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "wood:0",
+                    "fire:1",
+                    "earth:4",
+                    "metal:2",
+                    "water:1"
+                  ],
+                  "detail": "element_ratio_v1"
+                }
+              ]
+            },
+            "strength": {
+              "label_code": "strong",
+              "label_token": "shin_gang",
+              "support_score": 5,
+              "drain_score": 2,
+              "margin_used": 2,
+              "method": "element_support_drain_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "heuristic",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "day_el:earth",
+                    "support:5",
+                    "drain:2"
+                  ],
+                  "detail": "element_support_drain_v1"
+                }
+              ]
+            },
+            "rootedness": {
+              "day_stem_rooted_in_day_branch": true,
+              "root_hits": [
+                {
+                  "pillar_slot": "year",
+                  "branch_code": "sin",
+                  "hidden_stem_code": "mu",
+                  "layer_type": "residual"
+                },
+                {
+                  "pillar_slot": "month",
+                  "branch_code": "sin",
+                  "hidden_stem_code": "mu",
+                  "layer_type": "residual"
+                },
+                {
+                  "pillar_slot": "day",
+                  "branch_code": "jin",
+                  "hidden_stem_code": "mu",
+                  "layer_type": "main"
+                },
+                {
+                  "pillar_slot": "hour",
+                  "branch_code": "jin",
+                  "hidden_stem_code": "mu",
+                  "layer_type": "main"
+                }
+              ],
+              "strong_stage_slots": [
+                "day",
+                "hour"
+              ],
+              "rootedness_index": 100,
+              "method": "day_branch_hidden_and_strong_stage_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "high",
+              "evidence": [
+                {
+                  "kind": "hidden_stem",
+                  "codes": [
+                    "year:mu",
+                    "month:mu",
+                    "day:mu",
+                    "hour:mu"
+                  ],
+                  "detail": "day_branch_hidden_and_strong_stage_v1"
+                }
+              ]
+            },
+            "seasonal_strength": {
+              "month_branch_code": "sin",
+              "season": "autumn",
+              "in_season": false,
+              "season_score": 30,
+              "method": "month_branch_season_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "heuristic",
+              "evidence": [
+                {
+                  "kind": "branch",
+                  "pillar_slot": "month",
+                  "codes": [
+                    "sin",
+                    "metal",
+                    "earth"
+                  ],
+                  "detail": "month_branch_season_v1"
+                }
+              ]
+            },
+            "favorable_elements": {
+              "yongsin": [
+                "wood"
+              ],
+              "huisin": [
+                "water"
+              ],
+              "gisin": [
+                "earth"
+              ],
+              "method": "element_weak_strong_heuristic_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "low",
+              "evidence": [
+                {
+                  "kind": "count",
+                  "codes": [
+                    "weak:wood",
+                    "strong:earth"
+                  ],
+                  "detail": "element_weak_strong_heuristic_v1"
+                }
+              ]
+            },
+            "relations_intra": [
+              {
+                "type_id": "branch_punishment",
+                "reference_id": "relation:25",
+                "priority": 70,
+                "codes": [
+                  "jin",
+                  "jin"
+                ],
+                "pillar_slots": [
+                  "day",
+                  "hour"
+                ],
+                "evidence": [
+                  {
+                    "kind": "relation",
+                    "codes": [
+                      "jin",
+                      "jin"
+                    ],
+                    "detail": "branch_punishment:25"
+                  }
+                ]
+              }
+            ],
+            "gongmang": {
+              "void_branch_codes": [
+                "sul",
+                "hae"
+              ],
+              "hit_pillars": [],
+              "method": "xunkong_by_day_pillar_v1",
+              "engine_version": "individual_saju_chart_v1",
+              "confidence": "deterministic",
+              "evidence": [
+                {
+                  "kind": "rule",
+                  "codes": [
+                    "mu",
+                    "jin",
+                    "sul",
+                    "hae"
+                  ],
+                  "detail": "xunkong_by_day_pillar_v1"
+                }
+              ]
+            },
+            "shinsal_hits": [
+              {
+                "reference_id": "shinsal:17",
+                "slug": "학당귀인",
+                "category": "career",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "학당귀인"
+                    ],
+                    "detail": "matched:학당귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:18",
+                "slug": "월덕귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "월덕귀인"
+                    ],
+                    "detail": "matched:월덕귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:26",
+                "slug": "화개살",
+                "category": "personality",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "화개살"
+                    ],
+                    "detail": "matched:화개살"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:33",
+                "slug": "홍염살",
+                "category": "relationship",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "홍염살"
+                    ],
+                    "detail": "matched:홍염살"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:37",
+                "slug": "재고귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "재고귀인"
+                    ],
+                    "detail": "matched:재고귀인"
+                  }
+                ]
+              },
+              {
+                "reference_id": "shinsal:38",
+                "slug": "태극귀인",
+                "category": "fortune",
+                "possessed": true,
+                "hit_codes": [],
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "태극귀인"
+                    ],
+                    "detail": "matched:태극귀인"
+                  }
+                ]
+              }
+            ],
+            "nobles": {
+              "cheoneul_guin": false,
+              "munchang_guin": false,
+              "hakdang_guin": true,
+              "woldeok_guin": true,
+              "cheondeok_guin": false,
+              "taegeuk_guin": true,
+              "jaego_guin": true,
+              "cheonnok_guin": false,
+              "noble_hits": [
+                "hakdang_guin",
+                "woldeok_guin",
+                "jaego_guin",
+                "taegeuk_guin"
+              ]
+            },
+            "special_signals": [
+              {
+                "signal_id": "dohwa",
+                "possessed": true,
+                "evidence": [
+                  {
+                    "kind": "shinsal",
+                    "codes": [
+                      "홍염살"
+                    ],
+                    "detail": "shinsal:홍염살"
+                  }
+                ]
+              },
+              {
+                "signal_id": "yeokma",
+                "possessed": false,
+                "evidence": []
+              },
+              {
+                "signal_id": "wonjin",
+                "possessed": false,
+                "evidence": []
+              },
+              {
+                "signal_id": "guimun",
+                "possessed": false,
+                "evidence": []
+              }
+            ],
+            "luck_cycles": {
+              "gender_assumed": null,
+              "direction": null,
+              "major_cycles": [],
+              "method": "not_computed",
+              "computed": false,
+              "confidence": "heuristic",
+              "notes": [
+                "luck_cycles deferred to later batch"
+              ]
+            },
+            "validation": {
+              "ok": false,
+              "notes": [
+                "년주 팔자 형식이 올바르지 않습니다 (임신).",
+                "월주 팔자 형식이 올바르지 않습니다 (무신).",
+                "일주 팔자 형식이 올바르지 않습니다 (무진).",
+                "시주 팔자 형식이 올바르지 않습니다 (병진)."
+              ],
+              "checks": [
+                {
+                  "code": "pillars_present",
+                  "ok": true,
+                  "detail": "day_pillar_required"
+                },
+                {
+                  "code": "validation_bundle",
+                  "ok": false,
+                  "detail": "년주 팔자 형식이 올바르지 않습니다 (임신).;월주 팔자 형식이 올바르지 않습니다 (무신).;일주 팔자 형식이 올바르지 않습니다 (무진).;시주 팔자 형식이 올바르지 않습니다 (병진)."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "pairCeCommon": {
+        "source": "runPairContextEngine+applyRomanticPairLens",
+        "output": {
+          "status": "available",
+          "value": {
+            "pairCe": {
+              "schema_version": "pair_ce_v1",
+              "lens": "pair_shared_v1",
+              "packets": [
+                {
+                  "packet_id": "pce_003",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[5]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "육합",
+                    "sa",
+                    "sin",
+                    "사신합수"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "year"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_six_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_six_combine",
+                      "text_ko": "육합. 두 지지가 짝을 이루어 합하는 관계.",
+                      "text_en": "Six combine. Pairwise branch union.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.75,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "육합",
+                        "sa",
+                        "sin",
+                        "사신합수"
+                      ],
+                      "detail": "월주(신사)×년주(임신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_004",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[6]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "육합",
+                    "sa",
+                    "sin",
+                    "사신합수"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "month"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_six_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_six_combine",
+                      "text_ko": "육합. 두 지지가 짝을 이루어 합하는 관계.",
+                      "text_en": "Six combine. Pairwise branch union.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.75,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "육합",
+                        "sa",
+                        "sin",
+                        "사신합수"
+                      ],
+                      "detail": "월주(신사)×월주(무신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_006",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[0]",
+                  "fact_kind": "stem_combine",
+                  "codes": [
+                    "천간합",
+                    "gye",
+                    "mu",
+                    "무계합화"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "hour",
+                    "b": "day"
+                  },
+                  "reference_ids": [
+                    "relation_type:stem_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:stem_combine",
+                      "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                      "text_en": "Stem combine. Two stems unite into one qi.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "천간합",
+                        "gye",
+                        "mu",
+                        "무계합화"
+                      ],
+                      "detail": "시주(계미)×일주(무진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_007",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[3]",
+                  "fact_kind": "stem_combine",
+                  "codes": [
+                    "천간합",
+                    "sin",
+                    "byeong",
+                    "병신합수"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "hour"
+                  },
+                  "reference_ids": [
+                    "relation_type:stem_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:stem_combine",
+                      "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                      "text_en": "Stem combine. Two stems unite into one qi.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "천간합",
+                        "sin",
+                        "byeong",
+                        "병신합수"
+                      ],
+                      "detail": "월주(신사)×시주(병진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_008",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[4]",
+                  "fact_kind": "stem_combine",
+                  "codes": [
+                    "천간합",
+                    "gye",
+                    "mu",
+                    "무계합화"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "hour",
+                    "b": "month"
+                  },
+                  "reference_ids": [
+                    "relation_type:stem_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:stem_combine",
+                      "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                      "text_en": "Stem combine. Two stems unite into one qi.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "천간합",
+                        "gye",
+                        "mu",
+                        "무계합화"
+                      ],
+                      "detail": "시주(계미)×월주(무신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_001",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 1,
+                  "fact_path": "cross_hits[1]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "형",
+                    "jin",
+                    "jin",
+                    "진진 자형"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "day",
+                    "b": "day"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_punishment"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_punishment",
+                      "text_ko": "형. 지지 사이의 형벌·압박 관계.",
+                      "text_en": "Punishment. Punitive tension between branches.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.55,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "형",
+                        "jin",
+                        "jin",
+                        "진진 자형"
+                      ],
+                      "detail": "일주(경진)×일주(무진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_005",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[2]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "형",
+                    "jin",
+                    "jin",
+                    "진진 자형"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "day",
+                    "b": "hour"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_punishment"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_punishment",
+                      "text_ko": "형. 지지 사이의 형벌·압박 관계.",
+                      "text_en": "Punishment. Punitive tension between branches.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.5,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "형",
+                        "jin",
+                        "jin",
+                        "진진 자형"
+                      ],
+                      "detail": "일주(경진)×시주(병진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_009",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[7]",
+                  "fact_kind": "wonjin_guimun",
+                  "codes": [
+                    "원진",
+                    "sa",
+                    "sin"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "year"
+                  },
+                  "reference_ids": [
+                    "relation_type:wonjin"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:wonjin",
+                      "text_ko": "원진. 원진살에 해당하는 지지 짝 관계.",
+                      "text_en": "Wonjin. Classic wonjin branch pairing.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "원진",
+                        "sa",
+                        "sin"
+                      ],
+                      "detail": "월주(신사)×년주(임신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_010",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[8]",
+                  "fact_kind": "wonjin_guimun",
+                  "codes": [
+                    "원진",
+                    "sa",
+                    "sin"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "month"
+                  },
+                  "reference_ids": [
+                    "relation_type:wonjin"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:wonjin",
+                      "text_ko": "원진. 원진살에 해당하는 지지 짝 관계.",
+                      "text_en": "Wonjin. Classic wonjin branch pairing.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "원진",
+                        "sa",
+                        "sin"
+                      ],
+                      "detail": "월주(신사)×월주(무신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_002",
+                  "group": "energy",
+                  "role_in_lens": "energy_flow",
+                  "tier": 1,
+                  "fact_path": "element_flow",
+                  "fact_kind": "element_flow",
+                  "codes": [
+                    "generates_b_to_a",
+                    "metal",
+                    "earth"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "b_to_a",
+                    "from": "B",
+                    "to": "A"
+                  },
+                  "pillar_slots": {
+                    "a": "day",
+                    "b": "day"
+                  },
+                  "reference_ids": [
+                    "element:metal",
+                    "element:earth"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "element:metal",
+                      "text_ko": "금(金). 수렴·결단이 본성인 오행.",
+                      "text_en": "Metal. Condensation and decisiveness.",
+                      "resolved": true
+                    },
+                    {
+                      "reference_id": "element:earth",
+                      "text_ko": "토(土). 중정·매개가 본성인 오행.",
+                      "text_en": "Earth. Centering and mediation.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.55,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "stem",
+                      "codes": [
+                        "metal",
+                        "earth"
+                      ],
+                      "detail": "generates_b_to_a"
+                    }
+                  ]
+                }
+              ],
+              "groups": {
+                "bonding": [
+                  {
+                    "packet_id": "pce_003",
+                    "group": "bonding",
+                    "role_in_lens": "bond_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[5]",
+                    "fact_kind": "branch_pair",
+                    "codes": [
+                      "육합",
+                      "sa",
+                      "sin",
+                      "사신합수"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "month",
+                      "b": "year"
+                    },
+                    "reference_ids": [
+                      "relation_type:branch_six_combine"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:branch_six_combine",
+                        "text_ko": "육합. 두 지지가 짝을 이루어 합하는 관계.",
+                        "text_en": "Six combine. Pairwise branch union.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.75,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "육합",
+                          "sa",
+                          "sin",
+                          "사신합수"
+                        ],
+                        "detail": "월주(신사)×년주(임신)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_004",
+                    "group": "bonding",
+                    "role_in_lens": "bond_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[6]",
+                    "fact_kind": "branch_pair",
+                    "codes": [
+                      "육합",
+                      "sa",
+                      "sin",
+                      "사신합수"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "month",
+                      "b": "month"
+                    },
+                    "reference_ids": [
+                      "relation_type:branch_six_combine"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:branch_six_combine",
+                        "text_ko": "육합. 두 지지가 짝을 이루어 합하는 관계.",
+                        "text_en": "Six combine. Pairwise branch union.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.75,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "육합",
+                          "sa",
+                          "sin",
+                          "사신합수"
+                        ],
+                        "detail": "월주(신사)×월주(무신)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_006",
+                    "group": "bonding",
+                    "role_in_lens": "bond_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[0]",
+                    "fact_kind": "stem_combine",
+                    "codes": [
+                      "천간합",
+                      "gye",
+                      "mu",
+                      "무계합화"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "hour",
+                      "b": "day"
+                    },
+                    "reference_ids": [
+                      "relation_type:stem_combine"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:stem_combine",
+                        "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                        "text_en": "Stem combine. Two stems unite into one qi.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.4,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "천간합",
+                          "gye",
+                          "mu",
+                          "무계합화"
+                        ],
+                        "detail": "시주(계미)×일주(무진)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_007",
+                    "group": "bonding",
+                    "role_in_lens": "bond_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[3]",
+                    "fact_kind": "stem_combine",
+                    "codes": [
+                      "천간합",
+                      "sin",
+                      "byeong",
+                      "병신합수"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "month",
+                      "b": "hour"
+                    },
+                    "reference_ids": [
+                      "relation_type:stem_combine"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:stem_combine",
+                        "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                        "text_en": "Stem combine. Two stems unite into one qi.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.4,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "천간합",
+                          "sin",
+                          "byeong",
+                          "병신합수"
+                        ],
+                        "detail": "월주(신사)×시주(병진)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_008",
+                    "group": "bonding",
+                    "role_in_lens": "bond_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[4]",
+                    "fact_kind": "stem_combine",
+                    "codes": [
+                      "천간합",
+                      "gye",
+                      "mu",
+                      "무계합화"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "hour",
+                      "b": "month"
+                    },
+                    "reference_ids": [
+                      "relation_type:stem_combine"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:stem_combine",
+                        "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                        "text_en": "Stem combine. Two stems unite into one qi.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.4,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "천간합",
+                          "gye",
+                          "mu",
+                          "무계합화"
+                        ],
+                        "detail": "시주(계미)×월주(무신)"
+                      }
+                    ]
+                  }
+                ],
+                "friction": [
+                  {
+                    "packet_id": "pce_001",
+                    "group": "friction",
+                    "role_in_lens": "friction_signal",
+                    "tier": 1,
+                    "fact_path": "cross_hits[1]",
+                    "fact_kind": "branch_pair",
+                    "codes": [
+                      "형",
+                      "jin",
+                      "jin",
+                      "진진 자형"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "day",
+                      "b": "day"
+                    },
+                    "reference_ids": [
+                      "relation_type:branch_punishment"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:branch_punishment",
+                        "text_ko": "형. 지지 사이의 형벌·압박 관계.",
+                        "text_en": "Punishment. Punitive tension between branches.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.55,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "형",
+                          "jin",
+                          "jin",
+                          "진진 자형"
+                        ],
+                        "detail": "일주(경진)×일주(무진)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_005",
+                    "group": "friction",
+                    "role_in_lens": "friction_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[2]",
+                    "fact_kind": "branch_pair",
+                    "codes": [
+                      "형",
+                      "jin",
+                      "jin",
+                      "진진 자형"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "day",
+                      "b": "hour"
+                    },
+                    "reference_ids": [
+                      "relation_type:branch_punishment"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:branch_punishment",
+                        "text_ko": "형. 지지 사이의 형벌·압박 관계.",
+                        "text_en": "Punishment. Punitive tension between branches.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.5,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "형",
+                          "jin",
+                          "jin",
+                          "진진 자형"
+                        ],
+                        "detail": "일주(경진)×시주(병진)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_009",
+                    "group": "friction",
+                    "role_in_lens": "friction_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[7]",
+                    "fact_kind": "wonjin_guimun",
+                    "codes": [
+                      "원진",
+                      "sa",
+                      "sin"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "month",
+                      "b": "year"
+                    },
+                    "reference_ids": [
+                      "relation_type:wonjin"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:wonjin",
+                        "text_ko": "원진. 원진살에 해당하는 지지 짝 관계.",
+                        "text_en": "Wonjin. Classic wonjin branch pairing.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.4,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "원진",
+                          "sa",
+                          "sin"
+                        ],
+                        "detail": "월주(신사)×년주(임신)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_010",
+                    "group": "friction",
+                    "role_in_lens": "friction_signal",
+                    "tier": 2,
+                    "fact_path": "cross_hits[8]",
+                    "fact_kind": "wonjin_guimun",
+                    "codes": [
+                      "원진",
+                      "sa",
+                      "sin"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "pillar_slots": {
+                      "a": "month",
+                      "b": "month"
+                    },
+                    "reference_ids": [
+                      "relation_type:wonjin"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "relation_type:wonjin",
+                        "text_ko": "원진. 원진살에 해당하는 지지 짝 관계.",
+                        "text_en": "Wonjin. Classic wonjin branch pairing.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.4,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "원진",
+                          "sa",
+                          "sin"
+                        ],
+                        "detail": "월주(신사)×월주(무신)"
+                      }
+                    ]
+                  }
+                ],
+                "energy": [
+                  {
+                    "packet_id": "pce_002",
+                    "group": "energy",
+                    "role_in_lens": "energy_flow",
+                    "tier": 1,
+                    "fact_path": "element_flow",
+                    "fact_kind": "element_flow",
+                    "codes": [
+                      "generates_b_to_a",
+                      "metal",
+                      "earth"
+                    ],
+                    "parties": {
+                      "a_report_id": "a",
+                      "b_report_id": "b"
+                    },
+                    "directionality": {
+                      "polarity": "b_to_a",
+                      "from": "B",
+                      "to": "A"
+                    },
+                    "pillar_slots": {
+                      "a": "day",
+                      "b": "day"
+                    },
+                    "reference_ids": [
+                      "element:metal",
+                      "element:earth"
+                    ],
+                    "base_meanings": [
+                      {
+                        "reference_id": "element:metal",
+                        "text_ko": "금(金). 수렴·결단이 본성인 오행.",
+                        "text_en": "Metal. Condensation and decisiveness.",
+                        "resolved": true
+                      },
+                      {
+                        "reference_id": "element:earth",
+                        "text_ko": "토(土). 중정·매개가 본성인 오행.",
+                        "text_en": "Earth. Centering and mediation.",
+                        "resolved": true
+                      }
+                    ],
+                    "unresolved_reference_ids": [],
+                    "selection_priority": 0.55,
+                    "confidence": "deterministic",
+                    "evidence": [
+                      {
+                        "kind": "stem",
+                        "codes": [
+                          "metal",
+                          "earth"
+                        ],
+                        "detail": "generates_b_to_a"
+                      }
+                    ]
+                  }
+                ],
+                "structure": [],
+                "modifiers": []
+              },
+              "aggregates": {
+                "birth_time_unknown_a": false,
+                "birth_time_unknown_b": false,
+                "hit_counts_by_kind": {
+                  "branch_pair": 4,
+                  "stem_combine": 3,
+                  "wonjin_guimun": 2,
+                  "element_flow": 1
+                },
+                "ssot_gaps": [
+                  "mutual_cheoneul_guin",
+                  "cross_ten_god_officer_vs_self",
+                  "cross_ten_god_food_vs_seal",
+                  "gyeokguk"
+                ]
+              },
+              "exclusions": [],
+              "unresolved_references": [],
+              "provenance": {
+                "ce_version": "pair_ce_v1",
+                "lens": "pair_shared_v1",
+                "dictionary_version": "reference_dictionary_v1",
+                "pair_fact_version": "pair_saju_facts_v1",
+                "chart_a": {
+                  "report_id": "a",
+                  "schema_version": "chart_context",
+                  "fingerprints": "a"
+                },
+                "chart_b": {
+                  "report_id": "b",
+                  "schema_version": "chart_context",
+                  "fingerprints": "b"
+                },
+                "built_at": "2026-07-30T08:45:20.580Z",
+                "policy_id": "pair_context_engine_policy_v1"
+              },
+              "facts": {
+                "schema_version": "pair_saju_facts_v1",
+                "report_id_a": "a",
+                "report_id_b": "b",
+                "birth_time_unknown_a": false,
+                "birth_time_unknown_b": false,
+                "cross_hits": [
+                  {
+                    "personA_pillar": "시주(계미)",
+                    "personB_pillar": "일주(무진)",
+                    "type": "천간합",
+                    "interpretation": "戊(산, 신뢰)과 癸(시냇물, 직관)이 만나는 합입니다. 산에서 흘러내리는 물줄기가 불을 만나 따뜻한 에너지를 만듭니다. 신뢰와 직관의 조화.",
+                    "priority": 90,
+                    "palaceWeight": 1,
+                    "weightedPriority": 90,
+                    "category": "stem_combine",
+                    "personA_pillarSlot": "시주",
+                    "personA_code": "gye",
+                    "personB_pillarSlot": "일주",
+                    "personB_code": "mu",
+                    "detail": "무계합화"
+                  },
+                  {
+                    "personA_pillar": "일주(경진)",
+                    "personB_pillar": "일주(무진)",
+                    "type": "형",
+                    "interpretation": "辰(진)의 자형(自刑)입니다. 같은 것이 반복되면서 스스로를 괴롭힙니다. 완벽주의, 자기 비판이 심해질 수 있습니다.",
+                    "priority": 70,
+                    "palaceWeight": 1,
+                    "weightedPriority": 70,
+                    "category": "branch_pair",
+                    "personA_pillarSlot": "일주",
+                    "personA_code": "jin",
+                    "personB_pillarSlot": "일주",
+                    "personB_code": "jin",
+                    "detail": "진진 자형"
+                  },
+                  {
+                    "personA_pillar": "일주(경진)",
+                    "personB_pillar": "시주(병진)",
+                    "type": "형",
+                    "interpretation": "辰(진)의 자형(自刑)입니다. 같은 것이 반복되면서 스스로를 괴롭힙니다. 완벽주의, 자기 비판이 심해질 수 있습니다.",
+                    "priority": 70,
+                    "palaceWeight": 1,
+                    "weightedPriority": 70,
+                    "category": "branch_pair",
+                    "personA_pillarSlot": "일주",
+                    "personA_code": "jin",
+                    "personB_pillarSlot": "시주",
+                    "personB_code": "jin",
+                    "detail": "진진 자형"
+                  },
+                  {
+                    "personA_pillar": "월주(신사)",
+                    "personB_pillar": "시주(병진)",
+                    "type": "천간합",
+                    "interpretation": "丙(태양, 열정)과 辛(보석, 섬세함)이 만나는 합입니다. 태양이 보석을 비추고, 보석이 빛을 반사하여 흐르는 지혜를 만듭니다. 열정과 섬세함의 조화.",
+                    "priority": 90,
+                    "palaceWeight": 0.75,
+                    "weightedPriority": 68,
+                    "category": "stem_combine",
+                    "personA_pillarSlot": "월주",
+                    "personA_code": "sin",
+                    "personB_pillarSlot": "시주",
+                    "personB_code": "byeong",
+                    "detail": "병신합수"
+                  },
+                  {
+                    "personA_pillar": "시주(계미)",
+                    "personB_pillar": "월주(무신)",
+                    "type": "천간합",
+                    "interpretation": "戊(산, 신뢰)과 癸(시냇물, 직관)이 만나는 합입니다. 산에서 흘러내리는 물줄기가 불을 만나 따뜻한 에너지를 만듭니다. 신뢰와 직관의 조화.",
+                    "priority": 90,
+                    "palaceWeight": 0.75,
+                    "weightedPriority": 68,
+                    "category": "stem_combine",
+                    "personA_pillarSlot": "시주",
+                    "personA_code": "gye",
+                    "personB_pillarSlot": "월주",
+                    "personB_code": "mu",
+                    "detail": "무계합화"
+                  },
+                  {
+                    "personA_pillar": "월주(신사)",
+                    "personB_pillar": "년주(임신)",
+                    "type": "육합",
+                    "interpretation": "巳(작은 불, 지혜)와 申(날카로운 금, 재주)의 합입니다. 불이 금을 녹이고, 금이 불을 단단하게 합니다. 서로를 완성시키는 관계입니다.",
+                    "priority": 85,
+                    "palaceWeight": 0.75,
+                    "weightedPriority": 64,
+                    "category": "branch_pair",
+                    "personA_pillarSlot": "월주",
+                    "personA_code": "sa",
+                    "personB_pillarSlot": "년주",
+                    "personB_code": "sin",
+                    "detail": "사신합수"
+                  },
+                  {
+                    "personA_pillar": "월주(신사)",
+                    "personB_pillar": "월주(무신)",
+                    "type": "육합",
+                    "interpretation": "巳(작은 불, 지혜)와 申(날카로운 금, 재주)의 합입니다. 불이 금을 녹이고, 금이 불을 단단하게 합니다. 서로를 완성시키는 관계입니다.",
+                    "priority": 85,
+                    "palaceWeight": 0.75,
+                    "weightedPriority": 64,
+                    "category": "branch_pair",
+                    "personA_pillarSlot": "월주",
+                    "personA_code": "sa",
+                    "personB_pillarSlot": "월주",
+                    "personB_code": "sin",
+                    "detail": "사신합수"
+                  },
+                  {
+                    "personA_pillar": "월주(신사)",
+                    "personB_pillar": "년주(임신)",
+                    "type": "원진",
+                    "interpretation": "무의식적으로 서로를 답답하게 느끼거나 사소한 일에 예민해지기 쉬운 조합입니다.",
+                    "priority": 60,
+                    "palaceWeight": 0.75,
+                    "weightedPriority": 45,
+                    "category": "wonjin_guimun",
+                    "personA_pillarSlot": "월주",
+                    "personA_code": "sa",
+                    "personB_pillarSlot": "년주",
+                    "personB_code": "sin"
+                  },
+                  {
+                    "personA_pillar": "월주(신사)",
+                    "personB_pillar": "월주(무신)",
+                    "type": "원진",
+                    "interpretation": "무의식적으로 서로를 답답하게 느끼거나 사소한 일에 예민해지기 쉬운 조합입니다.",
+                    "priority": 60,
+                    "palaceWeight": 0.75,
+                    "weightedPriority": 45,
+                    "category": "wonjin_guimun",
+                    "personA_pillarSlot": "월주",
+                    "personA_code": "sa",
+                    "personB_pillarSlot": "월주",
+                    "personB_code": "sin"
+                  }
+                ],
+                "trio_hits": [],
+                "element_flow": {
+                  "day_stem_element_a": "metal",
+                  "day_stem_element_b": "earth",
+                  "interaction_code": "generates_b_to_a",
+                  "interaction_label": "토(土)이(가) 금(金)을(를) 살림(상생)",
+                  "direction": "b_to_a"
+                },
+                "johu_relation": null,
+                "yongsin_alignment": null,
+                "gongmang_shared": null,
+                "ssot_gaps": [
+                  "mutual_cheoneul_guin",
+                  "cross_ten_god_officer_vs_self",
+                  "cross_ten_god_food_vs_seal",
+                  "gyeokguk"
+                ],
+                "exclusions": [],
+                "provenance": {
+                  "pair_fact_version": "pair_saju_facts_v1",
+                  "palace_weight_source": "lib/saju/palaceWeight.ts PALACE_WEIGHT",
+                  "gongmang_method": "xunkong_by_day_pillar_v1",
+                  "built_at": "2026-07-30T08:45:20.580Z"
+                }
+              }
+            },
+            "romanticPairLens": {
+              "domain": "romantic",
+              "packets": [
+                {
+                  "packet_id": "pce_003",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[5]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "육합",
+                    "sa",
+                    "sin",
+                    "사신합수"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "year"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_six_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_six_combine",
+                      "text_ko": "육합. 두 지지가 짝을 이루어 합하는 관계.",
+                      "text_en": "Six combine. Pairwise branch union.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.75,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "육합",
+                        "sa",
+                        "sin",
+                        "사신합수"
+                      ],
+                      "detail": "월주(신사)×년주(임신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_004",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[6]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "육합",
+                    "sa",
+                    "sin",
+                    "사신합수"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "month"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_six_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_six_combine",
+                      "text_ko": "육합. 두 지지가 짝을 이루어 합하는 관계.",
+                      "text_en": "Six combine. Pairwise branch union.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.75,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "육합",
+                        "sa",
+                        "sin",
+                        "사신합수"
+                      ],
+                      "detail": "월주(신사)×월주(무신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_006",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[0]",
+                  "fact_kind": "stem_combine",
+                  "codes": [
+                    "천간합",
+                    "gye",
+                    "mu",
+                    "무계합화"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "hour",
+                    "b": "day"
+                  },
+                  "reference_ids": [
+                    "relation_type:stem_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:stem_combine",
+                      "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                      "text_en": "Stem combine. Two stems unite into one qi.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "천간합",
+                        "gye",
+                        "mu",
+                        "무계합화"
+                      ],
+                      "detail": "시주(계미)×일주(무진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_007",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[3]",
+                  "fact_kind": "stem_combine",
+                  "codes": [
+                    "천간합",
+                    "sin",
+                    "byeong",
+                    "병신합수"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "hour"
+                  },
+                  "reference_ids": [
+                    "relation_type:stem_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:stem_combine",
+                      "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                      "text_en": "Stem combine. Two stems unite into one qi.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "천간합",
+                        "sin",
+                        "byeong",
+                        "병신합수"
+                      ],
+                      "detail": "월주(신사)×시주(병진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_008",
+                  "group": "bonding",
+                  "role_in_lens": "bond_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[4]",
+                  "fact_kind": "stem_combine",
+                  "codes": [
+                    "천간합",
+                    "gye",
+                    "mu",
+                    "무계합화"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "hour",
+                    "b": "month"
+                  },
+                  "reference_ids": [
+                    "relation_type:stem_combine"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:stem_combine",
+                      "text_ko": "천간합. 두 천간이 합하여 한 기운으로 묶이는 관계.",
+                      "text_en": "Stem combine. Two stems unite into one qi.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "천간합",
+                        "gye",
+                        "mu",
+                        "무계합화"
+                      ],
+                      "detail": "시주(계미)×월주(무신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_001",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 1,
+                  "fact_path": "cross_hits[1]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "형",
+                    "jin",
+                    "jin",
+                    "진진 자형"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "day",
+                    "b": "day"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_punishment"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_punishment",
+                      "text_ko": "형. 지지 사이의 형벌·압박 관계.",
+                      "text_en": "Punishment. Punitive tension between branches.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.55,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "형",
+                        "jin",
+                        "jin",
+                        "진진 자형"
+                      ],
+                      "detail": "일주(경진)×일주(무진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_005",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[2]",
+                  "fact_kind": "branch_pair",
+                  "codes": [
+                    "형",
+                    "jin",
+                    "jin",
+                    "진진 자형"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "day",
+                    "b": "hour"
+                  },
+                  "reference_ids": [
+                    "relation_type:branch_punishment"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:branch_punishment",
+                      "text_ko": "형. 지지 사이의 형벌·압박 관계.",
+                      "text_en": "Punishment. Punitive tension between branches.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.5,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "형",
+                        "jin",
+                        "jin",
+                        "진진 자형"
+                      ],
+                      "detail": "일주(경진)×시주(병진)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_009",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[7]",
+                  "fact_kind": "wonjin_guimun",
+                  "codes": [
+                    "원진",
+                    "sa",
+                    "sin"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "year"
+                  },
+                  "reference_ids": [
+                    "relation_type:wonjin"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:wonjin",
+                      "text_ko": "원진. 원진살에 해당하는 지지 짝 관계.",
+                      "text_en": "Wonjin. Classic wonjin branch pairing.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "원진",
+                        "sa",
+                        "sin"
+                      ],
+                      "detail": "월주(신사)×년주(임신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_010",
+                  "group": "friction",
+                  "role_in_lens": "friction_signal",
+                  "tier": 2,
+                  "fact_path": "cross_hits[8]",
+                  "fact_kind": "wonjin_guimun",
+                  "codes": [
+                    "원진",
+                    "sa",
+                    "sin"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "symmetric"
+                  },
+                  "pillar_slots": {
+                    "a": "month",
+                    "b": "month"
+                  },
+                  "reference_ids": [
+                    "relation_type:wonjin"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "relation_type:wonjin",
+                      "text_ko": "원진. 원진살에 해당하는 지지 짝 관계.",
+                      "text_en": "Wonjin. Classic wonjin branch pairing.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.4,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "relation",
+                      "codes": [
+                        "원진",
+                        "sa",
+                        "sin"
+                      ],
+                      "detail": "월주(신사)×월주(무신)"
+                    }
+                  ]
+                },
+                {
+                  "packet_id": "pce_002",
+                  "group": "energy",
+                  "role_in_lens": "energy_flow",
+                  "tier": 1,
+                  "fact_path": "element_flow",
+                  "fact_kind": "element_flow",
+                  "codes": [
+                    "generates_b_to_a",
+                    "metal",
+                    "earth"
+                  ],
+                  "parties": {
+                    "a_report_id": "a",
+                    "b_report_id": "b"
+                  },
+                  "directionality": {
+                    "polarity": "b_to_a",
+                    "from": "B",
+                    "to": "A"
+                  },
+                  "pillar_slots": {
+                    "a": "day",
+                    "b": "day"
+                  },
+                  "reference_ids": [
+                    "element:metal",
+                    "element:earth"
+                  ],
+                  "base_meanings": [
+                    {
+                      "reference_id": "element:metal",
+                      "text_ko": "금(金). 수렴·결단이 본성인 오행.",
+                      "text_en": "Metal. Condensation and decisiveness.",
+                      "resolved": true
+                    },
+                    {
+                      "reference_id": "element:earth",
+                      "text_ko": "토(土). 중정·매개가 본성인 오행.",
+                      "text_en": "Earth. Centering and mediation.",
+                      "resolved": true
+                    }
+                  ],
+                  "unresolved_reference_ids": [],
+                  "selection_priority": 0.55,
+                  "confidence": "deterministic",
+                  "evidence": [
+                    {
+                      "kind": "stem",
+                      "codes": [
+                        "metal",
+                        "earth"
+                      ],
+                      "detail": "generates_b_to_a"
+                    }
+                  ]
+                }
+              ],
+              "framing": [
+                {
+                  "packet_id": "pce_003",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:bond"
+                },
+                {
+                  "packet_id": "pce_004",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:bond"
+                },
+                {
+                  "packet_id": "pce_006",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:bond"
+                },
+                {
+                  "packet_id": "pce_007",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:bond"
+                },
+                {
+                  "packet_id": "pce_008",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:bond"
+                },
+                {
+                  "packet_id": "pce_001",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:friction"
+                },
+                {
+                  "packet_id": "pce_005",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:friction"
+                },
+                {
+                  "packet_id": "pce_009",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:friction"
+                },
+                {
+                  "packet_id": "pce_010",
+                  "relevance": "primary",
+                  "frame_tag": "romantic:friction"
+                },
+                {
+                  "packet_id": "pce_002",
+                  "relevance": "supporting",
+                  "frame_tag": "romantic:energy"
+                }
+              ],
+              "source_ce_version": "pair_ce_v1",
+              "source_pair_fact_version": "pair_saju_facts_v1"
+            }
+          }
+        }
+      },
+      "romanticCeSpecific": {
+        "source": "romantic_context_input+canonical_projections",
+        "output": {
+          "status": "available",
+          "value": {
+            "romanticContextInput": {
+              "schema_version": "context_output_v1",
+              "domain": "romantic",
+              "grade": "D",
+              "scores": {
+                "activation": 72,
+                "benefit": 59,
+                "risk": 73
+              },
+              "event_scores": {
+                "intimacy": {
+                  "activation": 75,
+                  "benefit": 78,
+                  "risk": 53
+                },
+                "conflict": {
+                  "activation": 77,
+                  "benefit": 31,
+                  "risk": 88
+                },
+                "stability": {
+                  "activation": 65,
+                  "benefit": 67,
+                  "risk": 78
+                },
+                "overall": {
+                  "activation": 72,
+                  "benefit": 59,
+                  "risk": 73
+                }
+              },
+              "signals": {
+                "person_a": {
+                  "expression_style": {
+                    "food_count": 1,
+                    "expression_band": "balanced"
+                  },
+                  "conflict_response": {
+                    "officer_count": 0,
+                    "food_count": 1,
+                    "day_branch_tension_hits": [],
+                    "conflict_band": "direct"
+                  },
+                  "affection_language": {
+                    "wealth_count": 0,
+                    "seal_count": 0,
+                    "affection_band": "balanced"
+                  },
+                  "stress_pattern": {
+                    "heat_score": 33,
+                    "temperature_band": "cold",
+                    "stress_band": "withdrawn"
+                  },
+                  "decision_making": {
+                    "strength_label": "중화(상황에 따라 유연하게 기운이 오감)",
+                    "decision_band": "balanced"
+                  },
+                  "communication_style": {
+                    "self_count": 2,
+                    "seal_count": 0,
+                    "communication_band": "direct"
+                  }
+                },
+                "person_b": {
+                  "expression_style": {
+                    "food_count": 0,
+                    "expression_band": "reserved"
+                  },
+                  "conflict_response": {
+                    "officer_count": 0,
+                    "food_count": 0,
+                    "day_branch_tension_hits": [
+                      {
+                        "type": "형",
+                        "counterpart_palace": "시주",
+                        "codes": [
+                          "jin",
+                          "jin"
+                        ],
+                        "interpretation_ko": "辰(진)의 자형(自刑)입니다. 같은 것이 반복되면서 스스로를 괴롭힙니다. 완벽주의, 자기 비판이 심해질 수 있습니다."
+                      }
+                    ],
+                    "conflict_band": "balanced"
+                  },
+                  "affection_language": {
+                    "wealth_count": 1,
+                    "seal_count": 1,
+                    "affection_band": "balanced"
+                  },
+                  "stress_pattern": {
+                    "heat_score": 25,
+                    "temperature_band": "cold",
+                    "stress_band": "withdrawn"
+                  },
+                  "decision_making": {
+                    "strength_label": "신강(혼자서도 잘 버티는 타입)",
+                    "decision_band": "independent"
+                  },
+                  "communication_style": {
+                    "self_count": 1,
+                    "seal_count": 1,
+                    "communication_band": "balanced"
+                  }
+                }
+              },
+              "dominant_categories": {
+                "compare_expression_a": {
+                  "category": "balanced"
+                },
+                "compare_conflict_a": {
+                  "category": "direct"
+                },
+                "compare_affection_a": {
+                  "category": "balanced"
+                },
+                "compare_stress_a": {
+                  "category": "withdrawn"
+                },
+                "compare_decision_a": {
+                  "category": "balanced"
+                },
+                "compare_communication_a": {
+                  "category": "direct"
+                },
+                "compare_expression_b": {
+                  "category": "reserved"
+                },
+                "compare_conflict_b": {
+                  "category": "balanced"
+                },
+                "compare_affection_b": {
+                  "category": "balanced"
+                },
+                "compare_stress_b": {
+                  "category": "withdrawn"
+                },
+                "compare_decision_b": {
+                  "category": "independent"
+                },
+                "compare_communication_b": {
+                  "category": "balanced"
+                },
+                "balance_a": {
+                  "category": "balanced"
+                },
+                "balance_b": {
+                  "category": "balanced"
+                },
+                "recovery_a": {
+                  "category": "balanced"
+                },
+                "recovery_b": {
+                  "category": "balanced"
+                },
+                "recovery_mismatch": {
+                  "category": "aligned"
+                },
+                "residual_a": {
+                  "category": "clears_fast"
+                },
+                "residual_b": {
+                  "category": "moderate"
+                },
+                "reassurance_need_a": {
+                  "category": "presence"
+                },
+                "reassurance_need_b": {
+                  "category": "behavior_proof"
+                },
+                "reassurance_give_a": {
+                  "category": "solidarity"
+                },
+                "reassurance_give_b": {
+                  "category": "care"
+                },
+                "reassurance_match_b_gives_a": {
+                  "category": "mismatched"
+                },
+                "reassurance_match_a_gives_b": {
+                  "category": "mismatched"
+                },
+                "role_primary": {
+                  "category": "peer"
+                },
+                "role_saju": {
+                  "category": "peer"
+                },
+                "role_agrees": {
+                  "category": "agrees"
+                },
+                "saju_frame_direction": {
+                  "category": "balanced"
+                },
+                "sublead_idea_mood": {
+                  "category": "A"
+                },
+                "sublead_decision_approval": {
+                  "category": "balanced"
+                },
+                "sublead_execution": {
+                  "category": "B"
+                },
+                "cross_chart_tension_band": {
+                  "category": "high"
+                },
+                "cross_chart_tension_type": {
+                  "category": "형",
+                  "scores": {
+                    "hit_count": 2
+                  }
+                },
+                "expression_speed_direction": {
+                  "category": "balanced"
+                }
+              },
+              "axis_notes": {
+                "intimacy": null,
+                "conflict": null
+              },
+              "meta": {
+                "prompt_input_mode": "domain_signals_digest_v1",
+                "domain_signals_version": "domain_saju_signals_v1",
+                "saju_master_schema_a": "saju_master_v2",
+                "saju_master_schema_b": "saju_master_v2"
+              }
+            },
+            "canonicalProjections": {
+              "expression_speed": {
+                "direction": "A",
+                "align": "confirms",
+                "confidence": "high"
+              },
+              "saju_frame_direction": {
+                "direction": "A",
+                "anchor_is_a": true
+              },
+              "recovery_speed": {
+                "recovery_a": "quick_recovery",
+                "recovery_b": "deep_processing",
+                "recovery_mismatch": true
+              },
+              "reassurance_signal": {
+                "need_a": "listening",
+                "need_b": "behavior_proof",
+                "give_a": "expression",
+                "give_b": "action",
+                "match_a_gives_b": false,
+                "match_b_gives_a": false
+              },
+              "unconscious_role_play": {
+                "primary_frame": "peer",
+                "saju_frame": "peer",
+                "agrees": true
+              },
+              "balance_of_power": {
+                "balance_a": "leader",
+                "balance_b": "receiver",
+                "sublead_idea_mood": "A",
+                "sublead_decision_approval": "balanced",
+                "sublead_execution": "B"
+              },
+              "residual": {
+                "residual_a": "clears_fast",
+                "residual_b": "lingers"
+              },
+              "cross_chart_tension": {
+                "band": "moderate",
+                "dominant_type": "충",
+                "hit_count": 1,
+                "hits": [
+                  {
+                    "personA_pillar": "일주(갑자)",
+                    "personB_pillar": "일주(경오)",
+                    "type": "충",
+                    "interpretation": "자오충 — 감정을 다루는 속도와 방향이 정면으로 부딪히기 쉬운 조합입니다.",
+                    "priority": 80,
+                    "palaceWeight": 1,
+                    "weightedPriority": 80,
+                    "category": "branch_pair",
+                    "personA_pillarSlot": "일주",
+                    "personA_code": "ja",
+                    "personB_pillarSlot": "일주",
+                    "personB_code": "o",
+                    "detail": "자오충"
+                  }
+                ]
+              },
+              "comparison_table": {
+                "conflict": {
+                  "lean_a": "direct",
+                  "lean_b": "principled",
+                  "align": "caution",
+                  "confidence": "high"
+                },
+                "affection": {
+                  "lean_a": "emotional_care",
+                  "lean_b": "action_gift",
+                  "align": "confirms",
+                  "confidence": "high"
+                },
+                "stress": {
+                  "lean_a": "explosive",
+                  "lean_b": "withdrawn",
+                  "align": "caution",
+                  "confidence": "high"
+                },
+                "expression": {
+                  "lean_a": "expressive",
+                  "lean_b": "reserved",
+                  "align": "confirms",
+                  "confidence": "high"
+                },
+                "decision": {
+                  "lean_a": "independent",
+                  "lean_b": "consultative",
+                  "align": "caution",
+                  "confidence": "low"
+                },
+                "communication": {
+                  "lean_a": "direct",
+                  "lean_b": "considerate",
+                  "align": "caution",
+                  "confidence": "high"
+                }
+              },
+              "pair_ce_bonding": {
+                "packets": [
+                  {
+                    "packet_id": "pce_003",
+                    "fact_kind": "branch_pair",
+                    "group": "bonding",
+                    "codes": [
+                      "육합",
+                      "sa",
+                      "sin",
+                      "사신합수"
+                    ],
+                    "selection_priority": 0.75,
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "육합",
+                          "sa",
+                          "sin",
+                          "사신합수"
+                        ],
+                        "detail": "월주(신사)×년주(임신)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_004",
+                    "fact_kind": "branch_pair",
+                    "group": "bonding",
+                    "codes": [
+                      "육합",
+                      "sa",
+                      "sin",
+                      "사신합수"
+                    ],
+                    "selection_priority": 0.75,
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "육합",
+                          "sa",
+                          "sin",
+                          "사신합수"
+                        ],
+                        "detail": "월주(신사)×월주(무신)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_006",
+                    "fact_kind": "stem_combine",
+                    "group": "bonding",
+                    "codes": [
+                      "천간합",
+                      "gye",
+                      "mu",
+                      "무계합화"
+                    ],
+                    "selection_priority": 0.4,
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "천간합",
+                          "gye",
+                          "mu",
+                          "무계합화"
+                        ],
+                        "detail": "시주(계미)×일주(무진)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_007",
+                    "fact_kind": "stem_combine",
+                    "group": "bonding",
+                    "codes": [
+                      "천간합",
+                      "sin",
+                      "byeong",
+                      "병신합수"
+                    ],
+                    "selection_priority": 0.4,
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "천간합",
+                          "sin",
+                          "byeong",
+                          "병신합수"
+                        ],
+                        "detail": "월주(신사)×시주(병진)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_008",
+                    "fact_kind": "stem_combine",
+                    "group": "bonding",
+                    "codes": [
+                      "천간합",
+                      "gye",
+                      "mu",
+                      "무계합화"
+                    ],
+                    "selection_priority": 0.4,
+                    "directionality": {
+                      "polarity": "symmetric"
+                    },
+                    "evidence": [
+                      {
+                        "kind": "relation",
+                        "codes": [
+                          "천간합",
+                          "gye",
+                          "mu",
+                          "무계합화"
+                        ],
+                        "detail": "시주(계미)×월주(무신)"
+                      }
+                    ]
+                  },
+                  {
+                    "packet_id": "pce_002",
+                    "fact_kind": "element_flow",
+                    "group": "energy",
+                    "codes": [
+                      "generates_b_to_a",
+                      "metal",
+                      "earth"
+                    ],
+                    "selection_priority": 0.55,
+                    "directionality": {
+                      "polarity": "b_to_a",
+                      "from": "B",
+                      "to": "A"
+                    },
+                    "evidence": [
+                      {
+                        "kind": "stem",
+                        "codes": [
+                          "metal",
+                          "earth"
+                        ],
+                        "detail": "generates_b_to_a"
+                      }
+                    ]
+                  }
+                ],
+                "count": 6
+              }
+            }
+          }
+        }
+      }
+    },
+    "evidenceIndex": [
+      {
+        "id": "ce.individual.a",
+        "path": "person_core_blueprint.individual_saju_json(A)",
+        "summary": "A individual CE structured interpretation"
+      },
+      {
+        "id": "ce.individual.b",
+        "path": "person_core_blueprint.individual_saju_json(B)",
+        "summary": "B individual CE structured interpretation"
+      },
+      {
+        "id": "ce.pair.common",
+        "path": "runPairContextEngine output (shared) + romantic lens",
+        "summary": "Shared Pair CE common relationship interpretation"
+      },
+      {
+        "id": "ce.romantic.specific",
+        "path": "romantic_context_input + canonical_projections",
+        "summary": "Romantic CE romantic-specific interpretation"
+      }
+    ]
+  },
+  "fourCeInfluenceAudit": [
+    {
+      "evidenceId": "ce.individual.a",
+      "impact": "A의 일상 애정표현/요청 톤 문장 선택에 반영"
+    },
+    {
+      "evidenceId": "ce.individual.b",
+      "impact": "B의 애정표현/정리 방식 문장 선택에 반영"
+    },
+    {
+      "evidenceId": "ce.pair.common",
+      "impact": "Chapter 3의 pair-level capability 메커니즘 설명에 반영"
+    },
+    {
+      "evidenceId": "ce.romantic.specific",
+      "impact": "Flow/Conflict/Repair의 구조적 해석(속도·회복·안심) 근거에 반영"
+    }
+  ],
+  "toc": [
+    {
+      "chapter": "ch0_opening",
+      "label": "0. Opening: Relationship Signature"
+    },
+    {
+      "chapter": "ch1_who_we_are_together",
+      "label": "1. Who We Are Together"
+    },
+    {
+      "chapter": "ch2_you_and_me",
+      "label": "2. You and Me"
+    },
+    {
+      "chapter": "ch3_why_this_works",
+      "label": "3. Why This Works"
+    },
+    {
+      "chapter": "ch4_relationship_flow",
+      "label": "4. Relationship Flow"
+    },
+    {
+      "chapter": "ch5_when_we_miss_each_other",
+      "label": "5. When We Miss Each Other"
+    },
+    {
+      "chapter": "ch6_hidden_heart",
+      "label": "6. Hidden Heart"
+    },
+    {
+      "chapter": "ch7_repair_guide",
+      "label": "7. Repair Guide"
+    },
+    {
+      "chapter": "ch8_love_in_real_life",
+      "label": "8. Love in Real Life"
+    },
+    {
+      "chapter": "ch9_our_next_chapter",
+      "label": "9. Our Next Chapter"
+    },
+    {
+      "chapter": "ch10_closing",
+      "label": "10. Closing / Save and Share"
+    }
+  ],
+  "chapters": [
+    {
+      "chapter": "ch0_opening",
+      "title": "0. Opening: Relationship Signature",
+      "blocks": [
+        {
+          "blockId": "opening.signature",
+          "label": "관계 시그니처",
+          "sourceKind": "canonical_evidence",
+          "content": "깊어지는 계절",
+          "evidenceIds": [
+            "section_1_summary.relationship_name"
+          ],
+          "confidence": "high"
+        },
+        {
+          "blockId": "opening.paradox",
+          "label": "핵심 역설",
+          "sourceKind": "ce_derived",
+          "content": "지민의 빠른 표현과 정우의 신중한 숙성이 부딪힐 때, 갈등의 시작점은 같아도 회복의 속도는 다르게 흐릅니다.",
+          "evidenceIds": [
+            "canonical_projections.expression_speed",
+            "canonical_projections.recovery_speed",
+            "canonical_projections.cross_chart_tension"
+          ],
+          "confidence": "high"
+        },
+        {
+          "blockId": "opening.invitation",
+          "label": "읽기 초대",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "이 보고서는 누가 맞는지 판정하지 않습니다. 두 사람이 실제로 반복해 온 장면을 정확히 붙잡고, 같은 장면을 덜 아프게 통과하는 방법을 찾기 위한 지도입니다.",
+          "evidenceIds": [
+            "meta.screen_plan",
+            "meta.ranked_insights"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "chapter": "ch1_who_we_are_together",
+      "title": "1. Who We Are Together",
+      "blocks": [
+        {
+          "blockId": "together.narrative",
+          "label": "관계 정체성",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "지민과 정우는 감정의 속도가 다른 커플입니다. 지민은 관계의 온도를 빠르게 확인하며 연결을 지키고, 정우는 정리된 언어로 관계를 안정시키려 합니다. 그래서 처음에는 엇갈리지만, 서로의 리듬을 번역해 주는 순간 오히려 다른 커플보다 회복의 질이 높아집니다.",
+          "evidenceIds": [
+            "canonical_projections.expression_speed",
+            "canonical_projections.recovery_speed",
+            "section_4_special_bond.only_together"
+          ],
+          "confidence": "high"
+        },
+        {
+          "blockId": "together.signals",
+          "label": "핵심 pair signals",
+          "sourceKind": "ce_derived",
+          "content": "① 관계의 중심 리듬: 지민 주도·정우 수용 ② 버티게 해 주는 힘: 지민 경청 · 정우 행동 증거 ③ 의미 있는 긴장: 지민 급속 회복 · 정우 심층 숙성",
+          "evidenceIds": [
+            "canonical_projections.balance_of_power",
+            "canonical_projections.reassurance_signal",
+            "canonical_projections.recovery_speed"
+          ],
+          "confidence": "high"
+        },
+        {
+          "blockId": "together.scene",
+          "label": "일상 장면",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "퇴근 후 대화에서 지민이 먼저 마음의 매듭을 꺼내고, 정우가 바로 결론 대신 '듣고 정리해 내일 아침에 이어 말하자'고 제안하면, 두 사람은 같은 문제를 다르게 다루면서도 관계의 안전감은 지켜냅니다.",
+          "evidenceIds": [
+            "section_3_conversation_patterns.conflict_situation.dialogue_table",
+            "canonical_projections.recovery_speed"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "chapter": "ch2_you_and_me",
+      "title": "2. You and Me",
+      "blocks": [
+        {
+          "blockId": "profile.a",
+          "label": "지민 1인칭 프로필",
+          "sourceKind": "existing_llm_narrative",
+          "content": "나는 사랑을 느끼면 숨기지 않고 바로 표현하는 편이야. 하루를 같이 정리할 때도 먼저 말을 꺼내며 연결을 만들어. 내가 바라는 건 내 말의 내용이 완벽히 맞는지보다, 네가 내 마음을 듣고 있다는 신호야. 그리고 잘 말하지 못하는 애정은, 네가 해준 작은 행동을 오래 기억하고 고마워한다는 마음이야.",
+          "evidenceIds": [
+            "section_2_nature.a_nature.description",
+            "section_2_nature.a_nature.together_change"
+          ],
+          "confidence": "high"
+        },
+        {
+          "blockId": "profile.b",
+          "label": "정우 1인칭 프로필",
+          "sourceKind": "existing_llm_narrative",
+          "content": "나는 사랑을 행동으로 증명하려는 편이야. 말하기 전에 한 번 더 생각하고, 오래 가는 문장을 고르려고 해. 내가 바라는 건 내 속도가 느려 보여도 관계를 소홀히 하는 게 아니라는 걸 알아주는 거야. 그리고 잘 말하지 못하는 애정은, 네가 편해지도록 내가 먼저 생활의 무게를 정리해 두고 싶다는 마음이야.",
+          "evidenceIds": [
+            "section_2_nature.b_nature.description",
+            "section_2_nature.b_nature.together_change"
+          ],
+          "confidence": "high"
+        },
+        {
+          "blockId": "daymaster.reciprocal.blocked",
+          "label": "상호 Day-Master 해석 레이어",
+          "sourceKind": "ce_derived",
+          "content": "현재 fixture에서 일주 표기는 확인되지만(A: 일주(갑자), B: 일주(경오)), A→B/B→A 방향 관계 해석을 안전하게 생성하는 정식 CE 파생 필드가 없어 이 레이어는 차단 상태입니다. 따라서 Chapter 2에서 Day-Master 상호작용 문단을 임의 생성하지 않았습니다.",
+          "evidenceIds": [
+            "canonical_projections.cross_chart_tension.hits[0].personA_pillar",
+            "canonical_projections.cross_chart_tension.hits[0].personB_pillar",
+            "missing:ce.day_master_reciprocal_directional_v1"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "chapter": "ch3_why_this_works",
+      "title": "3. Why This Works",
+      "blocks": [
+        {
+          "blockId": "why.a_to_b",
+          "label": "A가 B에게 주는 것",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "정우에게 어려운 지점은 감정이 빠르게 오갈 때 관계의 현재감을 놓치지 않는 것입니다. 지민이 먼저 감정을 언어로 꺼내 주면, 정우는 상황을 추정하지 않고 실제 신호를 받습니다. 이 효과는 갈등이 아닐 때 더 분명한데, 일상 대화·데이트 계획·하루 정리에서 정우의 반응 속도가 안정적으로 빨라집니다.",
+          "evidenceIds": [
+            "section_4_special_bond.a_gives_b",
+            "canonical_projections.expression_speed",
+            "canonical_projections.pair_ce_bonding",
+            "ce.individual.a"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "blockId": "why.b_to_a",
+          "label": "B가 A에게 주는 것",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "지민에게 어려운 지점은 감정 에너지가 큰 날에도 관계의 안전감을 유지하는 것입니다. 정우가 행동 증거와 일정한 복귀 패턴을 보여 주면, 지민은 확인을 위해 강도를 올리지 않아도 됩니다. 이 효과는 평상시에도 나타나서, 약속 이행·생활 정리·작은 실행에서 지민의 체감 불안이 줄고 친밀감이 누적됩니다.",
+          "evidenceIds": [
+            "section_4_special_bond.b_gives_a",
+            "canonical_projections.reassurance_signal",
+            "canonical_projections.pair_ce_bonding",
+            "ce.individual.b"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "blockId": "why.together",
+          "label": "함께 만들게 되는 것",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "두 사람의 상호작용이 만들어내는 고유 역량은 '빠른 연결 신호'와 '지연 없는 복귀 약속'을 동시에 운용하는 능력입니다. 한쪽만으로는 생기기 어려운 이 역량 덕분에, 관계는 감정 강도가 큰 날에도 끊어지지 않고 재정렬됩니다. 즉 매력의 지속이 아니라, 반복 가능한 회복 운영체계가 관계의 핵심 자산이 됩니다.",
+          "evidenceIds": [
+            "canonical_projections.pair_ce_bonding",
+            "canonical_projections.recovery_speed",
+            "canonical_projections.balance_of_power",
+            "canonical_projections.reassurance_signal",
+            "ce.pair.common",
+            "ce.romantic.specific"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "chapter": "ch4_relationship_flow",
+      "title": "4. Relationship Flow",
+      "blocks": []
+    },
+    {
+      "chapter": "ch5_when_we_miss_each_other",
+      "title": "5. When We Miss Each Other",
+      "blocks": []
+    },
+    {
+      "chapter": "ch6_hidden_heart",
+      "title": "6. Hidden Heart",
+      "blocks": []
+    },
+    {
+      "chapter": "ch7_repair_guide",
+      "title": "7. Repair Guide",
+      "blocks": []
+    },
+    {
+      "chapter": "ch8_love_in_real_life",
+      "title": "8. Love in Real Life",
+      "blocks": []
+    },
+    {
+      "chapter": "ch9_our_next_chapter",
+      "title": "9. Our Next Chapter",
+      "blocks": [
+        {
+          "blockId": "next.mode",
+          "label": "Mode",
+          "sourceKind": "ce_derived",
+          "content": "Maturity-direction mode",
+          "evidenceIds": [
+            "section_6_timeline (safety check)",
+            "projectHorizon fate filter"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "chapter": "ch10_closing",
+      "title": "10. Closing / Save and Share",
+      "blocks": [
+        {
+          "blockId": "closing.statement",
+          "label": "결론 문장",
+          "sourceKind": "prototype_bounded_narrative",
+          "content": "두 사람의 차이는 관계의 약점이 아니라, 제대로 번역될 때 신뢰를 두껍게 만드는 재료입니다.",
+          "evidenceIds": [
+            "opening.signature",
+            "repairGuide",
+            "hiddenHeart"
+          ],
+          "confidence": "high"
+        }
+      ]
+    }
+  ],
+  "comparisonTable": [
+    {
+      "rowId": "compare.conflict",
+      "relationshipQuestion": "서로 부딪힐 때 우리는 무엇을 먼저 하나요?",
+      "personA": "직면형",
+      "personB": "원칙형",
+      "relationshipManifestation": "같은 갈등 장면에서 한 사람은 바로 맞추고, 다른 사람은 기준부터 세우려 해 타이밍이 어긋납니다.",
+      "understandingPoint": "감정의 강도보다 처리 순서를 먼저 합의하면 같은 문제를 덜 상처받고 다룰 수 있습니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.conflict",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.stress",
+      "relationshipQuestion": "압박을 받을 때 어떤 패턴이 나오나요?",
+      "personA": "폭발형",
+      "personB": "철수형",
+      "relationshipManifestation": "압박이 커질수록 한쪽은 빠르게 쏟아내고, 다른 쪽은 잠시 물러나 정리해 서로가 상대를 거절로 오해하기 쉽습니다.",
+      "understandingPoint": "거리 두기는 회피가 아니라 과부하 방지 신호로 해석하고, 복귀 시간을 문장으로 약속합니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.stress",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.communication",
+      "relationshipQuestion": "말을 고르고 해석하는 방식은 어떻게 다른가요?",
+      "personA": "직접형",
+      "personB": "배려형",
+      "relationshipManifestation": "직설과 배려형 문장이 만나면서 내용보다 어조와 순서가 먼저 쟁점이 됩니다.",
+      "understandingPoint": "핵심 요구를 한 줄로 먼저 말하고, 톤 조정은 그다음으로 미루면 오해가 줄어듭니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.communication",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.affection",
+      "relationshipQuestion": "사랑을 확인받고 전하는 방식은 어떻게 다른가요?",
+      "personA": "정서 돌봄형",
+      "personB": "행동·선물형",
+      "relationshipManifestation": "말과 행동의 애정 언어가 달라 고마움은 크지만 전달 방식이 엇갈릴 수 있습니다.",
+      "understandingPoint": "말로 받은 안심과 행동으로 받은 안심을 서로 번역해 주면 체감 만족이 급격히 올라갑니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.affection",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.decision",
+      "relationshipQuestion": "중요한 결정을 내릴 때 어떤 기준을 쓰나요?",
+      "personA": "독립형",
+      "personB": "상의형",
+      "relationshipManifestation": "결정을 고르는 기준(속도 vs 합의)이 달라 일정·돈·계획에서 미세한 마찰이 반복됩니다.",
+      "understandingPoint": "독자 결정권과 공동 확인권의 경계를 미리 정해 결정 피로를 줄입니다.",
+      "confidence": "medium",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.decision",
+        "section_2_nature.comparison_table"
+      ]
+    }
+  ],
+  "axisOverview": [
+    {
+      "axis_key": "stimulation",
+      "score_a": 72,
+      "score_b": 40,
+      "gap": 32,
+      "match_type": "tension"
+    },
+    {
+      "axis_key": "self_control",
+      "score_a": 55,
+      "score_b": 60,
+      "gap": 5,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "practicality",
+      "score_a": 48,
+      "score_b": 66,
+      "gap": 18,
+      "match_type": "complementary"
+    },
+    {
+      "axis_key": "structure",
+      "score_a": 70,
+      "score_b": 35,
+      "gap": 35,
+      "match_type": "tension"
+    },
+    {
+      "axis_key": "empathy",
+      "score_a": 65,
+      "score_b": 62,
+      "gap": 3,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "conflict_style",
+      "score_a": 58,
+      "score_b": 44,
+      "gap": 14,
+      "match_type": "complementary"
+    },
+    {
+      "axis_key": "resilience",
+      "score_a": 50,
+      "score_b": 53,
+      "gap": 3,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "recognition",
+      "score_a": 62,
+      "score_b": 47,
+      "gap": 15,
+      "match_type": "complementary"
+    },
+    {
+      "axis_key": "energy_style",
+      "score_a": 75,
+      "score_b": 41,
+      "gap": 34,
+      "match_type": "tension"
+    },
+    {
+      "axis_key": "thinking_style",
+      "score_a": 53,
+      "score_b": 57,
+      "gap": 4,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "decision_style",
+      "score_a": 60,
+      "score_b": 46,
+      "gap": 14,
+      "match_type": "complementary"
+    }
+  ],
+  "selectedAxisInsights": [
+    {
+      "axisKey": "structure",
+      "axisLabel": "계획구조화",
+      "matchType": "tension",
+      "gap": 35,
+      "personAPattern": "70점 경향",
+      "personBPattern": "35점 경향",
+      "whyItMatters": "두 사람의 일정·돈·우선순위 조율에서 갈등 비용을 가장 크게 만드는 축이라, 규칙을 먼저 맞추는 것이 관계 체력에 직결됩니다.",
+      "dailyManifestation": "여행 준비에서 한 사람은 체크리스트를 완성하려 하고, 다른 사람은 상황에 맞춰 즉흥 수정하려다 출발 직전에 다툼이 납니다.",
+      "relationshipEffect": "긴장",
+      "confidence": "high",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.structure"
+      ]
+    },
+    {
+      "axisKey": "energy_style",
+      "axisLabel": "외향에너지",
+      "matchType": "tension",
+      "gap": 34,
+      "personAPattern": "75점 경향",
+      "personBPattern": "41점 경향",
+      "whyItMatters": "함께 있을 때 회복되는 방식이 달라 주말과 모임의 만족도가 크게 갈리는 핵심 축입니다.",
+      "dailyManifestation": "한쪽은 사람 많은 자리에서 충전되고, 다른 쪽은 둘만의 정리 시간이 있어야 다음 대화가 부드럽게 이어집니다.",
+      "relationshipEffect": "긴장",
+      "confidence": "high",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.energy_style"
+      ]
+    },
+    {
+      "axisKey": "stimulation",
+      "axisLabel": "자극추구",
+      "matchType": "tension",
+      "gap": 32,
+      "personAPattern": "72점 경향",
+      "personBPattern": "40점 경향",
+      "whyItMatters": "새로운 자극을 원하는 속도가 달라 데이트 밀도와 피로도가 같이 흔들리기 때문입니다.",
+      "dailyManifestation": "새로운 장소를 계속 열어보려는 쪽과 익숙한 루틴을 선호하는 쪽이 데이트 횟수보다 강도를 두고 부딪힙니다.",
+      "relationshipEffect": "긴장",
+      "confidence": "high",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.stimulation"
+      ]
+    },
+    {
+      "axisKey": "recognition",
+      "axisLabel": "인정욕구",
+      "matchType": "complementary",
+      "gap": 15,
+      "personAPattern": "62점 경향",
+      "personBPattern": "47점 경향",
+      "whyItMatters": "일상 대화의 의도 해석과 기대치 형성에 직접 연결되는 축이라 반복 패턴을 설명해 줍니다.",
+      "dailyManifestation": "중요한 메시지를 보낼 때 한 사람은 맥락을 길게, 다른 사람은 요점 위주로 보내 해석이 엇갈립니다.",
+      "relationshipEffect": "보완",
+      "confidence": "low",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.recognition"
+      ]
+    }
+  ],
+  "axisSelectionAudit": {
+    "selectedReason": "4개 이하 제한 중 상위 distinct 신호를 선택",
+    "rejected": [
+      {
+        "axisKey": "self_control",
+        "reason": "ownership_collision",
+        "detail": "mapped row stress already owned by Saju comparison and axis score -8 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.self_control"
+        ]
+      },
+      {
+        "axisKey": "practicality",
+        "reason": "ownership_collision",
+        "detail": "mapped row decision already owned by Saju comparison and axis score 7 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.practicality"
+        ]
+      },
+      {
+        "axisKey": "empathy",
+        "reason": "ownership_collision",
+        "detail": "mapped row communication already owned by Saju comparison and axis score -10 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.empathy"
+        ]
+      },
+      {
+        "axisKey": "resilience",
+        "reason": "insufficient_evidence",
+        "detail": "selection score 6 < threshold 20.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.resilience"
+        ]
+      },
+      {
+        "axisKey": "thinking_style",
+        "reason": "ownership_collision",
+        "detail": "mapped row communication already owned by Saju comparison and axis score -9 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.thinking_style"
+        ]
+      },
+      {
+        "axisKey": "decision_style",
+        "reason": "ownership_collision",
+        "detail": "mapped row decision already owned by Saju comparison and axis score 3 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.decision_style"
+        ]
+      }
+    ]
+  },
+  "relationshipFlow": {
+    "title": "표현 속도 차이가 관계 루프를 만드는 방식",
+    "steps": [
+      "A의 접근: 지민이 불편함을 느끼는 순간 바로 이유를 확인하려고 질문한다.",
+      "B의 내부 해석: 정우는 질문의 속도를 압박으로 받아들이고 먼저 문장을 정리해야 안전하다고 느낀다.",
+      "B의 반응: 답을 미루거나 짧게 끊어 말해 시간을 확보한다.",
+      "A의 해석: 지민은 그 침묵을 무관심 또는 회피로 읽어 감정 강도를 올린다.",
+      "결과: 대화의 내용보다 톤이 중심이 되면서 친밀감이 줄고 갈등 피로가 커진다."
+    ],
+    "pivotPoint": "루프 전환점: 정우가 '30분 뒤 반드시 돌아오겠다'고 시간을 명시하고, 지민은 그 시간까지 질문 수를 줄이면 갈등이 복구 루프로 이동한다.",
+    "evidenceIds": [
+      "canonical_projections.expression_speed",
+      "section_3_conversation_patterns.conflict_situation.dialogue_table",
+      "canonical_projections.recovery_speed"
+    ]
+  },
+  "conflicts": [
+    {
+      "patternId": "conflict.speed-delay",
+      "trigger": "답장/답변이 늦어지는 순간",
+      "whatIMeant": "지민: 지금 마음이 멀어진 건지 확인하고 싶었어.",
+      "whatYouHeard": "정우: 나를 몰아붙이고 당장 답하라고 요구하는 걸로 들렸어.",
+      "hiddenNeed": "지민은 연결이 끊기지 않았다는 확인, 정우는 과부하 없이 정리할 시간을 원함.",
+      "betterWords": "지민: '지금 답을 강요하려는 건 아니고, 언제 다시 이야기할 수 있을지 알려줘.'",
+      "repairTiming": "갈등 직후 30~40분 정리 시간을 확보한 뒤 재진입.",
+      "evidenceIds": [
+        "section_3_conversation_patterns.conflict_situation.dialogue_table",
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed",
+        "section_4_hidden_hearts"
+      ],
+      "confidence": "high"
+    },
+    {
+      "patternId": "conflict.principle-tone",
+      "trigger": "원칙 설명이 감정 공감보다 먼저 나오는 순간",
+      "whatIMeant": "정우: 우리 둘 다 덜 다치려면 기준을 먼저 맞추자는 뜻이었어.",
+      "whatYouHeard": "지민: 내 감정보다 규칙이 더 중요하다고 말하는 것처럼 들렸어.",
+      "hiddenNeed": "정우는 대화의 구조가 있어야 안전하고, 지민은 먼저 감정이 인정되어야 대화가 열린다.",
+      "betterWords": "정우: '네가 속상한 건 먼저 이해해. 그다음에 우리가 지킬 기준을 같이 정해보자.'",
+      "repairTiming": "감정 확인 한 문장 → 기준 협의 순서로 같은 대화 안에서 전환.",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.conflict",
+        "canonical_projections.comparison_table.communication",
+        "section_4_hidden_hearts"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "hiddenHeart": {
+    "personA": "겉으로 보이는 지민의 반응은 질문이 빨라지고 톤이 높아지는 모습입니다. 실제 안쪽에는 '우리가 끊기지 않았다는 신호를 당장 받고 싶다'는 불안이 있습니다. 가장 깊은 두려움은 침묵이 곧 관계의 후퇴로 굳어지는 장면입니다. 그래서 지민에게 필요한 안심은 정답보다도 '나는 돌아온다'는 시간 약속입니다.",
+    "personB": "겉으로 보이는 정우의 반응은 말을 줄이고 잠시 물러나는 모습입니다. 실제 안쪽에는 '정리되지 않은 말로 너를 더 다치게 할까 봐 멈춘다'는 긴장이 있습니다. 가장 깊은 두려움은 성급한 한 문장이 관계를 장기 손상시키는 장면입니다. 정우에게 필요한 안심은 기다림이 처벌이 아니라 신뢰로 받아들여진다는 확인입니다.",
+    "personAOneLineForPartner": "정우야, 지금 조용해도 괜찮아. 돌아올 시간을 말해주면 나는 버려지지 않았다고 느껴.",
+    "personBOneLineForPartner": "지민아, 네 마음을 먼저 인정할게. 잠깐만 정리하고 꼭 이어서 말할게.",
+    "evidenceIds": [
+      "section_4_hidden_hearts.a_hidden",
+      "section_4_hidden_hearts.b_hidden",
+      "canonical_projections.recovery_speed",
+      "canonical_projections.reassurance_signal"
+    ]
+  },
+  "repairGuide": {
+    "sequence": [
+      "1) 멈춤 신호: 목소리가 올라가면 '잠깐, 지금은 감정이 앞서'를 공통 신호로 사용한다.",
+      "2) 시간/공간: 지민 10분 정리, 정우 30~40분 정리 시간을 기본값으로 둔다.",
+      "3) 첫 행동: 먼저 돌아오는 쪽이 '대화를 끝내지 않았다'는 문장 한 줄을 보낸다.",
+      "4) 재진입 문장: '내가 들은 건 ___인데 맞아?'로 사실 확인부터 시작한다.",
+      "5) 공동 약속: 갈등 중에는 성격 판정 문장을 금지하고, 행동·요청 문장만 사용한다."
+    ],
+    "sideBySide": {
+      "helpsA": [
+        "침묵 시간을 숫자로 알면 불안이 급격히 줄어든다.",
+        "감정 인정 문장을 먼저 들으면 방어가 낮아진다.",
+        "질문은 한 번에 하나씩 할 때 대화 품질이 좋아진다."
+      ],
+      "helpsB": [
+        "즉시 해명 강요가 줄면 정확한 표현이 가능해진다.",
+        "말하기 전 핵심 문장을 메모하면 과부하가 줄어든다.",
+        "비난 대신 요청형 문장을 들을 때 복귀 속도가 빨라진다."
+      ],
+      "together": [
+        "갈등 24시간 내 반드시 재대화한다.",
+        "사과와 해결책을 분리해 말한다.",
+        "끝맺음 문장 없이 대화를 종료하지 않는다."
+      ]
+    },
+    "evidenceIds": [
+      "canonical_projections.recovery_speed",
+      "canonical_projections.reassurance_signal",
+      "section_3_conversation_patterns.conflict_situation",
+      "canonical_projections.comparison_table"
+    ]
+  },
+  "realLifeScenes": [
+    {
+      "sceneId": "scene.weekend-plan",
+      "sceneTitle": "주말 일정과 데이트 밀도",
+      "whatHappens": "지민은 새로운 장소를 연속으로 넣고, 정우는 한두 개 핵심 일정만 깊게 가고 싶어합니다.",
+      "whyForThisPair": "자극추구·에너지 축 차이와 구조화 성향 차이가 동시에 작동하기 때문입니다.",
+      "whatACanDo": "새로운 일정은 최대 2개로 압축하고, 마지막 2시간은 정리 시간을 비워둡니다.",
+      "whatBCanDo": "루틴 유지가 필요한 이유를 미리 말하고, 한 개는 새 시도를 수용합니다.",
+      "sharedAgreement": "데이트 전날 10분 계획 싱크를 하고 당일 변경 횟수 상한을 1회로 둡니다.",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.stimulation",
+        "meta.psych_match.axis_results.energy_style",
+        "meta.psych_match.axis_results.structure"
+      ]
+    },
+    {
+      "sceneId": "scene.after-conflict-text",
+      "sceneTitle": "다툰 뒤 메시지 재개",
+      "whatHappens": "한쪽은 즉시 확인 문자를 보내고, 다른 쪽은 답변을 미루며 긴장이 커집니다.",
+      "whyForThisPair": "표현 속도와 회복 속도 불일치가 동일 트리거에서 반복됩니다.",
+      "whatACanDo": "재촉 대신 복귀 시간 확인 문장 하나만 보냅니다.",
+      "whatBCanDo": "정리 완료 시간을 숫자로 제시하고 그 시간에 반드시 복귀합니다.",
+      "sharedAgreement": "대화 중단 후 40분 이내 첫 복귀 신호를 보냅니다.",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed",
+        "section_3_conversation_patterns.conflict_situation"
+      ]
+    },
+    {
+      "sceneId": "scene.major-decision",
+      "sceneTitle": "큰 결정(이사/지출/휴가)",
+      "whatHappens": "지민은 빠른 확정을 선호하고, 정우는 검토와 합의 과정을 더 중시합니다.",
+      "whyForThisPair": "의사결정·소통 canonical 행에서 caution 정렬이 반복됩니다.",
+      "whatACanDo": "결정 기한을 제시하되 선택지 2개를 함께 남깁니다.",
+      "whatBCanDo": "검토 항목을 3개 이내로 압축해 의사결정 지연을 줄입니다.",
+      "sharedAgreement": "결정 회의는 1차(선호 공유)·2차(확정) 두 단계로 나눕니다.",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.decision",
+        "canonical_projections.comparison_table.communication"
+      ]
+    }
+  ],
+  "nextChapterMode": "maturity_direction",
+  "timingModeAudit": {
+    "mode": "maturity_direction",
+    "evidenceIds": [],
+    "confidence": "high",
+    "safetyRulesPassed": [
+      "no-safe-near-term-timing-evidence"
+    ],
+    "renderedCopy": [
+      "지금 조율할 것: 갈등 시 복귀 시간 약속을 습관화해 침묵-오해 루프를 끊습니다.",
+      "익숙해지며 좋아질 것: 서로의 애정 언어(말/행동) 번역 속도가 빨라져 같은 표현의 체감 차이가 줄어듭니다.",
+      "시간이 지나도 지킬 것: 감정 인정 먼저, 기준 협의 나중의 순서를 무너뜨리지 않습니다."
+    ],
+    "rationale": "section_6_timeline에 안전 규칙을 통과한 근거리 시계열 근거가 없어 예측형 모드를 사용하지 않음."
+  },
+  "nextChapter": [
+    "지금 조율할 것: 갈등 시 복귀 시간 약속을 습관화해 침묵-오해 루프를 끊습니다.",
+    "익숙해지며 좋아질 것: 서로의 애정 언어(말/행동) 번역 속도가 빨라져 같은 표현의 체감 차이가 줄어듭니다.",
+    "시간이 지나도 지킬 것: 감정 인정 먼저, 기준 협의 나중의 순서를 무너뜨리지 않습니다."
+  ],
+  "closing": {
+    "concludingStatement": "두 사람의 차이는 관계의 약점이 아니라, 제대로 번역될 때 신뢰를 두껍게 만드는 재료입니다.",
+    "rememberA": "지민이 기억할 문장: 빠른 확인보다 '돌아올 시간'을 받는 것이 더 큰 안심을 만든다.",
+    "rememberB": "정우가 기억할 문장: 정리의 정확성은 공감의 첫 문장을 건넨 뒤에 더 잘 작동한다.",
+    "shareLines": [
+      "우리는 감정의 속도는 다르지만, 복귀 약속이 있을 때 가장 단단해진다.",
+      "말의 방식이 다른 만큼, 서로의 애정 언어를 번역해 줄수록 만족이 커진다.",
+      "갈등의 승패보다 관계의 재접속 시간을 줄이는 것이 우리에게 더 중요하다."
+    ],
+    "reflectionQuestion": "다음 갈등에서 우리가 가장 먼저 지킬 한 문장을 지금 정한다면 무엇일까?"
+  },
+  "insightOwnership": [
+    {
+      "insightId": "insight.opening.signature",
+      "phenomenon": "관계 시그니처(깊어지는 계절)",
+      "evidenceIds": [
+        "section_1_summary.relationship_name"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch0_opening",
+      "supportingChapters": [
+        {
+          "chapter": "ch10_closing",
+          "purpose": "정서적 결말 문장 앵커"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.opening.paradox",
+      "phenomenon": "표현 속도와 회복 속도의 핵심 역설",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch0_opening",
+      "supportingChapters": [
+        {
+          "chapter": "ch4_relationship_flow",
+          "purpose": "루프의 출발 조건 설명"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.together.identity",
+      "phenomenon": "속도 차이가 있지만 복귀 약속이 있을 때 안정되는 커플 정체성",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch1_who_we_are_together",
+      "supportingChapters": [
+        {
+          "chapter": "ch4_relationship_flow",
+          "purpose": "루프 전환점 설명"
+        },
+        {
+          "chapter": "ch7_repair_guide",
+          "purpose": "실행 규칙화"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.daymaster.reciprocal.blocked",
+      "phenomenon": "A→B/B→A 상호 Day-Master 방향 해석 레이어는 CE 파생 부재로 차단",
+      "evidenceIds": [
+        "canonical_projections.cross_chart_tension.hits[0].personA_pillar",
+        "canonical_projections.cross_chart_tension.hits[0].personB_pillar",
+        "missing:ce.day_master_reciprocal_directional_v1"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch3_why_this_works",
+          "purpose": "pair-level 결과만 제한적으로 참조"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.compare.conflict",
+      "phenomenon": "갈등 처리 방식(직면형↔원칙형)의 caution 차이",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.conflict"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch5_when_we_miss_each_other",
+          "purpose": "trigger 배경 설명"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.compare.stress",
+      "phenomenon": "스트레스 처리(폭발형↔철수형) 차이",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.stress"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch8_love_in_real_life",
+          "purpose": "메시지 재개 장면 실천화"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.compare.communication",
+      "phenomenon": "소통 톤/순서 차이(직접형↔배려형)",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.communication"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch5_when_we_miss_each_other",
+          "purpose": "what you heard 경로 설명"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.compare.affection",
+      "phenomenon": "애정 언어 차이(정서 돌봄↔행동 증거)",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.affection"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch3_why_this_works",
+          "purpose": "상호보완 메커니즘 설명"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.compare.decision",
+      "phenomenon": "의사결정 기준 차이(독립↔상의)",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.decision"
+      ],
+      "confidence": "medium",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch8_love_in_real_life",
+          "purpose": "큰 결정 운영 규칙으로 전환"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.axis.structure",
+      "phenomenon": "계획 구조화 축의 큰 격차",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.structure"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch8_love_in_real_life",
+          "purpose": "주말·결정 장면 실천화"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.axis.energy_style",
+      "phenomenon": "외향 에너지 축 격차",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.energy_style"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch8_love_in_real_life",
+          "purpose": "주말·모임 장면 선택 근거"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.axis.stimulation",
+      "phenomenon": "자극추구 축 격차",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.stimulation"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch8_love_in_real_life",
+          "purpose": "데이트 강도 조절 근거"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.axis.recognition",
+      "phenomenon": "인정욕구 보완 축",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.recognition"
+      ],
+      "confidence": "low",
+      "primaryChapter": "ch2_you_and_me",
+      "supportingChapters": [
+        {
+          "chapter": "ch1_who_we_are_together",
+          "purpose": "관계 시그널 보조 근거"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.hidden.a",
+      "phenomenon": "지민의 확인 욕구와 이탈 두려움",
+      "evidenceIds": [
+        "section_4_hidden_hearts.a_hidden",
+        "canonical_projections.reassurance_signal"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch6_hidden_heart",
+      "supportingChapters": [
+        {
+          "chapter": "ch5_when_we_miss_each_other",
+          "purpose": "오해 해석 체인 보강"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.hidden.b",
+      "phenomenon": "정우의 과부하 회피와 정리 시간 필요",
+      "evidenceIds": [
+        "section_4_hidden_hearts.b_hidden",
+        "canonical_projections.recovery_speed"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch6_hidden_heart",
+      "supportingChapters": [
+        {
+          "chapter": "ch7_repair_guide",
+          "purpose": "시간 규칙 수립"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.why.complement",
+      "phenomenon": "말 기반 안심 + 행동 기반 안정의 상호 보완",
+      "evidenceIds": [
+        "section_4_special_bond",
+        "canonical_projections.pair_ce_bonding",
+        "section_4_relationship_frames"
+      ],
+      "confidence": "medium",
+      "primaryChapter": "ch3_why_this_works",
+      "supportingChapters": [
+        {
+          "chapter": "ch1_who_we_are_together",
+          "purpose": "정체성 장면 보강"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.flow.loop",
+      "phenomenon": "A 접근→B 해석→B 반응→A 해석 루프",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "section_3_conversation_patterns.conflict_situation.dialogue_table"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch4_relationship_flow",
+      "supportingChapters": [
+        {
+          "chapter": "ch5_when_we_miss_each_other",
+          "purpose": "패턴 분기 설명"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.conflict.speed-delay",
+      "phenomenon": "응답 지연 오해 패턴",
+      "evidenceIds": [
+        "section_3_conversation_patterns.conflict_situation.dialogue_table",
+        "canonical_projections.expression_speed"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch5_when_we_miss_each_other",
+      "supportingChapters": [
+        {
+          "chapter": "ch7_repair_guide",
+          "purpose": "복귀 타이밍 규칙화"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.conflict.principle-tone",
+      "phenomenon": "원칙 선행 문장 오해 패턴",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.conflict",
+        "canonical_projections.comparison_table.communication"
+      ],
+      "confidence": "medium",
+      "primaryChapter": "ch5_when_we_miss_each_other",
+      "supportingChapters": [
+        {
+          "chapter": "ch7_repair_guide",
+          "purpose": "재개 문장 설계 근거"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.repair.sequence",
+      "phenomenon": "실행 가능한 5단계 수리 시퀀스",
+      "evidenceIds": [
+        "canonical_projections.recovery_speed",
+        "canonical_projections.reassurance_signal"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch7_repair_guide",
+      "supportingChapters": [
+        {
+          "chapter": "ch10_closing",
+          "purpose": "기억 문장 행동화"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.scene.weekend-plan",
+      "phenomenon": "주말 계획 밀도 장면",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.structure",
+        "meta.psych_match.axis_results.stimulation"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch8_love_in_real_life",
+      "supportingChapters": [
+        {
+          "chapter": "ch2_you_and_me",
+          "purpose": "축 해석의 생활 적용 사례"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.scene.after-conflict-text",
+      "phenomenon": "갈등 후 메시지 재개 장면",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch8_love_in_real_life",
+      "supportingChapters": [
+        {
+          "chapter": "ch7_repair_guide",
+          "purpose": "재진입 규칙 적용 장면"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.scene.major-decision",
+      "phenomenon": "큰 결정 2단계 운영 장면",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.decision"
+      ],
+      "confidence": "medium",
+      "primaryChapter": "ch8_love_in_real_life",
+      "supportingChapters": [
+        {
+          "chapter": "ch2_you_and_me",
+          "purpose": "의사결정 row 후속 적용"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.next.maturity-direction",
+      "phenomenon": "타이밍 예측 대신 성숙 방향 제시",
+      "evidenceIds": [
+        "section_6_timeline",
+        "projectHorizon fate filter"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch9_our_next_chapter",
+      "supportingChapters": [
+        {
+          "chapter": "ch10_closing",
+          "purpose": "장기 보존 행동 리마인드"
+        }
+      ]
+    },
+    {
+      "insightId": "insight.closing.memory-lines",
+      "phenomenon": "관계 종료 문장과 기억 문장",
+      "evidenceIds": [
+        "opening.signature",
+        "repairGuide",
+        "comparisonTable"
+      ],
+      "confidence": "high",
+      "primaryChapter": "ch10_closing",
+      "supportingChapters": []
+    }
+  ],
+  "evidenceTrace": [
+    {
+      "blockId": "opening.invitation",
+      "chapter": "ch0_opening",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "이 보고서는 누가 맞는지 판정하지 않습니다. 두 사람이 실제로 반복해 온 장면을 정확히 붙잡고, 같은 장면을 덜 아프게 통과하는 방법을 찾기 위한 지도입니다.",
+      "evidenceIds": [
+        "meta.screen_plan",
+        "meta.ranked_insights"
+      ],
+      "plannerInstruction": "Introduce report purpose without score/grade; tie to selected opening insight."
+    },
+    {
+      "blockId": "together.narrative",
+      "chapter": "ch1_who_we_are_together",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "지민과 정우는 감정의 속도가 다른 커플입니다. 지민은 관계의 온도를 빠르게 확인하며 연결을 지키고, 정우는 정리된 언어로 관계를 안정시키려 합니다. 그래서 처음에는 엇갈리지만, 서로의 리듬을 번역해 주는 순간 오히려 다른 커플보다 회복의 질이 높아집니다.",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed",
+        "section_4_special_bond.only_together"
+      ],
+      "plannerInstruction": "Compose ch1_who_we_are_together block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "together.signals",
+      "chapter": "ch1_who_we_are_together",
+      "sourceKind": "ce_derived",
+      "text": "① 관계의 중심 리듬: 지민 주도·정우 수용 ② 버티게 해 주는 힘: 지민 경청 · 정우 행동 증거 ③ 의미 있는 긴장: 지민 급속 회복 · 정우 심층 숙성",
+      "evidenceIds": [
+        "canonical_projections.balance_of_power",
+        "canonical_projections.reassurance_signal",
+        "canonical_projections.recovery_speed"
+      ],
+      "plannerInstruction": "Compose ch1_who_we_are_together block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "together.scene",
+      "chapter": "ch1_who_we_are_together",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "퇴근 후 대화에서 지민이 먼저 마음의 매듭을 꺼내고, 정우가 바로 결론 대신 '듣고 정리해 내일 아침에 이어 말하자'고 제안하면, 두 사람은 같은 문제를 다르게 다루면서도 관계의 안전감은 지켜냅니다.",
+      "evidenceIds": [
+        "section_3_conversation_patterns.conflict_situation.dialogue_table",
+        "canonical_projections.recovery_speed"
+      ],
+      "plannerInstruction": "Compose ch1_who_we_are_together block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "profile.a",
+      "chapter": "ch2_you_and_me",
+      "sourceKind": "existing_llm_narrative",
+      "text": "나는 사랑을 느끼면 숨기지 않고 바로 표현하는 편이야. 하루를 같이 정리할 때도 먼저 말을 꺼내며 연결을 만들어. 내가 바라는 건 내 말의 내용이 완벽히 맞는지보다, 네가 내 마음을 듣고 있다는 신호야. 그리고 잘 말하지 못하는 애정은, 네가 해준 작은 행동을 오래 기억하고 고마워한다는 마음이야.",
+      "evidenceIds": [
+        "section_2_nature.a_nature.description",
+        "section_2_nature.a_nature.together_change"
+      ],
+      "plannerInstruction": "Compose ch2_you_and_me block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "profile.b",
+      "chapter": "ch2_you_and_me",
+      "sourceKind": "existing_llm_narrative",
+      "text": "나는 사랑을 행동으로 증명하려는 편이야. 말하기 전에 한 번 더 생각하고, 오래 가는 문장을 고르려고 해. 내가 바라는 건 내 속도가 느려 보여도 관계를 소홀히 하는 게 아니라는 걸 알아주는 거야. 그리고 잘 말하지 못하는 애정은, 네가 편해지도록 내가 먼저 생활의 무게를 정리해 두고 싶다는 마음이야.",
+      "evidenceIds": [
+        "section_2_nature.b_nature.description",
+        "section_2_nature.b_nature.together_change"
+      ],
+      "plannerInstruction": "Compose ch2_you_and_me block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "daymaster.reciprocal.blocked",
+      "chapter": "ch2_you_and_me",
+      "sourceKind": "ce_derived",
+      "text": "현재 fixture에서 일주 표기는 확인되지만(A: 일주(갑자), B: 일주(경오)), A→B/B→A 방향 관계 해석을 안전하게 생성하는 정식 CE 파생 필드가 없어 이 레이어는 차단 상태입니다. 따라서 Chapter 2에서 Day-Master 상호작용 문단을 임의 생성하지 않았습니다.",
+      "evidenceIds": [
+        "canonical_projections.cross_chart_tension.hits[0].personA_pillar",
+        "canonical_projections.cross_chart_tension.hits[0].personB_pillar",
+        "missing:ce.day_master_reciprocal_directional_v1"
+      ],
+      "plannerInstruction": "Compose ch2_you_and_me block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "why.a_to_b",
+      "chapter": "ch3_why_this_works",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "정우에게 어려운 지점은 감정이 빠르게 오갈 때 관계의 현재감을 놓치지 않는 것입니다. 지민이 먼저 감정을 언어로 꺼내 주면, 정우는 상황을 추정하지 않고 실제 신호를 받습니다. 이 효과는 갈등이 아닐 때 더 분명한데, 일상 대화·데이트 계획·하루 정리에서 정우의 반응 속도가 안정적으로 빨라집니다.",
+      "evidenceIds": [
+        "section_4_special_bond.a_gives_b",
+        "canonical_projections.expression_speed",
+        "canonical_projections.pair_ce_bonding",
+        "ce.individual.a"
+      ],
+      "plannerInstruction": "Compose ch3_why_this_works block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "why.b_to_a",
+      "chapter": "ch3_why_this_works",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "지민에게 어려운 지점은 감정 에너지가 큰 날에도 관계의 안전감을 유지하는 것입니다. 정우가 행동 증거와 일정한 복귀 패턴을 보여 주면, 지민은 확인을 위해 강도를 올리지 않아도 됩니다. 이 효과는 평상시에도 나타나서, 약속 이행·생활 정리·작은 실행에서 지민의 체감 불안이 줄고 친밀감이 누적됩니다.",
+      "evidenceIds": [
+        "section_4_special_bond.b_gives_a",
+        "canonical_projections.reassurance_signal",
+        "canonical_projections.pair_ce_bonding",
+        "ce.individual.b"
+      ],
+      "plannerInstruction": "Compose ch3_why_this_works block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "why.together",
+      "chapter": "ch3_why_this_works",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "두 사람의 상호작용이 만들어내는 고유 역량은 '빠른 연결 신호'와 '지연 없는 복귀 약속'을 동시에 운용하는 능력입니다. 한쪽만으로는 생기기 어려운 이 역량 덕분에, 관계는 감정 강도가 큰 날에도 끊어지지 않고 재정렬됩니다. 즉 매력의 지속이 아니라, 반복 가능한 회복 운영체계가 관계의 핵심 자산이 됩니다.",
+      "evidenceIds": [
+        "canonical_projections.pair_ce_bonding",
+        "canonical_projections.recovery_speed",
+        "canonical_projections.balance_of_power",
+        "canonical_projections.reassurance_signal",
+        "ce.pair.common",
+        "ce.romantic.specific"
+      ],
+      "plannerInstruction": "Compose ch3_why_this_works block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "next.mode",
+      "chapter": "ch9_our_next_chapter",
+      "sourceKind": "ce_derived",
+      "text": "Maturity-direction mode",
+      "evidenceIds": [
+        "section_6_timeline (safety check)",
+        "projectHorizon fate filter"
+      ],
+      "plannerInstruction": "Compose ch9_our_next_chapter block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "closing.statement",
+      "chapter": "ch10_closing",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "두 사람의 차이는 관계의 약점이 아니라, 제대로 번역될 때 신뢰를 두껍게 만드는 재료입니다.",
+      "evidenceIds": [
+        "opening.signature",
+        "repairGuide",
+        "hiddenHeart"
+      ],
+      "plannerInstruction": "Compose ch10_closing block from mapped evidence with no new analysis claims."
+    },
+    {
+      "blockId": "flow.steps",
+      "chapter": "ch4_relationship_flow",
+      "sourceKind": "ce_derived",
+      "text": "A의 접근: 지민이 불편함을 느끼는 순간 바로 이유를 확인하려고 질문한다. B의 내부 해석: 정우는 질문의 속도를 압박으로 받아들이고 먼저 문장을 정리해야 안전하다고 느낀다. B의 반응: 답을 미루거나 짧게 끊어 말해 시간을 확보한다. A의 해석: 지민은 그 침묵을 무관심 또는 회피로 읽어 감정 강도를 올린다. 결과: 대화의 내용보다 톤이 중심이 되면서 친밀감이 줄고 갈등 피로가 커진다.",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "section_3_conversation_patterns.conflict_situation.dialogue_table",
+        "canonical_projections.recovery_speed"
+      ],
+      "plannerInstruction": "Explain one representative loop from expression-speed and conflict dialogue evidence."
+    },
+    {
+      "blockId": "flow.pivot",
+      "chapter": "ch4_relationship_flow",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "루프 전환점: 정우가 '30분 뒤 반드시 돌아오겠다'고 시간을 명시하고, 지민은 그 시간까지 질문 수를 줄이면 갈등이 복구 루프로 이동한다.",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "section_3_conversation_patterns.conflict_situation.dialogue_table",
+        "canonical_projections.recovery_speed"
+      ],
+      "plannerInstruction": "Name actionable loop pivot without introducing unsupported causality."
+    },
+    {
+      "blockId": "conflict.conflict.speed-delay",
+      "chapter": "ch5_when_we_miss_each_other",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "답장/답변이 늦어지는 순간 지민: 지금 마음이 멀어진 건지 확인하고 싶었어. 정우: 나를 몰아붙이고 당장 답하라고 요구하는 걸로 들렸어. 지민은 연결이 끊기지 않았다는 확인, 정우는 과부하 없이 정리할 시간을 원함. 지민: '지금 답을 강요하려는 건 아니고, 언제 다시 이야기할 수 있을지 알려줘.' 갈등 직후 30~40분 정리 시간을 확보한 뒤 재진입.",
+      "evidenceIds": [
+        "section_3_conversation_patterns.conflict_situation.dialogue_table",
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed",
+        "section_4_hidden_hearts"
+      ],
+      "plannerInstruction": "Fill trigger→meant→heard→hidden-need→better-words→repair-timing chain only from supplied conflict/hidden-heart evidence."
+    },
+    {
+      "blockId": "conflict.conflict.principle-tone",
+      "chapter": "ch5_when_we_miss_each_other",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "원칙 설명이 감정 공감보다 먼저 나오는 순간 정우: 우리 둘 다 덜 다치려면 기준을 먼저 맞추자는 뜻이었어. 지민: 내 감정보다 규칙이 더 중요하다고 말하는 것처럼 들렸어. 정우는 대화의 구조가 있어야 안전하고, 지민은 먼저 감정이 인정되어야 대화가 열린다. 정우: '네가 속상한 건 먼저 이해해. 그다음에 우리가 지킬 기준을 같이 정해보자.' 감정 확인 한 문장 → 기준 협의 순서로 같은 대화 안에서 전환.",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.conflict",
+        "canonical_projections.comparison_table.communication",
+        "section_4_hidden_hearts"
+      ],
+      "plannerInstruction": "Fill trigger→meant→heard→hidden-need→better-words→repair-timing chain only from supplied conflict/hidden-heart evidence."
+    },
+    {
+      "blockId": "hidden.heart.full",
+      "chapter": "ch6_hidden_heart",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "겉으로 보이는 지민의 반응은 질문이 빨라지고 톤이 높아지는 모습입니다. 실제 안쪽에는 '우리가 끊기지 않았다는 신호를 당장 받고 싶다'는 불안이 있습니다. 가장 깊은 두려움은 침묵이 곧 관계의 후퇴로 굳어지는 장면입니다. 그래서 지민에게 필요한 안심은 정답보다도 '나는 돌아온다'는 시간 약속입니다. 겉으로 보이는 정우의 반응은 말을 줄이고 잠시 물러나는 모습입니다. 실제 안쪽에는 '정리되지 않은 말로 너를 더 다치게 할까 봐 멈춘다'는 긴장이 있습니다. 가장 깊은 두려움은 성급한 한 문장이 관계를 장기 손상시키는 장면입니다. 정우에게 필요한 안심은 기다림이 처벌이 아니라 신뢰로 받아들여진다는 확인입니다.",
+      "evidenceIds": [
+        "section_4_hidden_hearts.a_hidden",
+        "section_4_hidden_hearts.b_hidden",
+        "canonical_projections.recovery_speed",
+        "canonical_projections.reassurance_signal"
+      ],
+      "plannerInstruction": "Render visible reaction vs inner fear vs reassurance need in first-person-safe voice."
+    },
+    {
+      "blockId": "repair.sequence",
+      "chapter": "ch7_repair_guide",
+      "sourceKind": "ce_derived",
+      "text": "1) 멈춤 신호: 목소리가 올라가면 '잠깐, 지금은 감정이 앞서'를 공통 신호로 사용한다. 2) 시간/공간: 지민 10분 정리, 정우 30~40분 정리 시간을 기본값으로 둔다. 3) 첫 행동: 먼저 돌아오는 쪽이 '대화를 끝내지 않았다'는 문장 한 줄을 보낸다. 4) 재진입 문장: '내가 들은 건 ___인데 맞아?'로 사실 확인부터 시작한다. 5) 공동 약속: 갈등 중에는 성격 판정 문장을 금지하고, 행동·요청 문장만 사용한다.",
+      "evidenceIds": [
+        "canonical_projections.recovery_speed",
+        "canonical_projections.reassurance_signal",
+        "section_3_conversation_patterns.conflict_situation",
+        "canonical_projections.comparison_table"
+      ],
+      "plannerInstruction": "Produce executable five-step recovery sequence with timing and re-entry sentence."
+    },
+    {
+      "blockId": "scene.scene.weekend-plan",
+      "chapter": "ch8_love_in_real_life",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "주말 일정과 데이트 밀도 지민은 새로운 장소를 연속으로 넣고, 정우는 한두 개 핵심 일정만 깊게 가고 싶어합니다. 자극추구·에너지 축 차이와 구조화 성향 차이가 동시에 작동하기 때문입니다. 새로운 일정은 최대 2개로 압축하고, 마지막 2시간은 정리 시간을 비워둡니다. 루틴 유지가 필요한 이유를 미리 말하고, 한 개는 새 시도를 수용합니다. 데이트 전날 10분 계획 싱크를 하고 당일 변경 횟수 상한을 1회로 둡니다.",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.stimulation",
+        "meta.psych_match.axis_results.energy_style",
+        "meta.psych_match.axis_results.structure"
+      ],
+      "plannerInstruction": "Select exactly three high-relevance life scenes and attach pair-specific actions."
+    },
+    {
+      "blockId": "scene.scene.after-conflict-text",
+      "chapter": "ch8_love_in_real_life",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "다툰 뒤 메시지 재개 한쪽은 즉시 확인 문자를 보내고, 다른 쪽은 답변을 미루며 긴장이 커집니다. 표현 속도와 회복 속도 불일치가 동일 트리거에서 반복됩니다. 재촉 대신 복귀 시간 확인 문장 하나만 보냅니다. 정리 완료 시간을 숫자로 제시하고 그 시간에 반드시 복귀합니다. 대화 중단 후 40분 이내 첫 복귀 신호를 보냅니다.",
+      "evidenceIds": [
+        "canonical_projections.expression_speed",
+        "canonical_projections.recovery_speed",
+        "section_3_conversation_patterns.conflict_situation"
+      ],
+      "plannerInstruction": "Select exactly three high-relevance life scenes and attach pair-specific actions."
+    },
+    {
+      "blockId": "scene.scene.major-decision",
+      "chapter": "ch8_love_in_real_life",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "큰 결정(이사/지출/휴가) 지민은 빠른 확정을 선호하고, 정우는 검토와 합의 과정을 더 중시합니다. 의사결정·소통 canonical 행에서 caution 정렬이 반복됩니다. 결정 기한을 제시하되 선택지 2개를 함께 남깁니다. 검토 항목을 3개 이내로 압축해 의사결정 지연을 줄입니다. 결정 회의는 1차(선호 공유)·2차(확정) 두 단계로 나눕니다.",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.decision",
+        "canonical_projections.comparison_table.communication"
+      ],
+      "plannerInstruction": "Select exactly three high-relevance life scenes and attach pair-specific actions."
+    },
+    {
+      "blockId": "next.chapter.direction",
+      "chapter": "ch9_our_next_chapter",
+      "sourceKind": "ce_derived",
+      "text": "지금 조율할 것: 갈등 시 복귀 시간 약속을 습관화해 침묵-오해 루프를 끊습니다. 익숙해지며 좋아질 것: 서로의 애정 언어(말/행동) 번역 속도가 빨라져 같은 표현의 체감 차이가 줄어듭니다. 시간이 지나도 지킬 것: 감정 인정 먼저, 기준 협의 나중의 순서를 무너뜨리지 않습니다.",
+      "evidenceIds": [
+        "section_6_timeline",
+        "projectHorizon fate filter",
+        "repairGuide",
+        "hiddenHeart"
+      ],
+      "plannerInstruction": "Use maturity-direction mode when timing confidence is insufficient."
+    },
+    {
+      "blockId": "closing.share.lines",
+      "chapter": "ch10_closing",
+      "sourceKind": "prototype_bounded_narrative",
+      "text": "우리는 감정의 속도는 다르지만, 복귀 약속이 있을 때 가장 단단해진다. 말의 방식이 다른 만큼, 서로의 애정 언어를 번역해 줄수록 만족이 커진다. 갈등의 승패보다 관계의 재접속 시간을 줄이는 것이 우리에게 더 중요하다.",
+      "evidenceIds": [
+        "opening.signature",
+        "repairGuide",
+        "comparisonTable",
+        "axisInsights"
+      ],
+      "plannerInstruction": "End with one conclusive line + memory lines + share lines, without full-summary repetition."
+    }
+  ],
+  "omittedContent": [
+    {
+      "chapter": "ch2_you_and_me",
+      "omittedField": "Reciprocal Day-Master directional interpretation",
+      "reason": "일주 문자열은 있으나 A→B/B→A 방향 해석을 반환하는 안전한 CE 파생 필드가 없어 본문 해석을 생성하지 않음.",
+      "missingEvidence": [
+        "ce.day_master_reciprocal_directional_v1"
+      ]
+    },
+    {
+      "chapter": "ch5_when_we_miss_each_other",
+      "omittedField": "meant/heard from independent CE derivation",
+      "reason": "독립 CE 파생기가 없어 conflict dialogue + hidden heart로만 제한 구성.",
+      "missingEvidence": [
+        "ce.conflict_meant_heard_derivation_v1"
+      ]
+    },
+    {
+      "chapter": "ch9_our_next_chapter",
+      "omittedField": "연도 기반 3y/5y/10y 전망",
+      "reason": "타이밍 안전 규칙을 만족하는 증거 부족으로 maturity-direction 모드 선택.",
+      "missingEvidence": [
+        "timeline.safe_timing_signal.high_confidence"
+      ]
+    }
+  ]
+}

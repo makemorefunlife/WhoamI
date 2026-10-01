@@ -14,6 +14,7 @@
 import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
 import type { PrimaryAxisKey } from "@/lib/v2/survey/types";
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import { localizePromptExamplesEn } from "@/lib/prompts/enPromptLocalization";
 import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
 const TONE_RULES = `[Tone]
@@ -31,7 +32,7 @@ ${PRIMARY_AXIS_LLM_GUIDE}
 
 ${TONE_RULES}`;
 
-export function getDeepEssenceStructuredSystemPrompt(locale?: Locale | string): string {
+function getDeepEssenceStructuredSystemPromptRaw(locale?: Locale | string): string {
   const outputLocale = normalizeLocale(locale);
   return `${SYSTEM_RULES}
 
@@ -213,7 +214,7 @@ export type Part01EvidenceForPartAPrompt = {
   storyPlan?: import("../report/buildPersonalPart04StoryPlan").PersonalPart04StoryPlan | null;
 };
 
-export function buildDeepEssenceStructuredPartAUserPrompt(input: {
+function buildDeepEssenceStructuredPartAUserPromptRaw(input: {
   surveyAnalysis: string;
   essenceAnalysisSummary: string;
   birthEnergyContext: string;
@@ -394,7 +395,7 @@ Allowed Evidence Refs for adaptation_story: ${JSON.stringify(input.part01Evidenc
 - Each fuels/drains/optimal item must name a concrete trigger or context, not a generic category label — and briefly imply why it costs or returns energy for this specific person, not just what the situation is. Prefer "a long meeting where you keep having to respond to people with little room to process alone" over "Large social gatherings"; prefer "carrying other people's schedules or moods while your own decisions keep getting pushed back" over "Too much responsibility". Ground each item's specificity in the convergence you already found in [Energy evidence] (e.g. solitude_autonomy + pressure_response together might point at a specific kind of low-privacy, high-responsiveness situation) — never invent a scenario unconnected to the evidence, and never let one signal alone dictate one item. The same underlying evidence may show up differently across fuels vs. drains vs. optimal — e.g. a low-stimulation environment might explain both a drains item (too much unstructured noise) and an optimal item (quiet, low-interruption settings) from two genuinely different angles; don't just restate one as the mirror of the other. Keep every item to one concise phrase or short sentence (still a scannable list item, not a paragraph). Never write a blanket claim like "you dislike people" or "you're an introvert" — describe the specific pattern or context instead. Keep fuels, drains, and optimal meaningfully distinct from each other — avoid two items across these three lists restating the same situation from interchangeable angles unless it's a genuinely separate, specific insight.${
       input.part01Evidence?.adaptationStoryEligible
         ? `
-- adaptation_story MUST follow the pre-selected [Part 04 Story Plan] above. Your single task is to answer the SYNTHESIS QUESTION TO ANSWER in plain, warm, natural Korean, explaining how the Primary Adaptation coexists with the Secondary Contrast. Do NOT re-select facts or invent a new storyline — translate the pre-selected tension, capability gained, and cost incurred into 2-5 short paragraphs with blank lines (\\n\\n) between them. Restrict your evidence_refs strictly to keys present in Allowed Evidence Refs for adaptation_story. Never write generic closings (such as "여러 모습이 모두 당신이에요" or "현재와 본래가 조화를 이룹니다") — end with a person-specific recognition of the exact target tension. Zero advice, zero next steps. Never address the reader as 고객님/귀하/회원님.
+- adaptation_story MUST follow the pre-selected [Part 04 Story Plan] above. Your single task is to answer the SYNTHESIS QUESTION TO ANSWER in plain, warm, natural ${outputLocale === "en-US" ? "English" : "Korean"}, explaining how the Primary Adaptation coexists with the Secondary Contrast. Do NOT re-select facts or invent a new storyline — translate the pre-selected tension, capability gained, and cost incurred into 2-5 short paragraphs with blank lines (\\n\\n) between them. Restrict your evidence_refs strictly to keys present in Allowed Evidence Refs for adaptation_story. Never write generic closings (such as "여러 모습이 모두 당신이에요" or "현재와 본래가 조화를 이룹니다") — end with a person-specific recognition of the exact target tension. Zero advice, zero next steps. Never address the reader as 고객님/귀하/회원님.
 - adaptation_story MUST be 2-5 short paragraphs with an actual blank line (\\n\\n) between every pair of them — a single dense wall-of-text block is a FAILED response even if the content itself is good. All five beats in the narrative instructions (natural direction / current reliance / what it enables / what it may cost / integrated closing) must be covered — adjacent beats may share one paragraph when they genuinely flow together, but the final beat (integrated closing) always gets its own last paragraph, never folded into an earlier one.
 - adaptation_story has ZERO advice, ZERO next steps, and ZERO forward-looking capability-building language — this has been observed leaking in live output and is explicitly forbidden, including any close variant of: "~연습을 통해 ~을 높일 수 있어요" (practicing X can raise Y), "~하다면 더 많은 기회를 잡을 수 있어요" (if you do X you'll seize more opportunities), "더 나은 균형을 찾아가는 것이 중요해요" / "균형을 찾는 과정에서 ~ 회복할 수 있을 거예요" (finding/recovering better balance matters), "앞으로도 계속 성장해 나갈 수 있을 거예요" (you'll keep growing), "~하는 것이 중요하다는 점을 인식/기억해야 해요" (recognizing/remembering that X matters), "~은 당신의 삶을 더 풍요롭게 만들어줄 거예요" (X will enrich your life), or their English equivalents ("developing X could help", "finding balance is key", "you'll continue to grow", "it's important to remember/recognize that..."). None of these contain an imperative verb like "해보세요" but all of them are still advice — they tell the reader what to pursue, prioritize, or recognize, and promise an outcome if they do. If a sentence implies what should happen next or what a change would earn the reader — delete it or rewrite it as a plain observation of what already is, right now, with no forward pointer at all. ALSO STRICTLY FORBIDDEN anywhere in this field, as sentence endings (this is a category, not just the examples above — any ending with this shape is forbidden even if the exact words differ): "~해야 해요", "~할 필요가 있어요", "~하는 것이 중요해요", "~연습해보세요"/"~연습해 보세요", "~활용해보세요"/"~활용해 보세요", "~시도해보세요"/"~시도해 보세요", "~기억하세요". This is about the sentence's ENDING specifically — a sentence that merely describes a real, already-existing cost or effort using a different verb shape, such as "~할 필요가 생길 수 있어요" (a plain description that a need CAN arise, not an instruction to act on it), is not what this bans; the difference is whether the sentence tells the reader to do something (banned) versus describes what is already true (allowed).
   This applies MOST to the closing (5th) paragraph, where this leak has been observed repeatedly even after everything above — it is not immune just because it's "the wrap-up". FAILED PATTERN (observed live, do not reproduce even in paraphrase): a sentence that promises a future payoff for a future action — the shape "이런 균형을 찾는 과정에서 [자질]도 다시 회복할 수 있을 거예요" or "[행동]하면 삶이 더 풍요로워질 거예요" — both are advice wearing a summary's clothes, no matter which specific words fill the brackets. PERSON-SPECIFIC RECOGNITION CLOSING (5th paragraph): BANNED GENERIC PATTERNS: NEVER write generic closings such as "여러 모습이 모두 당신이에요", "서로 다른 모습이 아니라 연결되어 있어요", "이것도 당신의 한 부분이에요", "현재와 본래가 조화를 이룹니다", or "지금의 모습과 본래의 경향은 서로 다른 것이 아니라...". The closing MUST refer to the ACTUAL specific pattern discovered in THIS response (e.g. "사람을 중요하게 여기는 마음과 내 공간을 지키려는 태도는 서로 반대가 아니라, 관계 안에서 흔들리지 않기 위해 함께 커진 두 힘일 수 있어요").`
@@ -544,7 +545,7 @@ export type Part01EvidenceForPartBPrompt = {
   futureText: string;
 };
 
-export function buildDeepEssenceStructuredPartBUserPrompt(input: {
+function buildDeepEssenceStructuredPartBUserPromptRaw(input: {
   surveyAnalysis: string;
   essenceAnalysisSummary: string;
   birthEnergyContext: string;
@@ -662,7 +663,7 @@ Respond with exactly one JSON object matching the schema above.
 ${buildLlmOutputLocaleInstruction(outputLocale)}`;
 }
 
-export function getPart04ExpertSynthesisSystemPrompt(locale: "ko-KR" | "en-US" = "ko-KR"): string {
+function getPart04ExpertSynthesisSystemPromptRaw(locale: "ko-KR" | "en-US" = "ko-KR"): string {
   if (locale === "en-US") {
     return `You are a world-class Personal Insight Narrative Expert.
 Your task is to write Part 04 ("Why Have I Lived This Way?") of a Personal Premium Identity Report.
@@ -773,4 +774,34 @@ export function buildPart04ExpertSynthesisUserPrompt(
 
   lines.push("\nWrite the JSON response containing 'adaptation_story' with 'narrative' and 'evidence_refs'.");
   return lines.join("\n");
+}
+
+// ── en-US only: swap Korean sample sentences for English equivalents ──────────
+// ko-KR output is byte-for-byte unchanged (these wrappers return the raw prompt).
+const isEn = (l?: Locale | string) => normalizeLocale(l) === "en-US";
+
+export function getDeepEssenceStructuredSystemPrompt(locale?: Locale | string): string {
+  const raw = getDeepEssenceStructuredSystemPromptRaw(locale);
+  return isEn(locale) ? localizePromptExamplesEn(raw) : raw;
+}
+
+export function buildDeepEssenceStructuredPartAUserPrompt(
+  input: Parameters<typeof buildDeepEssenceStructuredPartAUserPromptRaw>[0],
+): string {
+  const raw = buildDeepEssenceStructuredPartAUserPromptRaw(input);
+  return isEn(input.locale) ? localizePromptExamplesEn(raw) : raw;
+}
+
+export function buildDeepEssenceStructuredPartBUserPrompt(
+  input: Parameters<typeof buildDeepEssenceStructuredPartBUserPromptRaw>[0],
+): string {
+  const raw = buildDeepEssenceStructuredPartBUserPromptRaw(input);
+  return isEn(input.locale) ? localizePromptExamplesEn(raw) : raw;
+}
+
+export function getPart04ExpertSynthesisSystemPrompt(
+  locale: "ko-KR" | "en-US" = "ko-KR",
+): string {
+  const raw = getPart04ExpertSynthesisSystemPromptRaw(locale);
+  return locale === "en-US" ? localizePromptExamplesEn(raw) : raw;
 }

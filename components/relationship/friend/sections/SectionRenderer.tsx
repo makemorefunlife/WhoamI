@@ -57,7 +57,7 @@ export function FriendReportViewModelView({
     { id: "ch03_roles", label: pick(locale, "Ch 2 · Friendship Roles", "Ch 2 · 어떤 친구인가") },
     { id: "ch04_tempo", label: pick(locale, "Ch 3 · Daily Tempo", "Ch 3 · 소통 템포") },
     { id: "ch05_teamwork", label: pick(locale, "Ch 4 · Play Teamwork", "Ch 4 · 함께 놀 때") },
-    { id: "ch06_counseling_group", label: pick(locale, "Ch 5 · Counseling & Group", "Ch 5 · 고민 & 다자간") },
+    { id: "ch06_counseling_group", label: pick(locale, "Ch 5 · Support & Group", "Ch 5 · 고민 & 다자간") },
     { id: "ch07_conflict_repair", label: pick(locale, "Ch 6 · Conflict Repair", "Ch 6 · 갈등과 회복") },
     { id: "ch08_boundaries", label: pick(locale, "Ch 7 · Expectations", "Ch 7 · 기대의 경계") },
     { id: "ch09_distance_durability", label: pick(locale, "Ch 8 · Distance & Durability", "Ch 8 · 우정의 거리감") },

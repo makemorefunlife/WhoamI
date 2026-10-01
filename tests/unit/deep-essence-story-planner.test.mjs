@@ -59,7 +59,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("A. Widest high-confidence gap becomes primary adaptation", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan);
     assert.strictEqual(plan.primaryAdaptation.axis, "autonomy");
@@ -69,7 +69,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("B. Meaningful layer contrast is selected when present", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan?.secondaryContrast);
     assert.strictEqual(plan.secondaryContrast.kind, "layer_contrast");
@@ -79,7 +79,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("C. Supporting Saju structure selects Day Master or Month Stem over Shinsal", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan?.supportingInnateStructure);
     assert.ok(["day_master", "pillars.month.stem_ten_god"].includes(plan.supportingInnateStructure.key));
@@ -88,7 +88,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("D. Synthesis frame contains a deterministic question framing both Primary Adaptation and Contrast", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan?.synthesisFrame.question.includes("자율"));
     assert.ok(plan?.synthesisFrame.question.includes("까닭은 무엇이며"));
@@ -97,7 +97,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("E. Selected evidence_refs contain valid known keys spanning 2+ families", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan);
     assert.ok(plan.selectedEvidenceRefs.length >= 2);
@@ -107,7 +107,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("F. StoryPlan defines role-classified requiredEvidence and optionalEvidence", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan);
     assert.ok(Array.isArray(plan.requiredEvidence.primaryRefs));
@@ -121,7 +121,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("G. StoryPlan synthesisFrame uses human semantic concepts, not only raw English axis IDs", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan);
     assert.strictEqual(plan.synthesisFrame.question.includes("autonomy"), false);
@@ -131,7 +131,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("H. Role consumption validation — StoryPlan selected layer_contrast drops story without layer ref (Test A & C & D & E & F)", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan);
     assert.strictEqual(plan.secondaryContrast?.kind, "layer_contrast");
@@ -222,7 +222,7 @@ describe("buildPersonalPart04StoryPlan", () => {
   it("M. Raw planner debug strings like score=undefined or debug notes never enter focused prompt", () => {
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     assert.ok(plan);
     assert.strictEqual(plan.synthesisFrame.question.includes("score="), false);
@@ -235,7 +235,7 @@ describe("buildPersonalPart04StoryPlan", () => {
     const { buildPart04ExpertSynthesisUserPrompt } = await import("../../lib/prompts/deepEssenceStructured.ts");
     const packet = buildMockPacket();
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     const userPrompt = buildPart04ExpertSynthesisUserPrompt({
       storyPlan: plan,
@@ -251,7 +251,7 @@ describe("buildPersonalPart04StoryPlan", () => {
     const packet = buildMockPacket();
     packet.isUnknownBirthTime = true;
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence, undefined, "ko-KR");
 
     if (plan) {
       assert.ok(plan.selectedEvidenceRefs.every((ref) => !ref.startsWith("pillars.hour.")));

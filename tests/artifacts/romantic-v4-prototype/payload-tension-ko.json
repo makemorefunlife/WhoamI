@@ -1,0 +1,396 @@
+{
+  "locale": "ko-KR",
+  "variant": "tension",
+  "pair": {
+    "personA": "지민",
+    "personB": "정우",
+    "perspective": "A"
+  },
+  "routeLabel": "/dev/romantic-v4-content-prototype?variant=tension&locale=ko-KR",
+  "toc": [],
+  "chapters": [],
+  "comparisonTable": [
+    {
+      "rowId": "compare.conflict",
+      "relationshipQuestion": "서로 부딪힐 때 우리는 무엇을 먼저 하나요?",
+      "personA": "직면형",
+      "personB": "원칙형",
+      "relationshipManifestation": "같은 갈등 장면에서 한 사람은 바로 맞추고, 다른 사람은 기준부터 세우려 해 타이밍이 어긋납니다.",
+      "understandingPoint": "감정의 강도보다 처리 순서를 먼저 합의하면 같은 문제를 덜 상처받고 다룰 수 있습니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.conflict",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.stress",
+      "relationshipQuestion": "압박을 받을 때 어떤 패턴이 나오나요?",
+      "personA": "폭발형",
+      "personB": "철수형",
+      "relationshipManifestation": "압박이 커질수록 한쪽은 빠르게 쏟아내고, 다른 쪽은 잠시 물러나 정리해 서로가 상대를 거절로 오해하기 쉽습니다.",
+      "understandingPoint": "거리 두기는 회피가 아니라 과부하 방지 신호로 해석하고, 복귀 시간을 문장으로 약속합니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.stress",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.communication",
+      "relationshipQuestion": "말을 고르고 해석하는 방식은 어떻게 다른가요?",
+      "personA": "직접형",
+      "personB": "배려형",
+      "relationshipManifestation": "직설과 배려형 문장이 만나면서 내용보다 어조와 순서가 먼저 쟁점이 됩니다.",
+      "understandingPoint": "핵심 요구를 한 줄로 먼저 말하고, 톤 조정은 그다음으로 미루면 오해가 줄어듭니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.communication",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.affection",
+      "relationshipQuestion": "사랑을 확인받고 전하는 방식은 어떻게 다른가요?",
+      "personA": "정서 돌봄형",
+      "personB": "행동·선물형",
+      "relationshipManifestation": "말과 행동의 애정 언어가 달라 고마움은 크지만 전달 방식이 엇갈릴 수 있습니다.",
+      "understandingPoint": "말로 받은 안심과 행동으로 받은 안심을 서로 번역해 주면 체감 만족이 급격히 올라갑니다.",
+      "confidence": "high",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.affection",
+        "section_2_nature.comparison_table"
+      ]
+    },
+    {
+      "rowId": "compare.decision",
+      "relationshipQuestion": "중요한 결정을 내릴 때 어떤 기준을 쓰나요?",
+      "personA": "독립형",
+      "personB": "상의형",
+      "relationshipManifestation": "결정을 고르는 기준(속도 vs 합의)이 달라 일정·돈·계획에서 미세한 마찰이 반복됩니다.",
+      "understandingPoint": "독자 결정권과 공동 확인권의 경계를 미리 정해 결정 피로를 줄입니다.",
+      "confidence": "medium",
+      "evidenceIds": [
+        "canonical_projections.comparison_table.decision",
+        "section_2_nature.comparison_table"
+      ]
+    }
+  ],
+  "axisOverview": [
+    {
+      "axis_key": "stimulation",
+      "score_a": 72,
+      "score_b": 40,
+      "gap": 32,
+      "match_type": "tension"
+    },
+    {
+      "axis_key": "self_control",
+      "score_a": 55,
+      "score_b": 60,
+      "gap": 5,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "practicality",
+      "score_a": 48,
+      "score_b": 66,
+      "gap": 18,
+      "match_type": "complementary"
+    },
+    {
+      "axis_key": "structure",
+      "score_a": 70,
+      "score_b": 35,
+      "gap": 35,
+      "match_type": "tension"
+    },
+    {
+      "axis_key": "empathy",
+      "score_a": 65,
+      "score_b": 62,
+      "gap": 3,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "conflict_style",
+      "score_a": 58,
+      "score_b": 44,
+      "gap": 14,
+      "match_type": "complementary"
+    },
+    {
+      "axis_key": "resilience",
+      "score_a": 50,
+      "score_b": 53,
+      "gap": 3,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "recognition",
+      "score_a": 62,
+      "score_b": 47,
+      "gap": 15,
+      "match_type": "complementary"
+    },
+    {
+      "axis_key": "energy_style",
+      "score_a": 75,
+      "score_b": 41,
+      "gap": 34,
+      "match_type": "tension"
+    },
+    {
+      "axis_key": "thinking_style",
+      "score_a": 53,
+      "score_b": 57,
+      "gap": 4,
+      "match_type": "similarity"
+    },
+    {
+      "axis_key": "decision_style",
+      "score_a": 60,
+      "score_b": 46,
+      "gap": 14,
+      "match_type": "complementary"
+    }
+  ],
+  "selectedAxisInsights": [
+    {
+      "axisKey": "structure",
+      "axisLabel": "계획구조화",
+      "matchType": "tension",
+      "gap": 35,
+      "personAPattern": "70점 경향",
+      "personBPattern": "35점 경향",
+      "whyItMatters": "두 사람의 일정·돈·우선순위 조율에서 갈등 비용을 가장 크게 만드는 축이라, 규칙을 먼저 맞추는 것이 관계 체력에 직결됩니다.",
+      "dailyManifestation": "여행 준비에서 한 사람은 체크리스트를 완성하려 하고, 다른 사람은 상황에 맞춰 즉흥 수정하려다 출발 직전에 다툼이 납니다.",
+      "relationshipEffect": "긴장",
+      "confidence": "high",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.structure"
+      ]
+    },
+    {
+      "axisKey": "energy_style",
+      "axisLabel": "외향에너지",
+      "matchType": "tension",
+      "gap": 34,
+      "personAPattern": "75점 경향",
+      "personBPattern": "41점 경향",
+      "whyItMatters": "함께 있을 때 회복되는 방식이 달라 주말과 모임의 만족도가 크게 갈리는 핵심 축입니다.",
+      "dailyManifestation": "한쪽은 사람 많은 자리에서 충전되고, 다른 쪽은 둘만의 정리 시간이 있어야 다음 대화가 부드럽게 이어집니다.",
+      "relationshipEffect": "긴장",
+      "confidence": "high",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.energy_style"
+      ]
+    },
+    {
+      "axisKey": "stimulation",
+      "axisLabel": "자극추구",
+      "matchType": "tension",
+      "gap": 32,
+      "personAPattern": "72점 경향",
+      "personBPattern": "40점 경향",
+      "whyItMatters": "새로운 자극을 원하는 속도가 달라 데이트 밀도와 피로도가 같이 흔들리기 때문입니다.",
+      "dailyManifestation": "새로운 장소를 계속 열어보려는 쪽과 익숙한 루틴을 선호하는 쪽이 데이트 횟수보다 강도를 두고 부딪힙니다.",
+      "relationshipEffect": "긴장",
+      "confidence": "high",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.stimulation"
+      ]
+    },
+    {
+      "axisKey": "recognition",
+      "axisLabel": "인정욕구",
+      "matchType": "complementary",
+      "gap": 15,
+      "personAPattern": "62점 경향",
+      "personBPattern": "47점 경향",
+      "whyItMatters": "일상 대화의 의도 해석과 기대치 형성에 직접 연결되는 축이라 반복 패턴을 설명해 줍니다.",
+      "dailyManifestation": "중요한 메시지를 보낼 때 한 사람은 맥락을 길게, 다른 사람은 요점 위주로 보내 해석이 엇갈립니다.",
+      "relationshipEffect": "보완",
+      "confidence": "low",
+      "evidenceIds": [
+        "meta.psych_match.axis_results.recognition"
+      ]
+    }
+  ],
+  "axisSelectionAudit": {
+    "selectedReason": "4개만 증거·비중복 규칙을 통과",
+    "rejected": [
+      {
+        "axisKey": "self_control",
+        "reason": "ownership_collision",
+        "detail": "mapped row stress already owned by Saju comparison and axis score -8 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.self_control"
+        ]
+      },
+      {
+        "axisKey": "practicality",
+        "reason": "ownership_collision",
+        "detail": "mapped row decision already owned by Saju comparison and axis score 7 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.practicality"
+        ]
+      },
+      {
+        "axisKey": "empathy",
+        "reason": "ownership_collision",
+        "detail": "mapped row communication already owned by Saju comparison and axis score -10 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.empathy"
+        ]
+      },
+      {
+        "axisKey": "resilience",
+        "reason": "insufficient_evidence",
+        "detail": "selection score 6 < threshold 20.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.resilience"
+        ]
+      },
+      {
+        "axisKey": "thinking_style",
+        "reason": "ownership_collision",
+        "detail": "mapped row communication already owned by Saju comparison and axis score -9 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.thinking_style"
+        ]
+      },
+      {
+        "axisKey": "decision_style",
+        "reason": "ownership_collision",
+        "detail": "mapped row decision already owned by Saju comparison and axis score 3 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.decision_style"
+        ]
+      }
+    ]
+  },
+  "relationshipFlow": {
+    "title": "",
+    "steps": [],
+    "pivotPoint": "",
+    "evidenceIds": []
+  },
+  "conflicts": [],
+  "hiddenHeart": {
+    "personA": "",
+    "personB": "",
+    "personAOneLineForPartner": "",
+    "personBOneLineForPartner": "",
+    "evidenceIds": []
+  },
+  "repairGuide": {
+    "sequence": [],
+    "sideBySide": {
+      "helpsA": [],
+      "helpsB": [],
+      "together": []
+    },
+    "evidenceIds": []
+  },
+  "realLifeScenes": [],
+  "nextChapterMode": "maturity_direction",
+  "timingModeAudit": {
+    "mode": "maturity_direction",
+    "evidenceIds": [],
+    "confidence": "tentative",
+    "safetyRulesPassed": [
+      "near-term safe waypoint not available"
+    ],
+    "renderedCopy": [],
+    "rationale": "근거리 타이밍 근거가 부족해 maturity_direction으로 강등."
+  },
+  "nextChapter": [],
+  "closing": {
+    "concludingStatement": "",
+    "rememberA": "",
+    "rememberB": "",
+    "shareLines": [],
+    "reflectionQuestion": ""
+  },
+  "insightOwnership": [],
+  "evidenceTrace": [],
+  "omittedContent": [],
+  "antiOverfitCheck": {
+    "variant": "tension",
+    "selectedComparisonRows": [
+      "compare.conflict",
+      "compare.stress",
+      "compare.communication",
+      "compare.affection",
+      "compare.decision"
+    ],
+    "selectedAxisInsights": [
+      "structure",
+      "energy_style",
+      "stimulation",
+      "recognition"
+    ],
+    "selectedConflictPatterns": [
+      "speed-delay"
+    ],
+    "selectedRealLifeScenes": [
+      "weekend-plan",
+      "after-conflict-text",
+      "major-decision"
+    ],
+    "nextChapterMode": "maturity_direction",
+    "omitted": [],
+    "evidenceGaps": [],
+    "axisRejected": [
+      {
+        "axisKey": "self_control",
+        "reason": "ownership_collision",
+        "detail": "mapped row stress already owned by Saju comparison and axis score -8 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.self_control"
+        ]
+      },
+      {
+        "axisKey": "practicality",
+        "reason": "ownership_collision",
+        "detail": "mapped row decision already owned by Saju comparison and axis score 7 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.practicality"
+        ]
+      },
+      {
+        "axisKey": "empathy",
+        "reason": "ownership_collision",
+        "detail": "mapped row communication already owned by Saju comparison and axis score -10 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.empathy"
+        ]
+      },
+      {
+        "axisKey": "resilience",
+        "reason": "insufficient_evidence",
+        "detail": "selection score 6 < threshold 20.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.resilience"
+        ]
+      },
+      {
+        "axisKey": "thinking_style",
+        "reason": "ownership_collision",
+        "detail": "mapped row communication already owned by Saju comparison and axis score -9 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.thinking_style"
+        ]
+      },
+      {
+        "axisKey": "decision_style",
+        "reason": "ownership_collision",
+        "detail": "mapped row decision already owned by Saju comparison and axis score 3 is not strong enough.",
+        "evidenceIds": [
+          "meta.psych_match.axis_results.decision_style"
+        ]
+      }
+    ]
+  }
+}
