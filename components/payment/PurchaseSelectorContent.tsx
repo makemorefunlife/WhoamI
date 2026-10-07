@@ -4,13 +4,12 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Check } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { useRegionalCheckout } from "@/lib/payment/useRegionalCheckout";
 import type { UsPlanId } from "@/lib/payment/usPricing";
 import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
-import { isGuestTossPlan, isTossPlan } from "@/lib/payment/tossCatalog";
+import { isCheckoutEnabled, isGuestTossPlan } from "@/lib/payment/tossCatalog";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
 import { ROUTES } from "@/constants/routes";
@@ -34,7 +33,7 @@ type EntitlementsSummary = {
  * screen -- regardless of what gets added to usPricing.ts/krPricing.ts
  * later. us_additional_relationship is deliberately left out of both:
  * it is eligibility-gated and rendered separately below, exactly like
- * the existing /pricing page (components/pricing/RegionalPricingCards.tsx).
+ * the existing /pricing page.
  */
 const US_CATALOG: UsPlanId[] = [
   "us_personal_premium",
@@ -74,9 +73,9 @@ function primaryPlanFor(
 }
 
 /**
- * The reusable purchase UI: same regional catalog, same
- * useRegionalCheckout hook, same checkout prepare/complete API and
- * entitlement logic as the standalone /pricing page -- only the plan
+ * The reusable purchase UI: same regional catalog, same Toss checkout
+ * (useTossCheckout -> /api/payments/toss/*) and entitlement logic as the
+ * standalone /pricing page -- only the plan
  * ORDER and which single plan is highlighted change based on `context`.
  * Rendered as-is inside PurchaseSelectorModal (a dialog) or
  * PurchaseSelectorPage (a full-page shell); this component itself knows
@@ -88,33 +87,33 @@ export default function PurchaseSelectorContent({
   successRedirectPath,
 }: {
   context: PurchaseContext;
-  /** Called once per successful purchase (success or already_processed), before any close/navigate the caller wants to do. */
+  /** Called after a successful in-place unlock (redeem code). Toss purchases return via successRedirectPath instead. */
   onSuccess?: (planId: string) => void;
   /**
-   * Optional explicit post-purchase destination, forwarded as-is to
-   * useRegionalCheckout's opts.successRedirectPath (see its doc comment).
-   * Fallback/parallel path only -- the onSuccess callback above is still
-   * the primary way a caller reacts to a successful purchase. Leave unset
+   * Optional explicit post-purchase destination: the Toss success page
+   * returns the buyer here after the server confirms the payment. Leave unset
    * for contexts (relationship, account, generic /pricing) with no single
    * specific "come back here" page.
    */
   successRedirectPath?: string;
 }) {
   const { locale, messages } = useLocale();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded: authLoaded } = useUser();
   const copy = messages.pricing.regionalPlans;
-  const { busy: regionalBusy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
-  // The 12-Month Membership is a one-time Toss purchase (see
-  // lib/payment/tossCatalog.ts); every other plan keeps the existing checkout.
-  const { busy: tossBusy, startTossCheckout } = useTossCheckout();
-  const busy = regionalBusy || tossBusy;
+  // 2026-10-07: every purchase goes through the Toss payment window (test
+  // keys until launch). The previous checkout provider is no longer wired into
+  // this UI. KR plans are on sale (KRW); US plans stay disabled until US
+  // payments are ready (NEXT_PUBLIC_US_CHECKOUT_ENABLED + a contract-confirmed
+  // TOSS_USD_PAYMENT_METHOD) -- see lib/payment/tossCatalog.ts.
+  const { busy, startTossCheckout } = useTossCheckout();
+  const usCheckoutEnabled = process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true";
+  const canBuy = (planId: string) => isCheckoutEnabled(planId, usCheckoutEnabled);
   const [planNotice, setPlanNotice] = useState<Record<string, string>>({});
   // Signed-out Toss purchase (KR plans): email + consent, then pay; the
   // purchase is claimed into an account after the email is verified.
   const [guestFormPlan, setGuestFormPlan] = useState<string | null>(null);
   const [guestEmail, setGuestEmail] = useState("");
   const [guestAgreed, setGuestAgreed] = useState(false);
-  const [result, setResult] = useState<Record<string, "success" | "error" | "review">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
 
@@ -189,13 +188,19 @@ export default function PurchaseSelectorContent({
   // Only ever a separate card when it isn't already the primary (account
   // context can make it the primary itself -- see primaryPlanFor).
   const showAdditionalRelationshipCard =
-    region === "us" && additionalEligible && primaryPlanId !== "us_additional_relationship";
+    region === "us" &&
+    additionalEligible &&
+    primaryPlanId !== "us_additional_relationship" &&
+    canBuy("us_additional_relationship");
 
   async function handleCheckout(planId: string) {
     if (!authLoaded) return;
-    setResult((prev) => ({ ...prev, [planId]: undefined as unknown as "success" }));
     setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
-    if (isTossPlan(planId)) {
+    if (!canBuy(planId)) {
+      setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.usCheckoutComingSoon }));
+      return;
+    }
+    {
       if (!isSignedIn) {
         if (isGuestTossPlan(planId)) {
           setGuestFormPlan(planId);
@@ -218,16 +223,6 @@ export default function PurchaseSelectorContent({
               ? messages.payments.tossStartError
               : "";
       if (notice) setPlanNotice((prev) => ({ ...prev, [planId]: notice }));
-      return;
-    }
-    const outcome = await openCheckout(planId, locale, { successRedirectPath });
-    if (outcome === "success" || outcome === "already_processed") {
-      setResult((prev) => ({ ...prev, [planId]: "success" }));
-      onSuccess?.(planId);
-    } else if (outcome === "needs_review") {
-      setResult((prev) => ({ ...prev, [planId]: "review" }));
-    } else if (outcome === "error" || outcome === "ineligible") {
-      setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
   }
 
@@ -377,32 +372,19 @@ export default function PurchaseSelectorContent({
             {planNotice[planId]}
           </p>
         ) : null}
-        {result[planId] === "success" ? (
-          <p className="mt-4 text-[12px] font-medium text-emerald-700">
-            {messages.paymentRefund.betaSandboxSuccess}
-          </p>
-        ) : result[planId] === "review" ? (
-          <p className="mt-4 text-[12px] font-medium text-amber-700">
-            {messages.paymentRefund.checkoutNeedsReview}
-          </p>
-        ) : result[planId] === "error" ? (
-          <p className="mt-4 text-[12px] font-medium text-rose-700">
-            {messages.paymentRefund.betaSandboxError}
-          </p>
-        ) : null}
         <button
           type="button"
-          disabled={busy || !authLoaded}
+          disabled={busy || !authLoaded || !canBuy(planId)}
           onClick={() => void handleCheckout(planId)}
           className={[
             "mt-6 w-full cursor-pointer rounded-full px-5 py-3 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98]",
             primary
               ? "bg-[#3A8F6E] text-white hover:bg-[#33805f]"
               : "border border-[#1A3328]/30 bg-[#FFFDF8] text-[#1A3328] hover:bg-[#F5F0E8]",
-            busy || !authLoaded ? "cursor-not-allowed opacity-60" : "",
+            busy || !authLoaded || !canBuy(planId) ? "cursor-not-allowed opacity-60" : "",
           ].join(" ")}
         >
-          {plan.cta}
+          {canBuy(planId) ? plan.cta : messages.payments.usCheckoutComingSoon}
         </button>
         {guestFormPlan === planId && !isSignedIn ? (
           <div className="mt-4 space-y-3 rounded-2xl border border-[#D4CFC4] bg-[#F5F0E8]/60 p-4 text-left">

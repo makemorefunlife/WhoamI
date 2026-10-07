@@ -153,21 +153,26 @@ async function main() {
   }
   ok("allowlist env, availability route/hook and unavailable copy are gone from app/components/lib");
 
-  assert.ok(selector.includes('import { useRegionalCheckout } from "@/lib/payment/useRegionalCheckout";'));
-  assert.ok((selector.match(/disabled=\{busy \|\| !authLoaded\}/g) ?? []).length >= 2, "buy buttons only wait for auth/busy");
-  assert.ok(selector.includes("{plan.cta}") && selector.includes("{copy.us_additional_relationship.cta}"));
+  // 2026-10-07: purchases go through the Toss payment window. KR plans are on
+  // sale; US plans are disabled ("coming soon") until US payments are ready.
+  assert.ok(!selector.includes("useRegionalCheckout"), "the purchase UI no longer wires the Paddle checkout");
+  assert.ok(selector.includes('import { useTossCheckout } from "@/lib/payment/useTossCheckout";'));
+  assert.ok(selector.includes("disabled={busy || !authLoaded || !canBuy(planId)}"), "buy buttons wait for auth/busy and per-plan availability");
+  assert.ok(selector.includes("{canBuy(planId) ? plan.cta : messages.payments.usCheckoutComingSoon}"));
   for (const [name, src] of [["prepare", prepare], ["complete", complete], ["beta complete", betaComplete]] as const) {
     assert.ok(!/status: 503/.test(src), `${name}: no 503 purchase-unavailable branch`);
+    assert.ok(src.includes('process.env.PADDLE_CHECKOUT_ENABLED !== "true"') && src.includes("status: 410"), `${name}: Paddle checkout disconnected (410)`);
   }
-  ok("every purchase CTA renders its normal label and opens checkout for any signed-in user");
+  ok("KR CTAs open the Toss checkout; US CTAs show 'coming soon'; Paddle checkout routes answer 410");
 
   // ---- 2. Sandbox flow ------------------------------------------------------
-  section("2. Sandbox purchase -> completion/webhook -> credit grant is intact");
+  section("2. Toss purchase -> server confirm -> credit grant; legacy Paddle webhook kept for history");
 
-  assert.ok(regional.indexOf('fetch("/api/pricing/checkout/prepare"') < regional.indexOf("await loadAndInitPaddle(clientToken)"));
-  assert.ok(regional.includes('window.Paddle.Environment.set("sandbox")'), "sandbox environment only");
-  assert.ok(regional.includes('fetch("/api/pricing/checkout/complete"'));
-  assert.ok(/outcome === "success" \|\| outcome === "already_processed"[\s\S]{0,120}onSuccess\?\.\(planId\)/.test(selector), "success -> onSuccess (unlock / resume analysis)");
+  const tossOrders = readSrc("app/api/payments/toss/orders/route.ts");
+  const tossConfirm = readSrc("lib/payment/tossConfirm.ts");
+  assert.ok(tossOrders.includes("resolveTossPlan(planId)") && tossOrders.includes("toss_payment_orders"), "server fixes the order amount");
+  assert.ok(tossConfirm.includes('rpc("claim_toss_order_for_confirm"') && tossConfirm.includes('rpc("process_toss_order"'), "server-side confirm then grant");
+  assert.ok(!regional.includes("successUrl") || regional.includes("loadAndInitPaddle"), "legacy hook kept only as unused reference code");
   assert.ok(complete.includes("fetchPaddleSandboxTransaction(") && complete.includes("grantUsPurchase(") && complete.includes("grantKrPurchase("));
   assert.ok(complete.indexOf("paddleQuantityRequiresReview(txn.items)") < complete.indexOf("const result = await grantUsPurchase("));
   assert.ok(webhook.includes("const result = await grantUsPurchase(") && webhook.includes("const result = await grantKrPurchase(") && webhook.includes("grantUsAnnualRenewal("));

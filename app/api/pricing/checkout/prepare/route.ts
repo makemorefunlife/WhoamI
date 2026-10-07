@@ -35,6 +35,11 @@ export const runtime = "nodejs";
  * could cross the two catalogs.
  */
 export async function POST(req: Request) {
+  // 2026-10-07: the Paddle checkout is disconnected (purchases go through the
+  // Toss payment window). Kept only behind an explicit opt-in flag.
+  if (process.env.PADDLE_CHECKOUT_ENABLED !== "true") {
+    return NextResponse.json({ error: "checkout_unavailable", code: "paddle_checkout_removed" }, { status: 410 });
+  }
   const locale = resolveRequestLocale({
     bodyLanguage: null,
     headerLanguage: req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),

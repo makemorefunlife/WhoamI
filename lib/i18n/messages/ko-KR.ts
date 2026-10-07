@@ -1350,6 +1350,7 @@ export const messagesKoKR: MessageCatalog = {
       "Aha It's me는 현재 개인정보를 판매하거나 교차 맥락 행동 광고 목적으로 공유하지 않습니다. 개인정보 관련 문의 및 요청 방법을 안내합니다.",
   },
   payments: {
+    usCheckoutComingSoon: "결제 준비 중",
     guestEmailInvalid: "올바른 이메일 주소를 입력해 주세요.",
     guestCheckoutTitle: "비회원으로 구매하기",
     guestEmailLabel: "구매자 이메일",

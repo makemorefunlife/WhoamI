@@ -137,10 +137,10 @@ section("D. Static wiring checks -- StitchPremiumCard and both hooks are actuall
 
   const contentSrc = readSrc("components/payment/PurchaseSelectorContent.tsx");
   assert.ok(
-    contentSrc.includes("openCheckout(planId, locale, { successRedirectPath })"),
-    "PurchaseSelectorContent must pass successRedirectPath into openCheckout's opts",
+    /startTossCheckout\(planId, locale, \{\s*returnPath: successRedirectPath \?\? ROUTES\.accountBilling,/.test(contentSrc),
+    "PurchaseSelectorContent must pass successRedirectPath as the Toss checkout's return path",
   );
-  ok("PurchaseSelectorContent threads successRedirectPath into openCheckout's opts");
+  ok("PurchaseSelectorContent threads successRedirectPath into the Toss checkout's returnPath");
 
   const wiringPattern = /buildThankYouSuccessPath\(\s*thankYouTarget,\s*windowSearch,\s*opts\?\.successRedirectPath,?\s*\)/;
   for (const [label, relPath] of [

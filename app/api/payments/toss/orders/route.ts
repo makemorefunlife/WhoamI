@@ -61,8 +61,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.errors.invalidRequest }, { status: 400 });
     }
 
+    const usEnabled = process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true";
     const method = resolveTossPaymentMethod(plan.currency, process.env.TOSS_USD_PAYMENT_METHOD);
-    if (!method) {
+    if (!method || (plan.currency === "USD" && !usEnabled)) {
       return NextResponse.json(
         { error: messages.payments.tossNotConfigured, code: "currency_not_enabled" },
         { status: 503 },

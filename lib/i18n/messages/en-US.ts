@@ -1421,6 +1421,7 @@ export const messagesEnUS = {
       "Aha It's me does not currently sell or share your personal information for cross-context behavioral advertising. Learn how to reach us with privacy questions or requests.",
   },
   payments: {
+    usCheckoutComingSoon: "Checkout coming soon",
     guestEmailInvalid: "Please enter a valid email address.",
     guestCheckoutTitle: "Buy without an account",
     guestEmailLabel: "Email for this purchase",
@@ -3163,6 +3164,7 @@ export type MessageCatalog = {
     metaDescription: string;
   };
   payments: {
+    usCheckoutComingSoon: string;
     guestEmailInvalid: string;
     guestCheckoutTitle: string;
     guestEmailLabel: string;

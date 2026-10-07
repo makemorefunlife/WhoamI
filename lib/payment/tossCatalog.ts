@@ -70,6 +70,18 @@ export function isGuestTossPlan(planId: string): boolean {
 }
 
 /**
+ * Whether a plan can be bought right now. Only Toss-sold plans can; KRW
+ * plans are always on, USD plans only when US checkout is switched on
+ * (NEXT_PUBLIC_US_CHECKOUT_ENABLED). The server additionally requires a
+ * contract-confirmed TOSS_USD_PAYMENT_METHOD before it creates a USD order.
+ */
+export function isCheckoutEnabled(planId: string, usCheckoutEnabled: boolean): boolean {
+  const plan = resolveTossPlan(planId);
+  if (!plan) return false;
+  return plan.currency === "KRW" || usCheckoutEnabled;
+}
+
+/**
  * Payment method for a currency, or null when that currency is not enabled.
  * KRW -> CARD. USD -> only an explicitly configured, contract-confirmed method.
  */
