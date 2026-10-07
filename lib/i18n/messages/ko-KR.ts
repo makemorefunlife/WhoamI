@@ -1269,7 +1269,7 @@ export const messagesKoKR: MessageCatalog = {
     copyrightSuffix: "모든 권리 보유.",
     business: {
       companyLabel: "상호(회사명)",
-      companyName: "Aha Its me",
+      companyName: "아하잇츠미",
       ceoLabel: "대표자 성명",
       ceoName: "홍성현",
       bizNumberLabel: "사업자등록번호",
