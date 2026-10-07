@@ -15,7 +15,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
     title: "Terms of Service",
     description:
       "Terms governing use of Aha It's me, including AI reports, third-party data, payments, and dispute resolution.",
-    lastUpdated: "2026-10-01",
+    lastUpdated: "2026-10-07",
     sections: [
       {
         id: "about",
@@ -52,10 +52,10 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
       },
       {
         id: "payments",
-        title: "5. Payments, Subscriptions & Refunds",
+        title: "5. Payments & Refunds",
         paragraphs: [
           "1. Global payment and refund processing may be handled through third-party payment service providers, which may act as the seller or Merchant of Record for an order and handle payment-related customer service inquiries and returns. The merchant name shown on your billing statement and the applicable provider’s own terms and privacy policy are presented at checkout and in your payment receipt; by placing an order, you agree to them.",
-          "2. Subscriptions renew automatically unless cancelled through your account settings or by contacting support@ahaitsme.com at least 24 hours before the renewal date.",
+          "2. All paid products, including the 12-Month Membership, are one-time purchases. They do not renew automatically and you will not be charged again when a pass or membership expires. Memberships purchased as auto-renewing plans before October 7, 2026 keep the terms that applied when they were purchased.",
           "3. All refund requests are handled in accordance with our standalone Refund Policy and the applicable payment service provider’s terms.",
           "4. During the Beta, checkout runs in a test environment and no real charges are made.",
         ],
@@ -87,7 +87,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
     title: "이용약관",
     description:
       "아하잇츠미(Aha It's me) 서비스 이용에 관한 약관입니다 — AI 분석 보고서, 상대방 정보 입력, 결제, 분쟁 해결 방법을 포함합니다.",
-    lastUpdated: "2026-09-29",
+    lastUpdated: "2026-10-07",
     sections: [
       {
         id: "about",
@@ -123,10 +123,10 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
       },
       {
         id: "payments",
-        title: "5. 결제, 구독 및 환불",
+        title: "5. 결제 및 환불",
         paragraphs: [
           "1. 글로벌 주문 건의 결제 및 환불 처리는 당사가 이용하는 제3자 결제 서비스 제공업체를 통해 처리될 수 있으며, 해당 업체는 판매자(Merchant of Record) 역할을 하며 결제 관련 고객 지원 문의 및 반품/환불 처리를 담당할 수 있습니다. 카드·은행 명세서에 표시되는 가맹점명과 해당 업체의 이용약관 및 개인정보처리방침은 결제 화면과 결제 영수증에서 안내되며, 결제를 진행함으로써 이용자는 이에 동의하게 됩니다.",
-          "2. 구독 서비스는 이용자가 계정 설정 또는 support@ahaitsme.com 문의를 통해 다음 결제일 최소 24시간 전까지 해지하지 않는 한 자동으로 갱신됩니다.",
+          "2. 회사가 판매하는 모든 유료 상품은 일회성 결제 상품이며, 정기결제 또는 자동 갱신되지 않습니다. 이용 기간이 끝나도 추가로 결제되지 않습니다.",
           "3. 모든 환불 요청은 별도의 환불 정책 및 해당 결제 서비스 제공업체의 약관에 따라 처리됩니다.",
         ],
       },
