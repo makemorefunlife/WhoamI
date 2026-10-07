@@ -60,6 +60,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.errors.invalidRequest }, { status: 400 });
     }
 
+    if (match.provider !== "paddle") {
+      // Sold through Toss (see /api/payments/toss/orders) -- never open a
+      // Paddle checkout for it.
+      return NextResponse.json({ error: messages.errors.invalidRequest, provider: match.provider }, { status: 409 });
+    }
+
     if (match.region === "us") {
       const plan = resolveUsPlan(match.planId);
       if (plan?.requiresEligibilityCheck) {

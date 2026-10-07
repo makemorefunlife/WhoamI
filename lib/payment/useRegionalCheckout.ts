@@ -133,6 +133,8 @@ export function useRegionalCheckout() {
       const match = resolveRegionalPlan(planId);
       const clientToken = process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN;
       if (!match || !user?.id || !clientToken) return "error";
+      // Toss-sold plans (the 12-Month Membership) never open Paddle.
+      if (match.provider !== "paddle") return "error";
 
       setBusy(true);
       try {

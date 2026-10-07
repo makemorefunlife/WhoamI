@@ -16,9 +16,7 @@ export type GrantUsPurchaseResult =
  * everything already committed (already_processed: true) -- never a partial
  * state.
  *
- * For `us_annual_membership`, paddlePaddleSubscriptionId is REQUIRED --
- * process_us_annual_renewal looks the membership up by it, so an initial
- * purchase recorded without it can never be renewed later.
+ * Not used for `us_annual_membership` any more (Toss-only since 2026-10-07).
  */
 export async function grantUsPurchase(
   supabase: SupabaseClient,
@@ -34,8 +32,11 @@ export async function grantUsPurchase(
   const plan = resolveUsPlan(params.planId);
   if (!plan) return { ok: false, reason: "unknown_plan" };
 
-  if (plan.planId === "us_annual_membership" && !params.paddleSubscriptionId?.trim()) {
-    logServerError("grantUsPurchase", null, "missing_subscription_id_for_annual");
+  // 2026-10-07: the membership is sold only through Toss (process_toss_order).
+  // A Paddle transaction can no longer create one -- process_us_purchase
+  // also refuses it ('membership_paddle_path_retired').
+  if (plan.provider !== "paddle") {
+    logServerError("grantUsPurchase", null, "plan_not_sold_via_paddle");
     return { ok: false, reason: "grant_failed" };
   }
 

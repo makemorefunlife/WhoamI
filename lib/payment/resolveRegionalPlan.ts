@@ -13,17 +13,17 @@ import { resolveKrPlan, krPlanHasPriceId, type KrPlanId } from "@/lib/payment/kr
  * could get crossed.
  */
 export type RegionalPlanMatch =
-  | { region: "us"; planId: UsPlanId; priceId: string; billingType: "one_time" | "recurring_annual" }
-  | { region: "kr"; planId: KrPlanId; priceId: string; billingType: "one_time" };
+  | { region: "us"; planId: UsPlanId; priceId: string; billingType: "one_time"; provider: "paddle" | "toss" }
+  | { region: "kr"; planId: KrPlanId; priceId: string; billingType: "one_time"; provider: "paddle" | "toss" };
 
 export function resolveRegionalPlan(planId: string): RegionalPlanMatch | null {
   const us = resolveUsPlan(planId);
   if (us) {
-    return { region: "us", planId: us.planId, priceId: us.priceId, billingType: us.billingType };
+    return { region: "us", planId: us.planId, priceId: us.priceId, billingType: us.billingType, provider: us.provider };
   }
   const kr = resolveKrPlan(planId);
   if (kr) {
-    return { region: "kr", planId: kr.planId, priceId: kr.priceId, billingType: kr.billingType };
+    return { region: "kr", planId: kr.planId, priceId: kr.priceId, billingType: kr.billingType, provider: "paddle" };
   }
   return null;
 }

@@ -46,7 +46,7 @@ export async function POST() {
 
   const { data: membership, error: lookupError } = await supabase
     .from("memberships")
-    .select("paddle_subscription_id, current_term_end, cancel_at_period_end")
+    .select("paddle_subscription_id, current_term_end, cancel_at_period_end, billing_model")
     .eq("clerk_user_id", userId)
     .eq("status", "active")
     .maybeSingle();
@@ -58,6 +58,13 @@ export async function POST() {
 
   if (!membership) {
     return NextResponse.json({ error: "no_active_membership" }, { status: 404 });
+  }
+
+  // One-time 12-Month Memberships have nothing to cancel on the provider
+  // side (they never renew). Early cancellation = an operator refund
+  // (/api/admin/membership-refunds), requested by contacting support.
+  if (membership.billing_model === "one_time_12m") {
+    return NextResponse.json({ error: "one_time_membership_no_renewal" }, { status: 409 });
   }
 
   const subscriptionId = membership.paddle_subscription_id as string | null;

@@ -507,6 +507,15 @@ export const messagesEnUS = {
     billingNoActiveMembership: "You don't have an active Annual Membership right now.",
     billingStartCta: "Choose a plan",
     billingLoadError: "We couldn't load your billing info. Please try again.",
+    billingPlanNameOneTime: "12-Month Membership",
+    billingPriceOneTime: "$280 · one-time payment",
+    billingOneTimeValidUntil: (date: string) =>
+      `Your membership is active until ${date}. It does not renew and you won't be charged again.`,
+    billingOneTimeCancelHelp:
+      "Need to cancel early? Contact us to request a refund for the unused period — the Refund Policy explains how it's calculated.",
+    billingRefundPolicyLink: "View refund policy",
+    billingLegacyRecurringNote:
+      "This membership was purchased as an auto-renewing plan before memberships became one-time purchases. It keeps its original terms.",
     billingRenewsOnNotice: (date: string) => `Renews automatically on ${date}.`,
     backToProfile: "Back to personal info",
     settingsTitle: "Account settings",
@@ -1410,6 +1419,34 @@ export const messagesEnUS = {
     metaTitle: "Do Not Sell or Share My Personal Information | Aha It's me!",
     metaDescription:
       "Aha It's me does not currently sell or share your personal information for cross-context behavioral advertising. Learn how to reach us with privacy questions or requests.",
+  },
+  payments: {
+    tossAlreadyMember: "You already have an active membership, so there's nothing to buy right now.",
+    tossNotConfigured: "Membership checkout isn't available yet. Please try again later.",
+    tossStartError: "We couldn't open the payment window. Please try again.",
+    tossConfirmingTitle: "Confirming your payment…",
+    tossConfirmingBody: "Please keep this page open. This usually takes a few seconds.",
+    tossSuccessTitle: "Payment complete",
+    tossSuccessBody: "Your purchase has been added to your account.",
+    tossContinue: "Continue",
+    tossPendingTitle: "Your payment is still being processed",
+    tossPendingBody:
+      "If you were charged, your purchase will be added to your account — please don't pay again. Check again in a moment, or reach us from the Contact page.",
+    tossBackToPricing: "Back to pricing",
+    tossRetry: "Check again",
+    tossFailedTitle: "Payment didn't go through",
+    tossFailedBody: "No payment was taken. You can try again from the pricing page.",
+    tossCancelledTitle: "Payment cancelled",
+    tossCancelledBody: "The payment window was closed, so nothing was charged.",
+    tossAutoRefundedTitle: "Payment cancelled and refunded",
+    tossAutoRefundedBody:
+      "You already have an active membership, so this payment was cancelled in full. Your existing membership is unchanged.",
+    tossAttentionTitle: "We need to check this payment",
+    tossAttentionBody:
+      "Your payment was received, but we couldn't finish it automatically. We'll resolve it for you — please don't pay again. You can reach us from the Contact page.",
+    tossInvalidTitle: "We couldn't find this payment",
+    tossInvalidBody:
+      "This payment link is invalid or already closed. If you were charged, please reach us from the Contact page.",
   },
   paymentRefund: {
     checkboxLabel:
@@ -2462,6 +2499,12 @@ export type MessageCatalog = {
     billingNoActiveMembership: string;
     billingStartCta: string;
     billingLoadError: string;
+    billingPlanNameOneTime: string;
+    billingPriceOneTime: string;
+    billingOneTimeValidUntil: (date: string) => string;
+    billingOneTimeCancelHelp: string;
+    billingRefundPolicyLink: string;
+    billingLegacyRecurringNote: string;
     billingRenewsOnNotice: (date: string) => string;
     backToProfile: string;
     settingsTitle: string;
@@ -3094,6 +3137,30 @@ export type MessageCatalog = {
     privacyPolicyLinkLabel: string;
     metaTitle: string;
     metaDescription: string;
+  };
+  payments: {
+    tossAlreadyMember: string;
+    tossNotConfigured: string;
+    tossStartError: string;
+    tossConfirmingTitle: string;
+    tossConfirmingBody: string;
+    tossSuccessTitle: string;
+    tossSuccessBody: string;
+    tossContinue: string;
+    tossPendingTitle: string;
+    tossPendingBody: string;
+    tossBackToPricing: string;
+    tossRetry: string;
+    tossFailedTitle: string;
+    tossFailedBody: string;
+    tossCancelledTitle: string;
+    tossCancelledBody: string;
+    tossAutoRefundedTitle: string;
+    tossAutoRefundedBody: string;
+    tossAttentionTitle: string;
+    tossAttentionBody: string;
+    tossInvalidTitle: string;
+    tossInvalidBody: string;
   };
   paymentRefund: {
     checkboxLabel: string;

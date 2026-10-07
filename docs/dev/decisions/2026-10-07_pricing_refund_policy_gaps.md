@@ -16,6 +16,8 @@
 
 ## 불일치 (코드 변경 필요)
 
+> 업데이트(같은 날): 1~5번은 `2026-10-07_one_time_membership_toss.md`의 코드로 해결(운영 DB 적용·Toss 설정 전). 아래는 원래 진단 기록.
+
 1. **12-Month Membership이 실제로는 자동 갱신 구독**
    - `US_PLANS.us_annual_membership.billingType = "recurring_annual"`, Paddle recurring price 사용, `process_us_annual_renewal`이 갱신 처리.
    - 필요: 결제사에 일회성 $280 가격 생성 → `priceId`/`billingType` 교체, 신규 구매 시 `paddle_subscription_id` 없이 멤버십 생성, 갱신 경로는 기존 구독자 전용으로 유지.

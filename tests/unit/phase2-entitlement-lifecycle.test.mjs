@@ -308,7 +308,7 @@ section("G. Purchase Selector: context-aware badges, Best-value Pass badge, over
   ok("overlap check is skipped for account context and signed-out visitors (never a hard block, just skipped when not applicable)");
 
   assert.ok(
-    /\(plan as \{ savingsNote\?: string \}\)\.savingsNote/.test(src),
+    /\(plan as \{ savingsNote\?: string \}\)\.savingsNote|\{plan\.savingsNote\}/.test(src),
     "renderCard must read and display a plan's savingsNote when present",
   );
   ok("renderCard renders a plan's savingsNote when present");
@@ -319,7 +319,7 @@ section("H. RegionalPricingCards renders savingsNote under the tagline");
   const src = readSrc("components/pricing/RegionalPricingCards.tsx");
 
   assert.ok(
-    /\(plan as \{ savingsNote\?: string \}\)\.savingsNote/.test(src),
+    /\(plan as \{ savingsNote\?: string \}\)\.savingsNote|\{plan\.savingsNote\}/.test(src),
     "the standalone pricing cards must also render savingsNote when the plan has one",
   );
   ok("RegionalPricingCards renders savingsNote when present");
@@ -366,7 +366,7 @@ section("I. Message catalogs: new keys, exact required savings copy, Annual earl
   ok("en-US defines decision.journalCapReachedNotice and journalCapUpgradeCta");
 
   // Exact required savings copy (verbatim from the product rules).
-  assert.ok(en.includes('savingsNote: "Save $2.98 vs. buying separately"'), "US Pass savingsNote must read exactly 'Save $2.98 vs. buying separately'");
+  assert.ok(en.includes('savingsNote: "Save $2.98 compared with buying reports separately"'), "US Pass savingsNote must read exactly 'Save $2.98 compared with buying reports separately'");
   ok("US Pass savingsNote matches the required copy exactly");
 
   assert.ok(ko.includes('savingsNote: "각각 따로 구매하는 것보다 2,800원 절약"'), "KR Pass savingsNote must read exactly '각각 따로 구매하는 것보다 2,800원 절약'");
@@ -390,7 +390,7 @@ section("I. Message catalogs: new keys, exact required savings copy, Annual earl
   // Pass contents remain explicit (Personal x1 + Relationship x1 + Journal
   // 30 days unlimited) -- unchanged from before Phase 2, just re-verified.
   assert.ok(
-    en.includes('"1 Personal deep analysis"') && en.includes('"1 Relationship deep analysis"') && en.includes('"Unlimited Decision Journal for 30 days"'),
+    en.includes('"1 Personal deep report"') && en.includes('"1 Relationship deep report"') && en.includes('"Unlimited Decision Journal access for 30 days"'),
     "US Pass feature list must spell out Personal x1 + Relationship x1 + Decision Journal 30 days unlimited",
   );
   ok("US Pass feature list is explicit about its contents");

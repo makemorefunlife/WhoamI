@@ -30,7 +30,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("memberships")
     .select(
-      "plan_id, status, current_term_start, current_term_end, cancel_at_period_end, cancel_requested_at",
+      "plan_id, status, billing_model, current_term_start, current_term_end, cancel_at_period_end, cancel_requested_at",
     )
     .eq("clerk_user_id", userId)
     .eq("status", "active")
@@ -45,12 +45,21 @@ export async function GET() {
     return NextResponse.json({ membership: null });
   }
 
+  // A one-time 12-Month Membership whose term is over is not shown as a
+  // current membership (it never renews). Legacy recurring rows are shown
+  // exactly as before -- their real state is driven by Paddle renewals.
+  const billingModel = (data.billing_model as string) === "one_time_12m" ? "one_time_12m" : "legacy_recurring";
+  if (billingModel === "one_time_12m" && new Date(data.current_term_end as string).getTime() <= Date.now()) {
+    return NextResponse.json({ membership: null });
+  }
+
   const plan = resolveUsPlan(data.plan_id as string);
 
   return NextResponse.json({
     membership: {
       planId: data.plan_id,
       planPriceUsd: plan?.priceUsd ?? null,
+      billingModel,
       status: data.status,
       currentTermStart: data.current_term_start,
       currentTermEnd: data.current_term_end,

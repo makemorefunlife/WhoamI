@@ -45,7 +45,7 @@ export async function listOwnPersonalGifts(
 ): Promise<PersonalGiftSummary[]> {
   const { data, error } = await supabase
     .from("gift_personal_coupons")
-    .select("code, status, created_at, redeemed_at")
+    .select("code, status, created_at, redeemed_at, expires_at")
     .eq("issued_to_clerk_user_id", clerkUserId)
     .neq("status", "revoked")
     .order("created_at", { ascending: true });
@@ -60,8 +60,16 @@ export async function listOwnPersonalGifts(
     if (status === "redeemed") {
       derived = "claimed";
     } else {
-      const issuedAtMs = new Date(createdAt).getTime();
-      derived = now - issuedAtMs >= GIFT_CODE_TTL_MS ? "expired" : "available";
+      // One-time 12-Month Membership coupons carry their own expiry (= the
+      // membership's end, see 20261007120000); legacy coupons (NULL) keep
+      // the 1-year-from-issue rule.
+      const expiresAt = row.expires_at as string | null;
+      if (expiresAt) {
+        derived = new Date(expiresAt).getTime() <= now ? "expired" : "available";
+      } else {
+        const issuedAtMs = new Date(createdAt).getTime();
+        derived = now - issuedAtMs >= GIFT_CODE_TTL_MS ? "expired" : "available";
+      }
     }
     return {
       code: row.code as string,

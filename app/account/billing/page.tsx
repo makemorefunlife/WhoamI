@@ -12,6 +12,8 @@ import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 type MembershipInfo = {
   planId: string;
   planPriceUsd: number | null;
+  /** "one_time_12m" = $280 once, 12 months, no renewal. "legacy_recurring" = legacy auto-renewing purchase (original terms kept). */
+  billingModel: "one_time_12m" | "legacy_recurring";
   status: string;
   currentTermStart: string;
   currentTermEnd: string;
@@ -349,6 +351,31 @@ export default function AccountBillingPage() {
             </button>
           </div>
         ) : (
+          membership.billingModel === "one_time_12m" ? (
+          <div className="space-y-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
+                {copy.billingPlanLabel}
+              </p>
+              <p className="mt-1 text-lg font-semibold text-primary">{copy.billingPlanNameOneTime}</p>
+              <p className="mt-0.5 text-sm text-on-surface-variant">{copy.billingPriceOneTime}</p>
+            </div>
+
+            <div className="rounded-xl border border-outline-variant/25 bg-surface-container-lowest/70 p-4">
+              <p className="text-sm font-medium text-on-surface">{copy.billingStatusActive}</p>
+              <p className="mt-1 text-sm text-on-surface-variant">
+                {copy.billingOneTimeValidUntil(formatDecisionDate(membership.currentTermEnd, locale))}
+              </p>
+            </div>
+
+            <p className="text-xs leading-relaxed text-on-surface-variant">
+              {copy.billingOneTimeCancelHelp}{" "}
+              <LocaleLink href={ROUTES.refund} className="font-semibold text-primary underline-offset-2 hover:underline">
+                {copy.billingRefundPolicyLink}
+              </LocaleLink>
+            </p>
+          </div>
+          ) : (
           <div className="space-y-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
@@ -392,7 +419,11 @@ export default function AccountBillingPage() {
                 ) : null}
               </div>
             ) : null}
+            <p className="text-xs leading-relaxed text-on-surface-variant">
+              {copy.billingLegacyRecurringNote}
+            </p>
           </div>
+          )
         )}
 
         <LocaleLink

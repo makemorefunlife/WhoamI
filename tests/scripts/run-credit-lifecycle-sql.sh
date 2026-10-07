@@ -12,6 +12,7 @@ P=(psql -v ON_ERROR_STOP=1 -q)
 MIGRATIONS=(
   20260907020100_credit_engine_tables.sql
   20260907020200_credit_engine_functions.sql
+  20260907030000_beta_purchase_grants.sql
   20260922040000_credit_lots.sql
   20260922040100_credit_engine_lot_functions.sql
   20260922040200_us_memberships.sql
@@ -20,7 +21,12 @@ MIGRATIONS=(
   20260922060000_kr_purchase_grants_provider_agnostic.sql
   20260926080000_fix_grant_credit_lot_ambiguous_balance.sql
   20260926090000_single_purchase_and_triple_one_year_expiry.sql
+  20260922070000_account_deletion_entitlement_cleanup.sql
+  20260922080000_paddle_webhooks_and_cancellation.sql
+  20260923000000_paddle_webhook_idempotency_and_ordering.sql
+  20260928000000_redeem_code_system.sql
   20260928120000_payment_manual_reviews.sql
+  20261007120000_one_time_membership_toss_and_refunds.sql
 )
 
 cleanup() { "${P[@]}" -d postgres -c "drop database if exists $DB;" >/dev/null 2>&1 || true; }
@@ -35,3 +41,5 @@ for m in "${MIGRATIONS[@]}"; do
 done
 "${P[@]}" -d "$DB" -f tests/sql/credit-lifecycle.test.sql 2>&1 | sed -n 's/^psql:.*NOTICE:  //p'
 echo "credit-lifecycle.sql: all assertions passed"
+"${P[@]}" -d "$DB" -f tests/sql/one_time_membership_toss.test.sql 2>&1 | sed -n 's/^psql:.*NOTICE:  //p'
+echo "one_time_membership_toss.sql: all assertions passed"

@@ -10,6 +10,9 @@ import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
+import { isTossPlan } from "@/lib/payment/tossCatalog";
+import { useTossCheckout } from "@/lib/payment/useTossCheckout";
+import { ROUTES } from "@/constants/routes";
 
 export type PurchaseContext = "personal" | "relationship" | "account";
 
@@ -99,7 +102,12 @@ export default function PurchaseSelectorContent({
   const { locale, messages } = useLocale();
   const { isSignedIn } = useUser();
   const copy = messages.pricing.regionalPlans;
-  const { busy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
+  const { busy: regionalBusy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
+  // The 12-Month Membership is a one-time Toss purchase (see
+  // lib/payment/tossCatalog.ts); every other plan keeps the existing checkout.
+  const { busy: tossBusy, startTossCheckout } = useTossCheckout();
+  const busy = regionalBusy || tossBusy;
+  const [planNotice, setPlanNotice] = useState<Record<string, string>>({});
   const [result, setResult] = useState<Record<string, "success" | "error" | "review">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
@@ -180,6 +188,24 @@ export default function PurchaseSelectorContent({
   async function handleCheckout(planId: string) {
     if (!authLoaded) return;
     setResult((prev) => ({ ...prev, [planId]: undefined as unknown as "success" }));
+    setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
+    if (isTossPlan(planId)) {
+      // Leaves the page on success (Toss redirects to /checkout/toss/success,
+      // which confirms server-side and then returns the buyer here).
+      const tossOutcome = await startTossCheckout(planId, locale, {
+        returnPath: successRedirectPath ?? ROUTES.accountBilling,
+      });
+      const notice =
+        tossOutcome === "already_member"
+          ? messages.payments.tossAlreadyMember
+          : tossOutcome === "not_configured"
+            ? messages.payments.tossNotConfigured
+            : tossOutcome === "error"
+              ? messages.payments.tossStartError
+              : "";
+      if (notice) setPlanNotice((prev) => ({ ...prev, [planId]: notice }));
+      return;
+    }
     const outcome = await openCheckout(planId, locale, { successRedirectPath });
     if (outcome === "success" || outcome === "already_processed") {
       setResult((prev) => ({ ...prev, [planId]: "success" }));
@@ -308,6 +334,11 @@ export default function PurchaseSelectorContent({
               </p>
             ))}
           </div>
+        ) : null}
+        {planNotice[planId] ? (
+          <p role="status" className="mt-4 text-[12px] font-medium text-amber-700">
+            {planNotice[planId]}
+          </p>
         ) : null}
         {result[planId] === "success" ? (
           <p className="mt-4 text-[12px] font-medium text-emerald-700">

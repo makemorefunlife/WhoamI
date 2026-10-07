@@ -480,6 +480,15 @@ export const messagesKoKR: MessageCatalog = {
     billingNoActiveMembership: "현재 이용 중인 연간 멤버십이 없어요.",
     billingStartCta: "플랜 선택하기",
     billingLoadError: "결제 정보를 불러오지 못했어요. 다시 시도해 주세요.",
+    billingPlanNameOneTime: "12개월 멤버십",
+    billingPriceOneTime: "$280 · 1회 결제",
+    billingOneTimeValidUntil: (date: string) =>
+      `${date}까지 이용할 수 있어요. 자동 갱신되지 않으며 추가로 결제되지 않아요.`,
+    billingOneTimeCancelHelp:
+      "중도 해지가 필요하시면 문의해 주세요. 남은 이용 기간에 대한 환불 기준은 환불 정책에서 확인하실 수 있어요.",
+    billingRefundPolicyLink: "환불 정책 보기",
+    billingLegacyRecurringNote:
+      "이 멤버십은 일회성 결제로 바뀌기 전에 자동 갱신 상품으로 구매하셨어요. 기존 조건이 그대로 유지돼요.",
     billingRenewsOnNotice: (date: string) => `${date}에 자동으로 갱신돼요.`,
     backToProfile: "개인정보로 돌아가기",
     settingsTitle: "계정 설정",
@@ -1339,6 +1348,34 @@ export const messagesKoKR: MessageCatalog = {
     metaTitle: "개인정보 판매 또는 공유 거부 | Aha It's me!",
     metaDescription:
       "Aha It's me는 현재 개인정보를 판매하거나 교차 맥락 행동 광고 목적으로 공유하지 않습니다. 개인정보 관련 문의 및 요청 방법을 안내합니다.",
+  },
+  payments: {
+    tossAlreadyMember: "이미 이용 중인 멤버십이 있어 지금은 구매할 필요가 없어요.",
+    tossNotConfigured: "멤버십 결제가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.",
+    tossStartError: "결제창을 열지 못했어요. 다시 시도해 주세요.",
+    tossConfirmingTitle: "결제를 확인하고 있어요…",
+    tossConfirmingBody: "이 페이지를 닫지 말아 주세요. 보통 몇 초면 끝나요.",
+    tossSuccessTitle: "결제가 완료됐어요",
+    tossSuccessBody: "구매하신 상품이 계정에 추가됐어요.",
+    tossContinue: "계속하기",
+    tossPendingTitle: "결제를 아직 처리하고 있어요",
+    tossPendingBody:
+      "결제가 이루어졌다면 구매 내역은 계정에 반영되니 다시 결제하지 마세요. 잠시 후 다시 확인하시거나 문의 페이지로 연락해 주세요.",
+    tossBackToPricing: "요금제로 돌아가기",
+    tossRetry: "다시 확인하기",
+    tossFailedTitle: "결제가 완료되지 않았어요",
+    tossFailedBody: "결제된 금액은 없어요. 요금제 페이지에서 다시 시도하실 수 있어요.",
+    tossCancelledTitle: "결제를 취소했어요",
+    tossCancelledBody: "결제창을 닫아 결제되지 않았어요.",
+    tossAutoRefundedTitle: "결제가 전액 취소됐어요",
+    tossAutoRefundedBody:
+      "이미 이용 중인 멤버십이 있어 이번 결제는 전액 취소됐어요. 기존 멤버십은 그대로 유지돼요.",
+    tossAttentionTitle: "결제 확인이 필요해요",
+    tossAttentionBody:
+      "결제는 접수됐지만 자동으로 마무리하지 못했어요. 저희가 확인해서 처리해 드릴게요. 다시 결제하지 마시고, 필요하면 문의 페이지로 연락해 주세요.",
+    tossInvalidTitle: "결제 정보를 찾을 수 없어요",
+    tossInvalidBody:
+      "유효하지 않거나 이미 종료된 결제 링크예요. 결제가 되었다면 문의 페이지로 연락해 주세요.",
   },
   paymentRefund: {
     /**
