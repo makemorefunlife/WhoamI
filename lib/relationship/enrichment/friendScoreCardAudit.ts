@@ -89,7 +89,7 @@ function connectionWhy(
       sentences.push(
         isKo
           ? `여기에 두 사람 모두 높은 공감 성향을 보유하고 있어, 기질적인 친화력이 일상 대화와 서운함 케어에서도 더욱 따뜻하게 체감됩니다.`
-          : `Furthermore, both of you share high empathy scores, allowing your innate connection to feel warm and supportive in everyday interactions.`,
+          : `Furthermore, both of you share high empathy scores, allowing your natural connection to feel warm and supportive in everyday interactions.`,
       );
     }
   }

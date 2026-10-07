@@ -36,6 +36,11 @@ import {
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
+import {
+  buildDiscoveryRoleText,
+  discoveryRoleTextToBody,
+  fetchDiscoveryRoleIds,
+} from "@/lib/relationship/map/discoveryRoleText";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/home/HomeAuthSignInPanel"),
@@ -226,7 +231,123 @@ export default function HomeContent() {
     primaryLabel?: string;
     secondaryLabel?: string;
     onSecondary?: () => void;
+    /**
+     * Relationship Discovery: when set, the modal body is extended with the
+     * "who is who to whom" sentences + role meanings for this pair.
+     */
+    discovery?: {
+      reportId: string;
+      relationshipReportId: string;
+      partnerName: string;
+    };
   } | null>(null);
+  const [loadedRole, setLoadedRole] = useState<{ key: string; body: string } | null>(null);
+  const discoveryKey = connectedModal?.discovery
+    ? `${connectedModal.discovery.reportId}:${connectedModal.discovery.relationshipReportId}`
+    : "";
+  const discoveryRoleBody = loadedRole?.key === discoveryKey ? loadedRole.body : null;
+  useEffect(() => {
+    const d = connectedModal?.discovery;
+    if (!d) return;
+    let cancelled = false;
+    void fetchDiscoveryRoleIds(d.reportId, d.relationshipReportId).then((ids) => {
+      if (cancelled || !ids) return;
+      const text = buildDiscoveryRoleText({
+        locale,
+        partnerName: d.partnerName,
+        roleId: ids.roleId,
+        reciprocalRoleId: ids.reciprocalRoleId,
+        messages: messages.relationshipMap,
+      });
+      if (text) setLoadedRole({ key: discoveryKey, body: discoveryRoleTextToBody(text) });
+    });
+    return () => {
+      cancelled = true;
+    };
+    // discoveryKey identifies the pair; the modal object itself changes identity often.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discoveryKey, locale, messages]);
+
+  /**
+   * Relationship Discovery -- the inviter's side. When a friend joined via
+   * this user's invite/connect link, the inviter's own membership row stays
+   * "unseen" until they look at it. On the first home entry of a session with
+   * a completed report, show one popup ("who are you to each other" + what it
+   * means). "Check it out" marks it seen and opens the Relation Map focused on
+   * that friend; "Later" leaves it unseen (the hub card still shows it).
+   */
+  const inviterDiscoveryRanRef = useRef(false);
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || resume.loading || inviterDiscoveryRanRef.current) return;
+    const reportId = resume.reportId;
+    if (!reportId || !resume.surveyCompleted) return;
+    // A pending invite/connect acceptance owns the home screen's modal.
+    if (localStorage.getItem("inviteToken") || localStorage.getItem("connectToken")) return;
+    try {
+      if (sessionStorage.getItem("discoveryPopupShown") === reportId) {
+        inviterDiscoveryRanRef.current = true;
+        return;
+      }
+    } catch {
+      /* storage unavailable: fall through, the ref still limits it to once per mount */
+    }
+    inviterDiscoveryRanRef.current = true;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/connect/discoveries?reportId=${encodeURIComponent(reportId)}`);
+        const data = (await res.json().catch(() => null)) as {
+          discoveries?: { relationshipReportId: string; name: string }[];
+        } | null;
+        const first = res.ok && Array.isArray(data?.discoveries) ? data.discoveries[0] : null;
+        if (!first) return;
+        try {
+          sessionStorage.setItem("discoveryPopupShown", reportId);
+        } catch {
+          /* ignore */
+        }
+        setConnectedModal((prev) =>
+          prev ?? {
+            sharerName: first.name,
+            title: messages.connect.discoveryTitle,
+            body: messages.connect.discoveryBody(first.name),
+            primaryLabel: messages.connect.discoveryConfirmCta,
+            secondaryLabel: messages.connect.connectedSharerSecondaryCta,
+            onSecondary: () => {},
+            discovery: {
+              reportId,
+              relationshipReportId: first.relationshipReportId,
+              partnerName: first.name,
+            },
+            onConfirm: () => {
+              void fetch("/api/connect/discoveries/seen", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  reportId,
+                  relationshipReportId: first.relationshipReportId,
+                }),
+              }).finally(() => {
+                router.push(
+                  localize(relationHubPath(reportId, first.relationshipReportId)),
+                );
+              });
+            },
+          },
+        );
+      } catch {
+        /* best-effort popup: never block the home screen */
+      }
+    })();
+  }, [
+    isLoaded,
+    isSignedIn,
+    resume.loading,
+    resume.reportId,
+    resume.surveyCompleted,
+    messages,
+    router,
+    localize,
+  ]);
 
   /**
    * Once a friend connection is actually usable (the joiner has their own
@@ -254,7 +375,11 @@ export default function HomeContent() {
         );
       };
       const onSecondary = () => router.push(localize(blueprintPath(reportId)));
-      return { onConfirm, onSecondary };
+      return {
+        onConfirm,
+        onSecondary,
+        relationshipReportId: pendingRelationshipReportId,
+      };
     },
     [router, localize],
   );
@@ -526,7 +651,8 @@ export default function HomeContent() {
       void completeInvite(reportId, inviteToken).then(({ sharerName, alreadyConnected }) => {
         const goToHub = () => router.push(localize(relationHubPath(reportId)));
         if (sharerName) {
-          const { onConfirm, onSecondary } = buildReadyModalActions(reportId);
+          const { onConfirm, onSecondary, relationshipReportId } =
+            buildReadyModalActions(reportId);
           setConnectedModal({
             sharerName,
             onConfirm,
@@ -539,6 +665,10 @@ export default function HomeContent() {
             primaryLabel: messages.connect.discoverRelationshipCta,
             secondaryLabel: messages.connect.connectedJoinerPersonalAnalysisCta,
             onSecondary,
+            discovery:
+              !alreadyConnected && relationshipReportId
+                ? { reportId, relationshipReportId, partnerName: sharerName }
+                : undefined,
           });
           return;
         }
@@ -613,7 +743,8 @@ export default function HomeContent() {
         if (!ok) alert(errorMessage ?? messages.connect.invalidBody);
         const goToHub = () => router.push(localize(relationHubPath(reportId)));
         if (ok && sharerName) {
-          const { onConfirm, onSecondary } = buildReadyModalActions(reportId);
+          const { onConfirm, onSecondary, relationshipReportId } =
+            buildReadyModalActions(reportId);
           setConnectedModal({
             sharerName,
             onConfirm,
@@ -626,6 +757,10 @@ export default function HomeContent() {
             primaryLabel: messages.connect.discoverRelationshipCta,
             secondaryLabel: messages.connect.connectedJoinerPersonalAnalysisCta,
             onSecondary,
+            discovery:
+              !alreadyConnected && relationshipReportId
+                ? { reportId, relationshipReportId, partnerName: sharerName }
+                : undefined,
           });
           return;
         }
@@ -817,7 +952,10 @@ export default function HomeContent() {
           connectedModal?.title ??
           messages.connect.connectedJoinerTitle(connectedModal?.sharerName ?? "")
         }
-        body={connectedModal?.body ?? messages.connect.connectedJoinerBody}
+        body={(() => {
+          const base = connectedModal?.body ?? messages.connect.connectedJoinerBody;
+          return discoveryRoleBody ? `${base}\n\n${discoveryRoleBody}` : base;
+        })()}
         primaryLabel={connectedModal?.primaryLabel ?? messages.connect.connectedJoinerCta}
         onPrimary={() => {
           if (!connectedModal) return;

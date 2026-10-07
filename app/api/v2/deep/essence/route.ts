@@ -3,16 +3,13 @@ import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
-import {
-  PERSONAL_V2_STRUCTURED_GENERATION_VERSION,
-  type SlimV1ReportResult,
-} from "@/lib/v1/slim/types";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
   readPersistedDeepEssenceAnalysis,
   writePersistedDeepEssenceAnalysis,
 } from "@/lib/report/reportAnalyses";
-import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
+import { decideStoredDeepEssenceReuse } from "@/lib/report/personalDeepEssenceReuse";
+import { runPersonalDeepEssenceGeneration } from "@/lib/report/personalDeepEssenceGeneration";
 import type {
   CurrentSelfProfile,
   SurveyAnswersInput,
@@ -85,54 +82,23 @@ export async function POST(req: Request) {
     );
     if (access.error) return access.error;
 
-    // Read-before-generate: this report is a paid, "lifetime access" feature —
-    // reuse the stored copy instead of re-invoking the LLM on every view.
+    // Read-before-generate: this report is a paid, "lifetime access" feature --
+    // a report the user already generated is always served from the saved copy.
+    // Internal generation versions / cache versions NEVER decide access
+    // (see lib/report/personalDeepEssenceReuse.ts); a newer version is only
+    // produced by an explicit user action (`forceRegenerate`).
     // report_analyses has no locale column, so the stored copy is only reused
     // when its recorded locale matches the current request; a locale switch
     // regenerates (and overwrites the single stored row for this report).
     const stored = body.forceRegenerate
       ? null
       : await readPersistedDeepEssenceAnalysis(supabase, reportId);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as { locale: string; slim_v1: SlimV1ReportResult };
-        // Server must not trust a stale/partial cached row just because it
-        // parses as JSON and has a locale match — `structured` is the field
-        // the client actually renders from (see StitchDeepEssenceView.tsx's
-        // identical isDeepEssenceStructuredReport gate), so re-validate it
-        // here too before returning the cache as-is. `null` is a legitimate
-        // stored value (prose-only fallback already occurred); anything else
-        // must pass the current schema, or we fall through to regenerate.
-        const structured = parsed.slim_v1?.structured;
-        const structuredIsTrustworthy =
-          structured === null || isDeepEssenceStructuredReport(structured);
-        // A stored row whose structured payload predates the current Personal
-        // V2 generation pipeline (e.g. no layered_identity/axis_interpretations
-        // support yet) must not be reused just because it still happens to
-        // satisfy the base schema check above — those newer fields are all
-        // optional, so an old row passes structuredIsTrustworthy too. Only
-        // applies when structured is non-null; a stored fallback (structured:
-        // null) is left exactly as before.
-        const storedGenerationVersion = parsed.slim_v1?.personal_v2_generation_version ?? 0;
-        const generationIsCurrent =
-          structured === null ||
-          storedGenerationVersion >= PERSONAL_V2_STRUCTURED_GENERATION_VERSION;
-        // A placeholder fallback (llm_source "fallback": no LLM output) is
-        // never a completed report, so it is never reused from the cache.
-        const storedIsPlaceholderFallback = parsed.slim_v1?.llm_source === "fallback";
-        if (!storedIsPlaceholderFallback) {
-          if (
-            parsed.locale === locale &&
-            parsed.slim_v1 &&
-            structuredIsTrustworthy &&
-            generationIsCurrent
-          ) {
-            return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 });
-          }
-        }
-      } catch (e) {
-        logServerError("v2/deep/essence:stored_parse", e, "invalid_json");
-      }
+    const reuse = decideStoredDeepEssenceReuse(stored, locale);
+    if (reuse.reuse) {
+      return NextResponse.json({ ok: true, locale, slim_v1: reuse.slim_v1 });
+    }
+    if (reuse.reason === "invalid_json") {
+      logServerError("v2/deep/essence:stored_parse", new Error("stored row is not valid JSON"), "invalid_json");
     }
 
     // DB-backed atomic lock — one in-flight slot per (reportId, locale).
@@ -157,89 +123,64 @@ export async function POST(req: Request) {
       );
     }
 
-    let creditReserved = false;
-    let generationSucceeded = false;
-
     try {
-      if (userId) {
-        const reserve = await reservePersonalCredit(supabase, {
-          clerkUserId: userId,
-          reportId,
-          locale,
-          generationRequestId,
-        });
-        if (!reserve.ok) {
-          if (reserve.reason === "insufficient_balance") {
-            return NextResponse.json(
-              { error: messages.errors.insufficientCredit },
-              { status: 402 },
-            );
-          }
-          return NextResponse.json(
-            { error: messages.errors.analysisFailed },
-            { status: 500 },
-          );
-        }
-        creditReserved = true;
-      }
-
-      const slim_v1 = await runSlimIntegratedReport({
-        birthDate,
-        birthTime: body.birthTime ?? null,
-        birthTimeUnknown: body.birthTimeUnknown === true,
-        birthPlace: body.birthPlace ?? null,
-        surveyAnswers: body.surveyAnswers ?? null,
-        currentSelfProfile: body.currentSelfProfile ?? null,
-        locale,
+      const outcome = await runPersonalDeepEssenceGeneration({
+        reserveCredit: userId
+          ? async () => {
+              const reserve = await reservePersonalCredit(supabase, {
+                clerkUserId: userId,
+                reportId,
+                locale,
+                generationRequestId,
+              });
+              if (reserve.ok) return { ok: true as const };
+              return {
+                ok: false as const,
+                reason:
+                  reserve.reason === "insufficient_balance"
+                    ? ("insufficient_balance" as const)
+                    : ("error" as const),
+              };
+            }
+          : null,
+        generate: () =>
+          runSlimIntegratedReport({
+            birthDate,
+            birthTime: body.birthTime ?? null,
+            birthTimeUnknown: body.birthTimeUnknown === true,
+            birthPlace: body.birthPlace ?? null,
+            surveyAnswers: body.surveyAnswers ?? null,
+            currentSelfProfile: body.currentSelfProfile ?? null,
+            locale,
+          }),
+        stillOwnsLock: () =>
+          stillOwnsPersonalPremiumGenerationLock(supabase, lock.lockId, generationRequestId),
+        persist: (slim_v1) =>
+          writePersistedDeepEssenceAnalysis(
+            supabase,
+            reportId,
+            JSON.stringify({ locale, slim_v1 }),
+            { locale },
+          ),
+        consumeCredit: () => consumeCredit(supabase, generationRequestId),
+        releaseCredit: () => releaseCredit(supabase, generationRequestId),
+        log: (tag, error, code) => logServerError(tag, error, code),
       });
 
-      const stillOwns = await stillOwnsPersonalPremiumGenerationLock(
-        supabase,
-        lock.lockId,
-        generationRequestId,
-      );
-      if (!stillOwns) {
-        logServerError(
-          "v2/deep/essence:",
-          new Error("Lock ownership lost during generation"),
-          "lock_lost",
-        );
+      if (outcome.kind === "ok") {
+        return NextResponse.json({ ok: true, locale, slim_v1: outcome.slim_v1 });
+      }
+      if (outcome.kind === "insufficient_credit") {
         return NextResponse.json(
-          { error: messages.errors.analysisFailed },
-          { status: 500 },
+          { error: messages.errors.insufficientCredit },
+          { status: 402 },
         );
       }
-
-      // Placeholder fallback (no API key / LLM failure) is not a real report:
-      // don't persist it, don't charge a credit (finally{} releases it).
-      if (slim_v1.llm_source === "fallback") {
-        logServerError(
-          "v2/deep/essence:",
-          new Error("LLM fallback result not persisted"),
-          "llm_fallback",
-        );
-        return NextResponse.json(
-          { error: messages.errors.analysisFailed },
-          { status: 502 },
-        );
-      }
-
-      await writePersistedDeepEssenceAnalysis(
-        supabase,
-        reportId,
-        JSON.stringify({ locale, slim_v1 }),
-        { locale },
+      return NextResponse.json(
+        { error: messages.errors.analysisFailed },
+        { status: outcome.status },
       );
-
-      if (creditReserved) {
-        await consumeCredit(supabase, generationRequestId);
-      }
-      generationSucceeded = true;
-      return NextResponse.json({ ok: true, locale, slim_v1 });
     } finally {
-      if (!generationSucceeded && creditReserved) {
-        await releaseCredit(supabase, generationRequestId);
-      }
       await releasePersonalPremiumGenerationLock(
         supabase,
         lock.lockId,

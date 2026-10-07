@@ -58,7 +58,7 @@ export default function ConnectionSuccessModal({
         >
           {title}
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-on-surface-variant">
           {body}
         </p>
 

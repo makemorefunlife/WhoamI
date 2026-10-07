@@ -206,10 +206,10 @@ async function main() {
   for (const locale of ["en-US", "ko-KR"] as const) {
     const all = [privacyPolicy, refundPolicy, termsOfService].map((d) => stringValues(d[locale]).join(" ")).join(" ");
     assert.match(all, locale === "en-US" ? /third-party payment service provider/ : /제3자 결제 서비스 제공업체/);
-    assert.ok(stringValues(refundPolicy[locale]).join(" ").includes("support@ahaitsme.com"));
+    assert.ok(stringValues(refundPolicy[locale]).join(" ").includes("contact@ahaitsme.com"));
     assert.ok(!/(is|acts as) the Merchant of Record for (all )?our/i.test(all), "no company asserted as our permanent Merchant of Record");
   }
-  ok("payments described as 'may be handled by third-party payment service providers'; contact support@ahaitsme.com");
+  ok("payments described as 'may be handled by third-party payment service providers'; contact contact@ahaitsme.com");
 
   // ---- 5. Credits ---------------------------------------------------------------
   section("5. Existing Personal and Relationship credits still work");

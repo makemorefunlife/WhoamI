@@ -764,6 +764,7 @@ export default function RelationHubDashboard() {
             />
             {discoveries[0] ? (
               <RelationshipDiscoveryCard
+                viewerReportId={hubReportId}
                 discovery={discoveries[0]}
                 busy={discoveryBusyId === discoveries[0].relationshipReportId}
                 onConfirm={() => confirmDiscovery(discoveries[0])}

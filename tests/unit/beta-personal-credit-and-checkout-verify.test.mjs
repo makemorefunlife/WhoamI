@@ -37,7 +37,7 @@ section("A. Personal deep-analysis route: cache-first, credit only on a real gen
 
   // The credit gate must be textually AFTER the stored-cache return, so a
   // cache hit returns before reservePersonalCredit is ever reached.
-  const cacheReturnIdx = src.indexOf("return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 })");
+  const cacheReturnIdx = src.indexOf("return NextResponse.json({ ok: true, locale, slim_v1: reuse.slim_v1 })");
   const reserveIdx = src.indexOf("reservePersonalCredit(supabase");
   assert.ok(cacheReturnIdx > -1 && reserveIdx > -1 && cacheReturnIdx < reserveIdx);
 
@@ -45,7 +45,7 @@ section("A. Personal deep-analysis route: cache-first, credit only on a real gen
   // documented NODE_ENV !== "development" exception) must not crash this
   // new code — it has to be an explicit branch, not a non-null assertion.
   assert.equal(src.includes("clerkUserId: userId!"), false, "must not force-assert a possibly-null userId into the credit RPC");
-  assert.ok(src.includes("if (userId) {"), "credit reservation must be conditioned on userId actually being present");
+  assert.ok(/reserveCredit:\s*userId\s*\?/.test(src), "credit reservation must be conditioned on userId actually being present");
   ok("essence route: cache hit never touches credit; generation reserves/consumes/releases personal credit; null-userId dev bypass handled without a crash");
 }
 

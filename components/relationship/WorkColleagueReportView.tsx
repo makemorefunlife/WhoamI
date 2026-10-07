@@ -1,5 +1,7 @@
 "use client";
 
+import { isStoredPlaceholderName } from "@/lib/relationship/relationshipPersonNames";
+import { storedReportSlotNames } from "@/lib/relationship/applyCurrentReportNames";
 import { useMemo } from "react";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
@@ -111,10 +113,20 @@ export default function WorkColleagueReportView({
         viewerIsReportA,
       )
     : null;
-  const rawMyName = myNameProp?.trim() || dnaPair?.me.nickname?.trim() || messages.report.meFallbackLabel;
+  // A real nickname always beats a generic placeholder ("Partner"/"상대"/"Me"/"나"):
+  // live prop first, then the names stored in the report itself.
+  const realName = (v: string | null | undefined): string | null => {
+    const t = v?.trim();
+    return t && !isStoredPlaceholderName(t) ? t : null;
+  };
+  const storedSlots = storedReportSlotNames(report);
+  const storedMe = viewerIsReportA === false ? storedSlots.b : storedSlots.a;
+  const storedPartner = viewerIsReportA === false ? storedSlots.a : storedSlots.b;
+  const rawMyName =
+    realName(myNameProp) ?? realName(dnaPair?.me.nickname) ?? realName(storedMe) ?? myNameProp?.trim() ?? messages.report.meFallbackLabel;
   const myName = rawMyName?.trim() || "나";
   const rawPartnerName =
-    partnerNameProp?.trim() || dnaPair?.partner.nickname?.trim() || messages.report.partnerFallbackLabel;
+    realName(partnerNameProp) ?? realName(dnaPair?.partner.nickname) ?? realName(storedPartner) ?? messages.report.partnerFallbackLabel;
   const partnerName = rawPartnerName?.trim() || "상대";
 
   const snap = office?.section_snapshot ?? {
