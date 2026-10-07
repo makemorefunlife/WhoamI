@@ -611,11 +611,11 @@ export const messagesKoKR: MessageCatalog = {
     betaNotice:
       "이건 Beta 테스트예요. 실제 결제는 발생하지 않고, 아래 버튼은 테스트 결제로 연결돼요. 베타 종료 후 자동으로 청구되는 금액은 전혀 없습니다.",
     regionalMetaTitle: "요금제 안내 | Aha It's me!",
-    regionalMetaDescription: "Personal · Relationship · 30일 이용권 · 연간 멤버십 요금제 안내",
+    regionalMetaDescription: "Personal · Relationship · Relationship Triple · 30일 이용권 요금제 안내",
     regionalHeroTitleLine1: "실제 요금제, 실제 상품",
     regionalHeroTitleLine2: "내 사용 방식에 맞는 플랜을 골라보세요",
     regionalHeroBody:
-      "일회성 리포트부터 30일 이용권, 연간 멤버십까지 — 아래 모든 플랜은 실제 상품과 실제 가격입니다.",
+      "단건 리포트부터 Relationship Triple, 30일 이용권까지 — 아래 모든 플랜은 실제 상품과 실제 가격이며, 정기결제나 자동 갱신 없는 일회성 결제 상품입니다.",
     regionalOneTimeBadge: "1회성 구매 · 자동갱신 없음",
     regionalAutoRenewBadge: "연 1회 자동갱신 (해지 전까지)",
     selectorTitlePersonal: "심화 분석 잠금 해제하기",
@@ -728,6 +728,7 @@ export const messagesKoKR: MessageCatalog = {
         period: "/ 1회",
         tagline: "타고난 기질과 현재 자아를 잇는 심층 리포트",
         features: ["Personal 심화 분석 1회 생성권", "생성 후에는 언제든 다시 열람 가능"],
+        validityNotes: ["구매일로부터 12개월 이내 생성권 사용"],
         cta: "Personal 구매",
       },
       kr_relationship_premium: {
@@ -736,6 +737,7 @@ export const messagesKoKR: MessageCatalog = {
         period: "/ 1회",
         tagline: "한 사람과의 관계를 깊게 들여다보는 심화 리포트",
         features: ["Relationship 심화 분석 1회 생성권", "생성 후에는 언제든 다시 열람 가능"],
+        validityNotes: ["구매일로부터 12개월 이내 생성권 사용"],
         cta: "Relationship 구매",
       },
       kr_insight_pass_30d: {
@@ -748,8 +750,8 @@ export const messagesKoKR: MessageCatalog = {
           "Personal 심화 분석 1회",
           "Relationship 심화 분석 1회",
           "Decision Journal 30일 무제한",
-          "자동 갱신 없음",
         ],
+        validityNotes: ["구매일로부터 30일 이용 · 자동 갱신 없음"],
         cta: "30일 패스 구매",
       },
       kr_relationship_triple: {
@@ -758,6 +760,7 @@ export const messagesKoKR: MessageCatalog = {
         period: "/ 1회",
         tagline: "Relationship 심화 분석 3회 패키지",
         features: ["Relationship 심화 분석 3회 생성권", "생성 후에는 언제든 다시 열람 가능"],
+        validityNotes: ["구매일로부터 12개월 이내 총 3회 생성권 사용"],
         cta: "트리플 팩 구매",
       },
     },
@@ -1267,10 +1270,8 @@ export const messagesKoKR: MessageCatalog = {
       // 자체를 렌더링하지 않으므로(placeholder 노출 방지), 번호가 나오면 여기만 채우면 됨.
       mailOrderNumber: "",
       addressLabel: "사업장 주소",
-      // NOTE: 사업자등록 주소 변경(강남구 언주로 134길 18, 신승빌딩 5층)이 공식 완료되기 전에는
-      // 이 값을 production에 배포하지 마세요 — 2026-09-21 요청 시점 기준 실제 주소로
-      // 갱신해 두었으니, 등록 변경 완료를 확인한 뒤 배포해 주세요.
-      address: "서울 강남구 언주로 134길 18, 신승빌딩 5층",
+      // 2026-10-07 대표 요청으로 사업자등록 주소 표기(도로명 + 호수 + 참고항목)로 교체.
+      address: "서울특별시 강남구 언주로134길 18, 5층 가8호(논현동, 신승빌딩)",
       phoneLabel: "전화번호",
       phone: "+1 626-381-8420",
       phoneNote: "전화 상담은 제공하지 않습니다. 문의는 이메일을 이용해주세요.",

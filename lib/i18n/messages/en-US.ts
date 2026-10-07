@@ -646,13 +646,13 @@ export const messagesEnUS = {
     betaNotice:
       "This is a Beta test. No real charge happens — every button below opens a test checkout. Nothing bills automatically after the Beta ends.",
     regionalMetaTitle: "Pricing | Aha It's me!",
-    regionalMetaDescription: "Personal · Relationship · 30-Day Pass · Annual Membership pricing for Aha It's me!",
+    regionalMetaDescription: "Personal · Relationship · 30-Day Insight Pass · 12-Month Membership pricing for Aha It's me!",
     regionalHeroTitleLine1: "Choose how you want to use it",
     regionalHeroTitleLine2: "Pick what fits how you use Aha It's me!",
     regionalHeroBody:
-      "One-time reports, a 30-day pass, or an annual membership. Checkout is in test mode during the Beta, so nothing is charged yet.",
+      "Individual reports, a 30-Day Insight Pass, or a 12-Month Membership — every plan is a one-time purchase with no auto-renewal. Checkout is in test mode during the Beta, so nothing is charged yet.",
     regionalOneTimeBadge: "One-time purchase · no auto-renewal",
-    regionalAutoRenewBadge: "Auto-renews annually until cancelled",
+    regionalAutoRenewBadge: "12-month access · no auto-renewal",
     selectorTitlePersonal: "Unlock your deep report",
     selectorTitleRelationship: "Unlock this relationship's deep report",
     selectorTitleAccount: "Choose your plan",
@@ -711,51 +711,58 @@ export const messagesEnUS = {
         price: "$11.99",
         period: "/ one-time",
         tagline: "A deeper report connecting your Natural Tendencies and Current Patterns",
-        features: ["1 Personal deep report", "View it again anytime after it's generated"],
+        features: ["1 Personal deep report", "Revisit your report after it's generated"],
+        validityNotes: ["Use your report credit within 12 months of purchase."],
         cta: "Get Personal",
       },
       us_relationship_premium: {
         name: "Relationship",
         price: "$18.99",
         period: "/ one-time",
-        tagline: "A deeper report on one specific relationship",
-        features: ["1 Relationship deep report", "View it again anytime after it's generated"],
+        tagline: "A deeper look at one specific relationship",
+        features: ["1 Relationship deep report", "Revisit your report after it's generated"],
+        validityNotes: ["Use your report credit within 12 months of purchase."],
         cta: "Get Relationship",
       },
       us_insight_pass_30d: {
         name: "30-Day Insight Pass",
         price: "$28",
         period: "/ one-time",
-        tagline: "Everything you need for a full month, in one pass",
-        savingsNote: "Save $2.98 vs. buying separately",
+        tagline: "A month of insight, all in one pass",
+        savingsNote: "Save $2.98 compared with buying reports separately",
         features: [
           "1 Personal deep report",
           "1 Relationship deep report",
-          "Unlimited Decision Journal for 30 days",
-          "No auto-renewal",
+          "Unlimited Decision Journal access for 30 days",
         ],
+        validityNotes: ["Valid for 30 days from purchase. No auto-renewal."],
         cta: "Get the 30-Day Pass",
       },
       us_annual_membership: {
-        name: "Annual Membership",
+        name: "12-Month Membership",
         price: "$280",
-        period: "/ year",
-        tagline: "Our best value for ongoing self and relationship insight",
+        period: "/ one-time",
+        tagline: "A year of ongoing self and relationship insight",
         features: [
-          "1 Personal deep report per year",
-          "2 Relationship deep reports every month (no rollover)",
-          "2 Gift Personal coupons to share, once at signup",
-          "Unlimited Decision Journal all year",
-          "Extra Relationship analyses at $9.99 each after your monthly 2",
+          "1 Personal deep report",
+          "2 Relationship deep reports each month",
+          "2 Personal report gift coupons when you join",
+          "Unlimited Decision Journal access",
+          "Additional Relationship reports for $9.99 each after your monthly 2",
         ],
-        cta: "Become a Member",
+        validityNotes: [
+          "Valid for 12 months from purchase. No auto-renewal.",
+          "Unused monthly report credits do not roll over.",
+        ],
+        cta: "Get the Membership",
       },
       us_additional_relationship: {
         name: "Additional Relationship",
         price: "$9.99",
         period: "/ one-time",
-        tagline: "For members who've used this cycle's 2 included Relationship reports",
+        tagline: "For members who've used this month's 2 included Relationship reports",
         features: [],
+        validityNotes: ["Use your report credit within 12 months of purchase."],
         cta: "Buy one more",
       },
       kr_personal_premium: {
@@ -764,6 +771,7 @@ export const messagesEnUS = {
         period: "/ one-time",
         tagline: "A deeper report connecting your Natural Tendencies and Current Patterns",
         features: ["1 Personal deep report", "View it again anytime after it's generated"],
+        validityNotes: ["Use your report credit within 12 months of purchase."],
         cta: "Get Personal",
       },
       kr_relationship_premium: {
@@ -772,6 +780,7 @@ export const messagesEnUS = {
         period: "/ one-time",
         tagline: "A deeper report on one specific relationship",
         features: ["1 Relationship deep report", "View it again anytime after it's generated"],
+        validityNotes: ["Use your report credit within 12 months of purchase."],
         cta: "Get Relationship",
       },
       kr_insight_pass_30d: {
@@ -783,8 +792,8 @@ export const messagesEnUS = {
           "1 Personal deep report",
           "1 Relationship deep report",
           "Unlimited Decision Journal for 30 days",
-          "No auto-renewal",
         ],
+        validityNotes: ["Valid for 30 days from purchase. No auto-renewal."],
         cta: "Get the 30-Day Pass",
       },
       kr_relationship_triple: {
@@ -793,6 +802,7 @@ export const messagesEnUS = {
         period: "/ one-time",
         tagline: "3 Relationship deep analyses in one pack",
         features: ["3 Relationship deep reports", "View them again anytime after they're generated"],
+        validityNotes: ["Use all 3 report credits within 12 months of purchase."],
         cta: "Get the Triple Pack",
       },
     },
@@ -1090,7 +1100,7 @@ export const messagesEnUS = {
     decideWithAiTagline: "Your next decision, decoded together",
     starRatingAria: (value: number, max: number) => `${value} out of ${max} stars`,
     journalCapReachedNotice: (cap: number) =>
-      `You've reached your ${cap}-entry Decision Journal limit. Upgrade to a 30-Day Pass or Annual Membership for unlimited entries.`,
+      `You've reached your ${cap}-entry Decision Journal limit. Upgrade to a 30-Day Insight Pass or 12-Month Membership for unlimited entries.`,
     journalCapUpgradeCta: "See upgrade options",
   },
   legal: {
@@ -2012,6 +2022,19 @@ export const messagesEnUS = {
 };
 
 /** Shape-only catalog (values are free strings per locale). */
+/** Copy for one regional pricing card (US or KR catalog). */
+export type RegionalPlanCopy = {
+  name: string;
+  price: string;
+  period: string;
+  tagline: string;
+  savingsNote?: string;
+  features: string[];
+  /** Usage window / renewal notes shown under the feature list (e.g. "Use within 12 months"). */
+  validityNotes?: string[];
+  cta: string;
+};
+
 export type MessageCatalog = {
   common: {
     close: string;
@@ -2604,15 +2627,15 @@ export type MessageCatalog = {
       };
     };
     regionalPlans: {
-      us_personal_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      us_relationship_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      us_insight_pass_30d: { name: string; price: string; period: string; tagline: string; savingsNote?: string; features: string[]; cta: string };
-      us_annual_membership: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      us_additional_relationship: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      kr_personal_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      kr_relationship_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      kr_insight_pass_30d: { name: string; price: string; period: string; tagline: string; savingsNote?: string; features: string[]; cta: string };
-      kr_relationship_triple: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      us_personal_premium: RegionalPlanCopy;
+      us_relationship_premium: RegionalPlanCopy;
+      us_insight_pass_30d: RegionalPlanCopy;
+      us_annual_membership: RegionalPlanCopy;
+      us_additional_relationship: RegionalPlanCopy;
+      kr_personal_premium: RegionalPlanCopy;
+      kr_relationship_premium: RegionalPlanCopy;
+      kr_insight_pass_30d: RegionalPlanCopy;
+      kr_relationship_triple: RegionalPlanCopy;
     };
   };
   faq: {

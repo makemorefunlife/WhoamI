@@ -3,6 +3,8 @@ export type PolicySection = {
   title: string;
   paragraphs: string[];
   listItems?: string[];
+  /** Paragraphs rendered after listItems (e.g. a note that follows a bulleted list). */
+  closingParagraphs?: string[];
 };
 
 export type PolicyDocument = {

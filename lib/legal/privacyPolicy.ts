@@ -382,7 +382,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         title: "14. 문의처",
         paragraphs: [
           "상호명: 아하잇츠미 (Aha It's me)",
-          "소재지: 서울 강남구 언주로 134길 18, 신승빌딩 5층",
+          "소재지: 서울특별시 강남구 언주로134길 18, 5층 가8호(논현동, 신승빌딩)",
           "이메일: contact@ahaitsme.com",
         ],
       },

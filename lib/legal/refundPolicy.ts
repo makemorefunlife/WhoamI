@@ -2,59 +2,126 @@ import type { PolicyDocument } from "@/lib/legal/types";
 import type { Locale } from "@/lib/i18n/locale";
 
 /**
- * Refund Policy — en-US sourced from Legal/refund_policy_en.md.
+ * Refund Policy.
  *
- * No Korean source markdown existed for this one (unlike Terms/Privacy,
- * which had Legal/*_kr.md drafts) — the ko-KR text below is a direct
- * translation of the en-US policy, written to match it section-for-section
- * so both locales state the same terms. Have this reviewed for legal
- * accuracy before relying on it.
+ * en-US and ko-KR intentionally differ (2026-10-07): the US catalog has the
+ * 30-Day Insight Pass + 12-Month Membership + $9.99 Additional Relationship,
+ * the KR catalog has Personal / Relationship / Relationship Triple / 30-Day
+ * Insight Pass only. en-US text is the 2026-10-07 policy supplied by Sera;
+ * ko-KR section 2 ("서비스 제공 기간 및 결제 방식") replaced the old
+ * "구독 해지" section on the same date. Have both reviewed for legal accuracy.
+ *
+ * Wording here must match what the credit engine actually does (see
+ * process_us_purchase / process_kr_purchase). Known gaps as of 2026-10-07
+ * are tracked in docs/dev/decisions/2026-10-07_pricing_refund_policy_gaps.md.
  */
 export const refundPolicy: Record<Locale, PolicyDocument> = {
   "en-US": {
     title: "Refund Policy",
     description:
-      "Thank you for using Aha It's me. Because our Service provides digital, AI-generated analysis reports that are delivered instantly upon creation, we maintain the following refund policy to ensure fairness and transparency.",
-    lastUpdated: "2026-09-29",
+      "Thank you for using Aha It's me. We offer individual AI-generated reports, a 30-Day Insight Pass, and a 12-Month Membership. This policy explains each product's validity period and refund terms.",
+    lastUpdated: "2026-10-07",
     sections: [
       {
-        id: "eligibility",
-        title: "1. Refund Eligibility",
+        id: "service-periods",
+        title: "1. Payment and Service Periods",
         paragraphs: [
-          "Without limiting any mandatory statutory consumer rights under applicable law, refund eligibility for digital content on Aha It's me is determined as follows:",
+          "All products are one-time purchases. We do not automatically renew your access or charge you again when a pass or membership expires.",
         ],
         listItems: [
-          "Before Digital Content Delivery: You are eligible for a full refund within 7 days of purchase, provided that you have not generated, viewed, or accessed the AI analysis report or premium content.",
-          "After Digital Content Delivery: Once an AI report has been successfully generated and delivered to your account, the digital service is considered consumed. In accordance with applicable electronic commerce and consumer protection laws, refunds for simple change of mind are restricted after delivery.",
-          "Technical Errors & Non-Delivery: If a system fault or technical failure prevents your report from being generated or delivered, you are eligible for a full refund or free re-issuance.",
-          "Duplicate Charges: If an error results in duplicate charges for the same order, the duplicate transaction will be refunded in full.",
+          "Personal and Relationship reports: Each purchase includes one report generation credit, valid for 12 months from the purchase date.",
+          "30-Day Insight Pass: Includes one Personal report, one Relationship report, and unlimited Decision Journal access for 30 days from the purchase date. Both reports must be generated during this period.",
+          "12-Month Membership: Begins on the purchase date and provides membership benefits for 12 months. It includes one Personal report, two Relationship reports per membership month, two Personal report gift coupons issued at purchase, and unlimited Decision Journal access. Unused monthly Relationship credits do not roll over.",
+          "Gift coupons: Membership gift coupons must be redeemed and used to generate a report before the membership expires.",
+          "Additional Relationship reports: Reports purchased separately for $9.99 each include one generation credit valid for 12 months from their purchase date.",
+        ],
+        closingParagraphs: [
+          "Generation credits expire at the end of their stated validity period. Reports successfully generated before expiration remain available for viewing in your account, subject to our Terms of Service.",
         ],
       },
       {
-        id: "subscriptions",
-        title: "2. Subscription Cancellations",
+        id: "individual-reports",
+        title: "2. Individual Report Refunds",
+        paragraphs: [
+          "For Personal, Relationship, and separately purchased additional Relationship reports:",
+        ],
+        listItems: [
+          "Before generation: You may request a full refund within seven days of purchase if the purchased credit has not been used to generate a report.",
+          "After delivery: We do not offer change-of-mind refunds once the report has been successfully generated and delivered to your account.",
+          "After seven days: Unused credits remain valid for their stated validity period, but change-of-mind refunds are not offered under this policy.",
+        ],
+        closingParagraphs: [
+          "Technical failures, duplicate charges, and mandatory consumer rights are addressed below.",
+        ],
+      },
+      {
+        id: "insight-pass",
+        title: "3. 30-Day Insight Pass Refunds",
+        paragraphs: [
+          "You may request a full refund within seven days of purchase if you have not generated either included report or used any paid Decision Journal features.",
+          "Once an included report has been generated or a paid Decision Journal feature has been used, we do not offer change-of-mind or partial refunds for the pass.",
+          "The pass expires 30 days after purchase and does not renew automatically.",
+          "Technical failures, duplicate charges, and mandatory consumer rights are addressed below.",
+        ],
+      },
+      {
+        id: "membership",
+        title: "4. 12-Month Membership Cancellation and Refunds",
+        paragraphs: [
+          "You may request early cancellation by emailing support@ahaitsme.com.",
+          "If you request cancellation within seven days of purchase and neither you nor a gift recipient has used any included benefit, you are eligible for a full refund.",
+          "Otherwise, we provide a prorated refund for the unused membership period:",
+          "Refund amount = membership price paid × unused membership days ÷ total membership days.",
+          "We use the date we receive your cancellation request as the cancellation date. Refunds are calculated using calendar days and rounded to the nearest cent.",
+          "When cancellation takes effect:",
+        ],
+        listItems: [
+          "Membership benefits and paid Decision Journal access end.",
+          "Unused membership report credits and unredeemed gift coupons are canceled.",
+          "Gift credits already redeemed but not used to generate a report are canceled.",
+          "Reports already generated remain available in the relevant account.",
+        ],
+        closingParagraphs: [
+          "Reports and gift coupons already used are not deducted separately from the time-based refund. Unused credits from past membership months do not increase the refund amount.",
+          "Additional Relationship reports purchased separately are governed by Section 2 and are not included in the membership refund calculation.",
+        ],
+      },
+      {
+        id: "technical-errors",
+        title: "5. Technical Errors and Duplicate Charges",
         paragraphs: [],
         listItems: [
-          "If you are subscribed to a recurring plan, you may cancel your subscription at any time through your billing settings.",
-          "Upon cancellation, you will retain access to premium features until the end of your current billing cycle. No partial refunds will be issued for unused days within a billing period.",
+          "Report non-delivery: If a technical failure prevents a purchased report from being generated or delivered, contact us. We will restore the credit or reissue the report at no additional cost. If we cannot provide the report, we will refund the affected purchase or the portion attributable to the undelivered report.",
+          "Pass or membership access failures: If a technical failure prevents access to paid features, contact us. We will investigate and provide an appropriate remedy, which may include restoring access, extending the access period, or refunding the affected portion.",
+          "Duplicate charges: Duplicate payments for the same order will be refunded in full.",
         ],
       },
       {
         id: "request",
-        title: "3. How to Request a Refund & Merchant Authority",
-        paragraphs: [
-          "Global payment and refund processing may be handled through third-party payment service providers, which may act as the seller or Merchant of Record for an order. Billing inquiries, disputes, and refund requests are processed in accordance with the applicable provider's terms and applicable consumer protection laws.",
-        ],
+        title: "6. How to Request a Refund",
+        paragraphs: ["Email support@ahaitsme.com with:"],
         listItems: [
-          "To request a refund, contact us at support@ahaitsme.com with your transaction ID, or use the support information included in your payment receipt. Where needed, we will help escalate your request to the payment service provider.",
-          "Where a payment service provider acts as the Merchant of Record, it has final authority to evaluate, approve, and process refunds in compliance with applicable consumer rights, technical non-delivery cases, and its own terms.",
+          "The email address used for the purchase",
+          "Your order or transaction ID",
+          "The product purchased",
+          "The reason for your request",
+        ],
+        closingParagraphs: [
+          "Aha It's me reviews refund requests under this policy. Approved refunds are processed through our payment service provider to the original payment method.",
         ],
       },
       {
         id: "processing",
-        title: "4. Processing Time",
+        title: "7. Processing Time",
         paragraphs: [
-          "Once approved, refunds are processed by the payment service provider and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.",
+          "Once approved, refunds are submitted to our payment service provider. It may take five to ten business days for the refund to appear on your statement, depending on the payment method and financial institution.",
+        ],
+      },
+      {
+        id: "consumer-rights",
+        title: "8. Consumer Rights",
+        paragraphs: [
+          "This policy does not limit any mandatory consumer rights under applicable law. Where applicable law requires a refund or other remedy beyond this policy, those requirements take precedence.",
         ],
       },
     ],
@@ -63,7 +130,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
     title: "환불 정책",
     description:
       "아하잇츠미(Aha It's me)를 이용해 주셔서 감사합니다. 본 서비스는 생성 즉시 제공되는 디지털 AI 분석 보고서를 다루는 특성상, 공정성과 투명성을 위해 다음과 같은 환불 정책을 운영합니다.",
-    lastUpdated: "2026-09-29",
+    lastUpdated: "2026-10-07",
     sections: [
       {
         id: "eligibility",
@@ -79,12 +146,19 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         ],
       },
       {
-        id: "subscriptions",
-        title: "2. 구독 해지",
-        paragraphs: [],
+        id: "service-periods",
+        title: "2. 서비스 제공 기간 및 결제 방식",
+        paragraphs: [
+          "한국에서 판매하는 모든 유료 상품은 일회성 결제 상품이며, 정기결제 또는 자동 갱신되지 않습니다.",
+        ],
         listItems: [
-          "정기 구독 중인 경우, 결제 설정 화면에서 언제든지 구독을 해지할 수 있습니다.",
-          "해지 후에도 현재 결제 주기가 끝날 때까지는 프리미엄 기능을 계속 이용하실 수 있습니다. 결제 주기 내 미사용 기간에 대한 부분 환불은 제공되지 않습니다.",
+          "Personal 및 Relationship: 구매일로부터 12개월 이내에 심화 분석 보고서 1회를 생성할 수 있습니다.",
+          "Relationship Triple: 구매일로부터 12개월 이내에 관계 심화 분석 보고서를 총 3회 생성할 수 있습니다.",
+          "30-Day Insight Pass: 구매일로부터 30일간 Personal 심화 분석 1회, Relationship 심화 분석 1회 및 Decision Journal 무제한 이용이 제공됩니다.",
+        ],
+        closingParagraphs: [
+          "분석 생성권의 사용 기한과 생성된 보고서의 재열람은 구분됩니다. 생성된 보고서는 계정에서 다시 열람할 수 있습니다.",
+          "환불 가능 여부와 기준은 본 정책의 제1항에 따릅니다.",
         ],
       },
       {

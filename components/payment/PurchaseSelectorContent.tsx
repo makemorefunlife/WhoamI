@@ -8,6 +8,8 @@ import { useRegionalCheckout } from "@/lib/payment/useRegionalCheckout";
 import type { UsPlanId } from "@/lib/payment/usPricing";
 import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
+import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
+import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
 
 export type PurchaseContext = "personal" | "relationship" | "account";
 
@@ -258,8 +260,9 @@ export default function PurchaseSelectorContent({
         : messages.pricing.selectorTitlePersonal;
 
   function renderCard(planId: RegionalPlanId, primary: boolean) {
-    const plan = copy[planId as keyof typeof copy];
+    const plan: RegionalPlanCopy | undefined = copy[planId as keyof typeof copy];
     if (!plan) return null;
+    const artKind = planArtKindFor(planId);
     return (
       <article
         key={planId}
@@ -279,16 +282,15 @@ export default function PurchaseSelectorContent({
             {messages.pricing.selectorBestValueBadge}
           </span>
         ) : null}
+        {artKind ? <PlanIllustration kind={artKind} className="mb-4" /> : null}
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#3A8F6E]">{plan.name}</p>
         <div className="mt-3 flex items-baseline gap-1">
           <span className="text-3xl font-extrabold tracking-tight text-[#1A3328]">{plan.price}</span>
           {plan.period ? <span className="text-sm font-medium text-[#4A5C52]">{plan.period}</span> : null}
         </div>
         <p className="mt-2 text-sm leading-relaxed text-[#4A5C52]">{plan.tagline}</p>
-        {(plan as { savingsNote?: string }).savingsNote ? (
-          <p className="mt-1 text-xs font-semibold text-[#3A8F6E]">
-            {(plan as { savingsNote?: string }).savingsNote}
-          </p>
+        {plan.savingsNote ? (
+          <p className="mt-1 text-xs font-semibold text-[#3A8F6E]">{plan.savingsNote}</p>
         ) : null}
         <ul className="mt-6 flex-1 space-y-3">
           {plan.features.map((feature: string) => (
@@ -298,6 +300,15 @@ export default function PurchaseSelectorContent({
             </li>
           ))}
         </ul>
+        {plan.validityNotes?.length ? (
+          <div className="mt-5 space-y-1 rounded-xl bg-[#F5F0E8] px-3.5 py-2.5">
+            {plan.validityNotes.map((note) => (
+              <p key={note} className="text-xs leading-relaxed text-[#4A5C52]">
+                {note}
+              </p>
+            ))}
+          </div>
+        ) : null}
         {result[planId] === "success" ? (
           <p className="mt-4 text-[12px] font-medium text-emerald-700">
             {messages.paymentRefund.betaSandboxSuccess}
@@ -359,6 +370,11 @@ export default function PurchaseSelectorContent({
               {copy.us_additional_relationship.name}
             </p>
             <p className="mt-1 text-sm text-[#4A5C52]">{copy.us_additional_relationship.tagline}</p>
+            {copy.us_additional_relationship.validityNotes?.map((note) => (
+              <p key={note} className="mt-1 text-xs text-[#4A5C52]/80">
+                {note}
+              </p>
+            ))}
           </div>
           <div className="flex shrink-0 items-center gap-3">
             <span className="text-xl font-extrabold text-[#1A3328]">

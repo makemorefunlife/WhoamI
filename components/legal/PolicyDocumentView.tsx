@@ -94,6 +94,14 @@ export default async function PolicyDocumentView({
                     ))}
                   </ul>
                 ) : null}
+                {section.closingParagraphs?.map((paragraph, index) => (
+                  <p
+                    key={`${section.id}-cp-${index}`}
+                    className="text-[15px] leading-[1.8] text-on-surface-variant [word-break:keep-all] sm:text-[15.5px] sm:leading-[1.85]"
+                  >
+                    {renderInlineText(paragraph)}
+                  </p>
+                ))}
               </div>
             </section>
           ))}
