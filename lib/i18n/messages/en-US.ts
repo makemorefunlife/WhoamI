@@ -1431,6 +1431,9 @@ export const messagesEnUS = {
       "I agree to the Terms and the collection of my email for this purchase, and I understand that once generation of personalized digital content begins, withdrawal for a change of mind may be limited. (required)",
     guestConsentRequired: "Please enter your email and check the agreement to continue.",
     guestPayCta: "Pay as a guest",
+    signInAndPayCta: "Sign in and pay",
+    guestSignupNotice:
+      "You can buy as a guest. To use your analysis and save your report, sign up or sign in with the email you enter at checkout and verify that email.",
     guestOrSignIn: "Signed-in purchases are added to your account right away.",
     signInRequired: "Please sign in to buy this plan.",
     tossAwaitingClaimTitle: "Payment complete — one more step",
@@ -3172,6 +3175,8 @@ export type MessageCatalog = {
     guestConsentLabel: string;
     guestConsentRequired: string;
     guestPayCta: string;
+    signInAndPayCta: string;
+    guestSignupNotice: string;
     guestOrSignIn: string;
     signInRequired: string;
     tossAwaitingClaimTitle: string;

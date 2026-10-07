@@ -1359,6 +1359,9 @@ export const messagesKoKR: MessageCatalog = {
       "이용약관과 구매를 위한 이메일 수집·이용에 동의하며, 개인화된 디지털 콘텐츠 생성이 시작된 후에는 단순 변심에 따른 청약철회가 제한될 수 있음을 확인합니다. (필수)",
     guestConsentRequired: "이메일을 입력하고 동의에 체크해 주세요.",
     guestPayCta: "비회원으로 결제하기",
+    signInAndPayCta: "로그인하고 결제하기",
+    guestSignupNotice:
+      "비회원으로 구매할 수 있어요. 분석 이용과 보고서 저장을 위해 구매 시 입력한 이메일로 가입하거나 로그인하고, 이메일 인증을 완료해야 합니다.",
     guestOrSignIn: "로그인 후 구매하면 바로 계정에 추가돼요.",
     signInRequired: "이 상품은 로그인 후 구매할 수 있어요.",
     tossAwaitingClaimTitle: "결제 완료 — 마지막 단계가 남았어요",
