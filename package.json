@@ -21,6 +21,7 @@
     "test:analysis-entry-gate": "npx tsx tests/unit/analysis-entry-gate.test.ts",
     "test:paddle-retirement": "npx tsx tests/unit/paddle-retirement.test.ts",
     "test:toss-membership-flow": "npx tsx tests/unit/toss-membership-flow.test.ts",
+    "test:toss-guest-email-flow": "npx tsx tests/unit/toss-guest-email-flow.test.ts",
     "test:credit-lifecycle-sql": "bash tests/scripts/run-credit-lifecycle-sql.sh",
     "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
     "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",

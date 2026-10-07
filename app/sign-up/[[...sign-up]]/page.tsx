@@ -6,10 +6,20 @@ import SignUpUsNotice from "@/components/legal/SignUpUsNotice";
 import CustomSignUpForm from "@/components/auth/CustomSignUpForm";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { readAuthPrefillEmail, safeRelativeRedirect } from "@/lib/auth/prefillEmail";
 
 export default function SignUpPage() {
   const { locale, messages } = useLocale();
   const isKr = locale === "ko-KR";
+  // Way back after sign-up (e.g. the guest-purchase claim page or the
+  // checkout the user was in): same-origin relative ?redirect_url= only.
+  // Purchase email prefill comes from sessionStorage, never the URL.
+  const [afterSignUp] = useState(() =>
+    typeof window === "undefined"
+      ? ROUTES.home
+      : (safeRelativeRedirect(new URLSearchParams(window.location.search).get("redirect_url")) ?? ROUTES.home),
+  );
+  const [prefill] = useState(() => (typeof window === "undefined" ? null : readAuthPrefillEmail()));
 
   const [ageChecked, setAgeChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
@@ -38,7 +48,7 @@ export default function SignUpPage() {
               onMarketingChange={setMarketingChecked}
             />
             {krReady ? (
-              <CustomSignUpForm fallbackRedirectPath={ROUTES.home} />
+              <CustomSignUpForm fallbackRedirectPath={afterSignUp} initialEmail={prefill} />
             ) : (
               <div className="w-full max-w-[400px] rounded-2xl border border-dashed border-[#D4CFC4] bg-[#FFFDF8] px-5 py-10 text-center shadow-sm">
                 <p className="text-sm font-medium text-[#4A5C52]">
@@ -49,7 +59,7 @@ export default function SignUpPage() {
           </>
         ) : (
           <>
-            <CustomSignUpForm fallbackRedirectPath={ROUTES.home} />
+            <CustomSignUpForm fallbackRedirectPath={afterSignUp} initialEmail={prefill} />
             <SignUpUsNotice
               marketingChecked={marketingChecked}
               onMarketingChange={setMarketingChecked}

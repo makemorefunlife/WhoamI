@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import { Check, Info, X } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -100,12 +99,6 @@ export default function PurchaseSelectorContent({
   successRedirectPath?: string;
 }) {
   const { locale, messages, href: localizeHref } = useLocale();
-  const pathname = usePathname();
-  // Sign in, then come back to this same page (Clerk honors redirect_url
-  // over the sign-in page's fallback) to buy as a member.
-  const signInHref = `${localizeHref(ROUTES.signIn)}?redirect_url=${encodeURIComponent(
-    successRedirectPath ?? pathname ?? localizeHref(ROUTES.pricing),
-  )}`;
   const { isSignedIn, isLoaded: authLoaded } = useUser();
   const copy = messages.pricing.regionalPlans;
   // 2026-10-07: every purchase goes through the Toss payment window (test
@@ -122,19 +115,46 @@ export default function PurchaseSelectorContent({
   const [guestFormPlan, setGuestFormPlan] = useState<string | null>(null);
   const [guestEmail, setGuestEmail] = useState("");
   const [guestAgreed, setGuestAgreed] = useState(false);
+  // Came back from "quick sign-in" with ?checkout=<planId>: offer to continue
+  // the same plan's payment (same page, same locale).
+  const [resumePlan, setResumePlan] = useState<string | null>(null);
+  useEffect(() => {
+    if (!authLoaded || !isSignedIn) return;
+    const url = new URL(window.location.href);
+    const planId = url.searchParams.get("checkout");
+    if (!planId) return;
+    url.searchParams.delete("checkout");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
+    // Deferred like the other effects here (no synchronous setState in an effect).
+    const timer = setTimeout(() => {
+      if (isCheckoutEnabled(planId, process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true")) setResumePlan(planId);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [authLoaded, isSignedIn]);
+
+  // "Quick sign-in": Clerk sign-in, then back to this page with the plan kept.
+  function signInHrefFor(planId: string): string {
+    const back = new URL(window.location.href);
+    back.searchParams.set("checkout", planId);
+    return `${localizeHref(ROUTES.signIn)}?${new URLSearchParams({
+      redirect_url: `${back.pathname}${back.search}`,
+    }).toString()}`;
+  }
 
   // Esc closes the guest-checkout popup only (capture phase + stop, so an
   // enclosing PurchaseSelectorModal does not close at the same time).
   useEffect(() => {
-    if (!guestFormPlan) return;
+    if (!guestFormPlan && !resumePlan) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       e.stopImmediatePropagation();
-      if (!busy) setGuestFormPlan(null);
+      if (busy) return;
+      setGuestFormPlan(null);
+      setResumePlan(null);
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [guestFormPlan, busy]);
+  }, [guestFormPlan, resumePlan, busy]);
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
 
@@ -223,13 +243,13 @@ export default function PurchaseSelectorContent({
     }
     {
       if (!isSignedIn) {
-        if (isGuestTossPlan(planId)) {
-          setGuestFormPlan(planId);
-        } else {
-          setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.signInRequired }));
-        }
+        // Checkout modal: sign in, or (guest-eligible plans) pay as a guest.
+        setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
+        setGuestAgreed(false);
+        setGuestFormPlan(planId);
         return;
       }
+      setResumePlan(null);
       // Leaves the page on success (Toss redirects to /checkout/toss/success,
       // which confirms server-side and then returns the buyer here).
       const tossOutcome = await startTossCheckout(planId, locale, {
@@ -254,7 +274,7 @@ export default function PurchaseSelectorContent({
       return;
     }
     if (!guestAgreed || !guestEmail.trim()) {
-      setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.guestConsentRequired }));
+      setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.guestRequiredConsentMissing }));
       return;
     }
     setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
@@ -343,35 +363,33 @@ export default function PurchaseSelectorContent({
         ? messages.pricing.selectorTitleAccount
         : messages.pricing.selectorTitlePersonal;
 
-  function openGuestCheckout(planId: string) {
-    // Signed in (e.g. signed in from another tab after the cards rendered):
-    // never offer guest checkout -- go straight to the member checkout.
-    if (isSignedIn) {
-      setGuestFormPlan(null);
-      void handleCheckout(planId);
-      return;
-    }
-    setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
-    setGuestAgreed(false);
-    setGuestFormPlan(planId);
-  }
-
   function closeGuestCheckout() {
     if (busy) return;
     setGuestFormPlan(null);
+    setResumePlan(null);
   }
 
-  function renderGuestCheckoutPopup() {
-    if (!guestFormPlan || isSignedIn || typeof document === "undefined") return null;
-    const planId = guestFormPlan;
+  /**
+   * Checkout modal.
+   *  - signed out: "quick sign-in" (back to this page with the plan kept) and,
+   *    for guest-eligible plans, "or pay as a guest" (email + required
+   *    agreement + refund notice + terms / refund / privacy links);
+   *  - signed in after quick sign-in: "continue to payment" for the same plan.
+   */
+  function renderCheckoutModal() {
+    const planId = isSignedIn ? resumePlan : guestFormPlan;
+    if (!planId || typeof document === "undefined") return null;
     const plan: RegionalPlanCopy | undefined = copy[planId as keyof typeof copy];
     if (!plan) return null;
+    const t = messages.payments;
+    const guestAllowed = !isSignedIn && isGuestTossPlan(planId);
+    const linkCls = "underline underline-offset-2";
     return createPortal(
       <div
         className="fixed inset-0 z-[300] flex items-end justify-center bg-[#1A3328]/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="guest-checkout-title"
+        aria-labelledby="checkout-modal-title"
         onClick={closeGuestCheckout}
       >
         <div
@@ -380,12 +398,16 @@ export default function PurchaseSelectorContent({
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p id="guest-checkout-title" className="text-base font-bold text-[#1A3328]">
-                {messages.payments.guestCheckoutTitle}
+              <p id="checkout-modal-title" className="text-base font-bold text-[#1A3328]">
+                {plan.name}
               </p>
               <p className="mt-1 text-sm text-[#4A5C52]">
-                {plan.name} · <span className="font-semibold text-[#1A3328]">{plan.price}</span>
+                <span className="font-semibold text-[#1A3328]">{plan.price}</span>
+                {plan.period ? ` ${plan.period}` : ""}
               </p>
+              {plan.validityNotes?.length ? (
+                <p className="mt-1 text-xs text-[#4A5C52]">{plan.validityNotes.join(" · ")}</p>
+              ) : null}
             </div>
             <button
               type="button"
@@ -396,48 +418,80 @@ export default function PurchaseSelectorContent({
               <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-4 space-y-3">
-            <label className="block text-xs font-medium text-[#4A5C52]">
-              {messages.payments.guestEmailLabel}
-              <input
-                type="email"
-                autoComplete="email"
-                autoFocus
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
-              />
-            </label>
-            <p className="text-xs leading-relaxed text-[#4A5C52]">{messages.payments.guestEmailHint}</p>
-            <label className="flex items-start gap-2 text-xs leading-relaxed text-[#1A3328]">
-              <input
-                type="checkbox"
-                checked={guestAgreed}
-                onChange={(e) => setGuestAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[#3A8F6E]"
-              />
-              <span>{messages.payments.guestConsentLabel}</span>
-            </label>
-            <p className="flex flex-wrap gap-x-3 text-xs text-[#3A8F6E]">
-              <LocaleLink href={ROUTES.terms} target="_blank" rel="noopener" className="underline underline-offset-2">{messages.footer.terms}</LocaleLink>
-              <LocaleLink href={ROUTES.privacy} target="_blank" rel="noopener" className="underline underline-offset-2">{messages.footer.privacy}</LocaleLink>
-              <LocaleLink href={ROUTES.refund} target="_blank" rel="noopener" className="underline underline-offset-2">{messages.footer.refund}</LocaleLink>
-            </p>
-            {planNotice[planId] ? (
-              <p role="status" className="text-[12px] font-medium text-amber-700">
-                {planNotice[planId]}
-              </p>
-            ) : null}
-            <GuestSignupNotice text={messages.payments.guestSignupNotice} />
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void handleGuestCheckout(planId)}
-              className="w-full rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {messages.payments.guestPayCta}
-            </button>
-          </div>
+
+          {isSignedIn ? (
+            <div className="mt-5 space-y-3">
+              <p className="text-sm font-semibold text-[#1A3328]">{t.resumeTitle}</p>
+              {planNotice[planId] ? (
+                <p role="status" className="text-[12px] font-medium text-amber-700">{planNotice[planId]}</p>
+              ) : null}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void handleCheckout(planId)}
+                className="w-full rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {t.continueToPayment}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mt-5 rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4">
+                <p className="text-sm font-semibold leading-relaxed text-[#1A3328]">{t.loginPrompt}</p>
+                <a
+                  href={signInHrefFor(planId)}
+                  className="mt-3 flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
+                >
+                  {t.quickSignIn}
+                </a>
+              </div>
+
+              {guestAllowed ? (
+                <div className="mt-5 space-y-3">
+                  <p className="text-sm font-bold text-[#1A3328]">{t.guestSectionTitle}</p>
+                  <label className="block text-xs font-medium text-[#4A5C52]">
+                    {t.guestEmailLabelGuide}
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
+                    />
+                  </label>
+                  <GuestSignupNotice text={t.guestDescription} />
+                  <label className="flex items-start gap-2 text-sm leading-relaxed text-[#1A3328]">
+                    <input
+                      type="checkbox"
+                      checked={guestAgreed}
+                      onChange={(e) => setGuestAgreed(e.target.checked)}
+                      className="mt-1 h-4 w-4 shrink-0 accent-[#3A8F6E]"
+                    />
+                    <span>{t.guestRequiredConsent}</span>
+                  </label>
+                  <p className="rounded-xl bg-[#F5F0E8] px-3.5 py-2.5 text-xs leading-relaxed text-[#4A5C52]">{t.refundNotice}</p>
+                  <p className="flex flex-wrap gap-x-3 text-xs text-[#3A8F6E]">
+                    <LocaleLink href={ROUTES.terms} target="_blank" rel="noopener" className={linkCls}>{messages.footer.terms}</LocaleLink>
+                    <LocaleLink href={ROUTES.refund} target="_blank" rel="noopener" className={linkCls}>{messages.footer.refund}</LocaleLink>
+                    <LocaleLink href={ROUTES.privacy} target="_blank" rel="noopener" className={linkCls}>{messages.footer.privacy}</LocaleLink>
+                  </p>
+                  {planNotice[planId] ? (
+                    <p role="status" className="text-[12px] font-medium text-amber-700">{planNotice[planId]}</p>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void handleGuestCheckout(planId)}
+                    className="w-full rounded-full border border-[#1A3328]/30 bg-[#FFFDF8] px-5 py-3 text-sm font-semibold text-[#1A3328] transition hover:bg-[#F5F0E8] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {t.guestPayCta}
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-4 text-xs leading-relaxed text-[#4A5C52]">{t.signInRequired}</p>
+              )}
+            </>
+          )}
         </div>
       </div>,
       document.body,
@@ -499,39 +553,7 @@ export default function PurchaseSelectorContent({
             {planNotice[planId]}
           </p>
         ) : null}
-        {authLoaded && !isSignedIn && isGuestTossPlan(planId) && canBuy(planId) ? (
-          <>
-            <div className={["mt-6 grid gap-2.5", primary ? "sm:grid-cols-2" : ""].join(" ")}>
-              <LocaleLink
-                href={signInHref}
-                skipLocale
-                className={[
-                  "flex w-full items-center justify-center rounded-full px-5 py-3 text-center text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98]",
-                  primary
-                    ? "bg-[#3A8F6E] text-white hover:bg-[#33805f]"
-                    : "border border-[#1A3328]/30 bg-[#FFFDF8] text-[#1A3328] hover:bg-[#F5F0E8]",
-                ].join(" ")}
-              >
-                {messages.payments.signInAndPayCta}
-              </LocaleLink>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => openGuestCheckout(planId)}
-                className={[
-                  "w-full cursor-pointer rounded-full px-5 py-3 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
-                  primary
-                    ? "bg-[#3A8F6E] text-white hover:bg-[#33805f]"
-                    : "border border-[#1A3328]/30 bg-[#FFFDF8] text-[#1A3328] hover:bg-[#F5F0E8]",
-                ].join(" ")}
-              >
-                {messages.payments.guestPayCta}
-              </button>
-            </div>
-            <p className="mt-2 text-center text-[11px] text-[#4A5C52]">{messages.payments.guestOrSignIn}</p>
-          </>
-        ) : (
-          <button
+        <button
             type="button"
             disabled={busy || !authLoaded || !canBuy(planId)}
             onClick={() => void handleCheckout(planId)}
@@ -545,7 +567,6 @@ export default function PurchaseSelectorContent({
           >
             {canBuy(planId) ? plan.cta : messages.payments.usCheckoutComingSoon}
           </button>
-        )}
       </article>
     );
   }
@@ -553,7 +574,7 @@ export default function PurchaseSelectorContent({
   return (
     <div className="space-y-6">
       <h2 className="stitch-headline text-2xl font-bold text-[#1A3328]">{title}</h2>
-      {renderGuestCheckoutPopup()}
+      {renderCheckoutModal()}
 
       {alreadyHasAccessNotice ? (
         <p className="rounded-xl border border-[#D4CFC4] bg-[#F5F0E8] px-4 py-2.5 text-xs leading-relaxed text-[#4A5C52]">

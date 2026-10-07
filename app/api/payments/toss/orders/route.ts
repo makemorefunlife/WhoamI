@@ -14,6 +14,8 @@ import { resolveTossPaymentMethod, resolveTossPlan } from "@/lib/payment/tossCat
 import { tossSecretConfigured } from "@/lib/payment/tossServer";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { clientIpKey, normalizeGuestEmail } from "@/lib/payment/guestCheckout";
+import { claimTokenExpiry, newClaimNonce } from "@/lib/payment/guestClaimToken";
+import { tossKeyIsTest } from "@/lib/payment/tossTestMode";
 
 export const runtime = "nodejs";
 
@@ -108,6 +110,12 @@ export async function POST(req: Request) {
       order_id: orderId,
       clerk_user_id: userId ?? null,
       guest_email: guestEmail,
+      // Guest orders: per-order nonce for the emailed claim link (the token
+      // itself is derived with a server secret and never stored).
+      claim_token_nonce: guestEmail ? newClaimNonce() : null,
+      claim_token_expires_at: guestEmail ? claimTokenExpiry() : null,
+      locale,
+      is_test: tossKeyIsTest(),
       plan_id: plan.planId,
       amount: plan.amount,
       currency: plan.currency,

@@ -38,6 +38,8 @@ export type TossPayment = {
   method: string | null;
   approvedAt: string | null;
   cancels: TossCancel[];
+  /** Toss's own receipt page (payment.receipt.url), when provided. */
+  receiptUrl?: string | null;
 };
 
 export type TossResult =
@@ -78,6 +80,10 @@ function parsePayment(body: unknown): TossPayment | null {
     currency: typeof b.currency === "string" ? b.currency : "KRW",
     method: typeof b.method === "string" ? b.method : null,
     approvedAt: typeof b.approvedAt === "string" ? b.approvedAt : null,
+    receiptUrl:
+      b.receipt && typeof b.receipt === "object" && typeof (b.receipt as Record<string, unknown>).url === "string"
+        ? ((b.receipt as Record<string, unknown>).url as string)
+        : null,
     cancels,
   };
 }

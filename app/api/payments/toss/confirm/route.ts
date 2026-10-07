@@ -1,14 +1,17 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { NextResponse, after } from "next/server";
 import {
   createRouteSupabaseClient,
   supabaseConfigErrorResponse,
 } from "@/lib/supabase/serverClient";
 import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
+import { processDueGuestEmails } from "@/lib/email/guestPurchaseEmail";
 import { completeTossOrder } from "@/lib/payment/tossConfirm";
 import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
 import { clientIpKey, maskEmail } from "@/lib/payment/guestCheckout";
+import { decideTestGrant } from "@/lib/payment/tossTestMode";
+import { CLAIM_COOKIE, CLAIM_COOKIE_MAX_AGE_S, claimTokenFor } from "@/lib/payment/guestClaimToken";
 
 export const runtime = "nodejs";
 
@@ -48,22 +51,67 @@ export async function POST(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
+    // Serverless-safe extra sender: after this response, send up to a few due
+    // purchase-guide emails (elapsed retries / backoffs). Bounded; each send
+    // is guarded by the DB lease + Resend Idempotency-Key.
+    after(async () => {
+      await processDueGuestEmails(supabase, { limit: 3 }).catch(() => undefined);
+    });
+
     const outcome = await completeTossOrder(supabase, {
       clerkUserId: guest ? null : (userId as string),
       orderId,
       paymentKey,
       amount,
+      // Test orders on a public deployment: allowlist check on the Clerk user
+      // id and Clerk-VERIFIED emails (read server-side, never from the body).
+      testAccess: guest
+        ? undefined
+        : async () => {
+            const user = await currentUser();
+            const verifiedEmails = (user?.emailAddresses ?? [])
+              .filter((e) => e.verification?.status === "verified")
+              .map((e) => e.emailAddress);
+            return decideTestGrant(supabase, { clerkUserId: userId as string, verifiedEmails });
+          },
     });
 
     if (outcome.status === "awaiting_claim") {
       // Show the buyer which address to verify (masked) -- never the full email.
       const { data } = await supabase
         .from("toss_payment_orders")
-        .select("guest_email")
+        .select("guest_email, approved_at, claim_token_nonce, claim_token_expires_at")
         .eq("order_id", orderId)
         .maybeSingle();
-      const email = (data?.guest_email as string | null) ?? null;
-      return NextResponse.json({ ...outcome, maskedEmail: email ? maskEmail(email) : null }, { status: 200 });
+      const row = data as {
+        guest_email: string | null;
+        approved_at: string | null;
+        claim_token_nonce: string | null;
+        claim_token_expires_at: string | null;
+      } | null;
+      const email = row?.guest_email ?? null;
+      const res = NextResponse.json({ ...outcome, maskedEmail: email ? maskEmail(email) : null }, { status: 200 });
+      // The buyer's own browser, right after paying: a short-lived httpOnly
+      // cookie (not readable by page scripts, not in any URL) lets the claim
+      // page prefill the sign-up / sign-in email. Only within 30 minutes of
+      // the approval, and the cookie alone grants nothing.
+      const approvedMs = row?.approved_at ? new Date(row.approved_at).getTime() : 0;
+      const fresh = approvedMs > 0 && Date.now() - approvedMs < CLAIM_COOKIE_MAX_AGE_S * 1000;
+      const token = fresh && row?.claim_token_nonce ? claimTokenFor(orderId, row.claim_token_nonce) : null;
+      if (token) {
+        res.cookies.set(CLAIM_COOKIE, `${orderId}.${token}`, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/api/payments/toss",
+          maxAge: CLAIM_COOKIE_MAX_AGE_S,
+        });
+      }
+      return res;
+    }
+
+    if (outcome.status === "test_no_grant") {
+      return NextResponse.json(outcome, { status: 200 });
     }
 
     const httpStatus =

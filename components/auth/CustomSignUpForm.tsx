@@ -11,19 +11,22 @@ type Props = {
   fallbackRedirectPath?: string;
   signInUrl?: string;
   onSuccess?: () => void;
+  /** Prefilled email (guest-purchase claim flow). The user can still change it. */
+  initialEmail?: string | null;
 };
 
 export default function CustomSignUpForm({
   fallbackRedirectPath = ROUTES.home,
   signInUrl,
   onSuccess,
+  initialEmail,
 }: Props) {
   const router = useRouter();
   const { isLoaded, signUp, setActive } = useSignUp();
   const { locale, href } = useLocale();
   const isKr = locale === "ko-KR";
 
-  const [emailAddress, setEmailAddress] = useState("");
+  const [emailAddress, setEmailAddress] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -161,7 +164,7 @@ export default function CustomSignUpForm({
       return;
     }
 
-    console.log("[SignUp] create started", { email: emailAddress.trim() });
+    console.log("[SignUp] create started");
     try {
       const res = await Promise.race([
         signUp.create({
@@ -360,6 +363,7 @@ export default function CustomSignUpForm({
           routing="hash"
           signInUrl={signInUrl || href(ROUTES.signIn)}
           fallbackRedirectUrl={href(fallbackRedirectPath)}
+          initialValues={initialEmail ? { emailAddress: initialEmail } : undefined}
         />
         <button
           type="button"

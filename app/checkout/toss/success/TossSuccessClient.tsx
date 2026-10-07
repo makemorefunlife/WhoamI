@@ -6,10 +6,13 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
+import { loadReportSession } from "@/lib/home/reportSession";
+import { postPurchaseDestination } from "@/lib/payment/postPurchaseDestination";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
-  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null }
+  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string }
+  | { status: "test_no_grant"; reason: string }
   | { status: "payment_failed"; code: string }
   | { status: "pending_retry"; reason: string }
   | { status: "refunded_automatically"; reason: string }
@@ -19,8 +22,9 @@ type ConfirmBody =
 
 type ViewState =
   | { kind: "confirming" }
-  | { kind: "granted" }
-  | { kind: "awaiting_claim"; maskedEmail: string }
+  | { kind: "granted"; planId: string }
+  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean }
+  | { kind: "test_no_grant" }
   | { kind: "pending" }
   | { kind: "failed" }
   | { kind: "refunded" }
@@ -46,6 +50,8 @@ function SuccessContent() {
   const guest = params.get("guest") === "1";
   const [view, setView] = useState<ViewState>(() => (hasParams ? { kind: "confirming" } : { kind: "invalid" }));
   const returnPath = safeReturnPath(params.get("redirect")) ?? ROUTES.accountBilling;
+  const explicitReturn = safeReturnPath(params.get("redirect"));
+  const [starting, setStarting] = useState(false);
 
   // Only sets state after an await, so it is safe to start from an effect.
   const confirm = useCallback(async () => {
@@ -62,10 +68,12 @@ function SuccessContent() {
         body = null;
       }
       const status = body?.status;
-      if (status === "granted") return setView({ kind: "granted" });
+      if (status === "granted" && body && "planId" in body) return setView({ kind: "granted", planId: body.planId });
       if (status === "awaiting_claim" && body && "maskedEmail" in body) {
-        return setView({ kind: "awaiting_claim", maskedEmail: body.maskedEmail ?? "" });
+        // "sent" only when the mail provider accepted the message.
+        return setView({ kind: "awaiting_claim", maskedEmail: body.maskedEmail ?? "", emailSent: body.emailStatus === "sent" });
       }
+      if (status === "test_no_grant") return setView({ kind: "test_no_grant" });
       if (status === "payment_failed") return setView({ kind: "failed" });
       if (status === "refunded_automatically") return setView({ kind: "refunded" });
       if (status === "needs_attention") return setView({ kind: "attention" });
@@ -89,6 +97,18 @@ function SuccessContent() {
   }, [confirm, hasParams]);
 
   const goNext = () => router.push(localizedPath(returnPath, locale));
+  // Existing entry rules (report / survey / birth state + the plan bought),
+  // not a fixed /analysis route.
+  const startAnalysis = async (planId: string) => {
+    setStarting(true);
+    let session = null;
+    try {
+      session = await loadReportSession({ forceRefresh: true });
+    } catch {
+      session = null;
+    }
+    router.push(localizedPath(postPurchaseDestination({ planId, locale, session, explicitReturnPath: explicitReturn }), locale));
+  };
   const goPricing = () => router.push(localizedPath(ROUTES.pricing, locale));
   const primaryButton = "stitch-cta-primary w-full";
   const secondaryButton = "stitch-cta-secondary mt-3 w-full";
@@ -97,16 +117,25 @@ function SuccessContent() {
     case "confirming":
       return <TossResultShell tone="progress" title={t.tossConfirmingTitle} body={t.tossConfirmingBody} />;
     case "granted":
+      // Shown only after the server confirmed the entitlement grant.
       return (
-        <TossResultShell tone="success" title={t.tossSuccessTitle} body={t.tossSuccessBody}>
-          <button type="button" className={primaryButton} onClick={goNext}>
-            {t.tossContinue}
+        <TossResultShell tone="success" title={t.memberGrantedTitle} body={t.memberGrantedBody}>
+          <button type="button" className={primaryButton} disabled={starting} onClick={() => void startAnalysis(view.planId)}>
+            {t.startAnalysisCta}
           </button>
         </TossResultShell>
       );
     case "awaiting_claim":
+      // Shown only after the server confirmed the Toss approval.
       return (
-        <TossResultShell tone="success" title={t.tossAwaitingClaimTitle} body={t.tossAwaitingClaimBody(view.maskedEmail)}>
+        <TossResultShell
+          tone="success"
+          title={t.guestDoneTitle}
+          body={view.emailSent ? t.guestDoneBodyEmailSent : t.guestDoneBodyEmailPending}
+        >
+          {view.maskedEmail ? (
+            <p className="mb-4 text-center text-xs text-[#4A5C52]">{t.guestPurchaseEmailMasked(view.maskedEmail)}</p>
+          ) : null}
           <button
             type="button"
             className={primaryButton}
@@ -114,7 +143,15 @@ function SuccessContent() {
               router.push(localizedPath(`/checkout/toss/claim?${new URLSearchParams({ orderId }).toString()}`, locale))
             }
           >
-            {t.tossClaimCta}
+            {t.guestLinkCta}
+          </button>
+        </TossResultShell>
+      );
+    case "test_no_grant":
+      return (
+        <TossResultShell tone="warning" title={t.testNoGrantTitle} body={t.testNoGrantBody}>
+          <button type="button" className={primaryButton} onClick={goPricing}>
+            {t.tossBackToPricing}
           </button>
         </TossResultShell>
       );

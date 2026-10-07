@@ -760,7 +760,7 @@ export const messagesEnUS = {
           "Additional Relationship reports for $9.99 each after your monthly 2",
         ],
         validityNotes: [
-          "Valid for 12 months from purchase. No auto-renewal.",
+          "Use for 12 months from the purchase date. No auto-renewal.",
           "Unused monthly report credits do not roll over.",
         ],
         cta: "Get the Membership",
@@ -1475,6 +1475,59 @@ export const messagesEnUS = {
     tossInvalidTitle: "We couldn't find this payment",
     tossInvalidBody:
       "This payment link is invalid or already closed. If you were charged, please reach us from the Contact page.",
+    loginPrompt: "Sign in to save your results automatically and run relationship analyses faster!",
+    quickSignIn: "Quick sign-in",
+    guestSectionTitle: "Or pay as a guest",
+    guestEmailLabelGuide: "Email for your purchase details",
+    guestEmailLabelWithReceipt: "Email for your purchase details & receipt",
+    guestDescription: "After payment, we'll email you a link to start your analysis. To use the analysis and save your report, sign in or sign up with your purchase email and verify it.",
+    guestRequiredConsent: "[Required] I agree to the purchase terms and the cancellation & refund policy.",
+    guestRequiredConsentMissing: "Please enter your email and check the required agreement.",
+    refundNotice: "Unused products can be fully refunded within 7 days of purchase. For refunds after use, please see each product's refund policy.",
+    resumeTitle: "You're signed in. Continue to payment.",
+    continueToPayment: "Continue to payment",
+    memberGrantedTitle: "Your pass is linked to your account!",
+    memberGrantedBody: "Enter the details we need and start your analysis.",
+    startAnalysisCta: "Start my analysis now",
+    guestDoneTitle: "Your purchase is complete!",
+    guestDoneBodyEmailSent: "We sent a link to start your analysis to your purchase email. Link an account to start your analysis.",
+    guestDoneBodyEmailPending: "Your purchase is complete. Use the button below to link an account and start your analysis.",
+    guestLinkCta: "Link my account and start",
+    testNoGrantTitle: "Test payment processed",
+    testNoGrantBody: "This was a test payment, so no real charge was made. It was cancelled automatically and no pass was issued.",
+    claimSignedOutTitle: "Link an account to start your analysis",
+    claimSignUpCta: "Sign up with this email",
+    claimSignInCta: "I already have an account · Sign in",
+    claimNoPrefillBody: "Sign up or sign in with the email you used at checkout and verify it, and your pass will be linked to your account.",
+    claimTestNotAllowedTitle: "Test payments can't be linked as a pass",
+    claimLinkExpiredNotice: "This account-link link has expired or was replaced. Your purchase and pass are unchanged — sign in below or get a new link.",
+    claimNewLinkCta: "Email me a new link",
+    claimNewLinkRequested: "Request received. If this is a paid order, we'll send a new link to the purchase email. If it doesn't arrive within a few minutes, check your spam folder.",
+    claimTestNotAllowedBody: "On the public site, test payments become a pass only for approved test accounts. No real charge was made.",
+    guestPurchaseEmailMasked: (email: string) =>
+      `Purchase email: ${email}`,
+    claimSignedOutBody: (email: string) =>
+      `Sign up or sign in with ${email} and verify it, and your pass will be linked to your account.`,
+    guestEmail: {
+      subject: "[Aha! It's me] Your analysis pass purchase",
+      testSubjectPrefix: "[TEST purchase · no real charge]",
+      testBanner: "This is a test purchase. No real charge was made.",
+      testAmountSuffix: "(test · not charged)",
+      heading: "Thank you for your purchase",
+      greeting: "Your Aha! It's me analysis pass purchase is complete. Here are the details.",
+      productLabel: "Product",
+      amountLabel: "Amount paid",
+      purchasedAtLabel: "Purchase date",
+      validityLabel: "Use by",
+      validityFallback: "See the refund policy for each product's validity period.",
+      notYetGranted: "You'll receive your pass after linking an account.",
+      accountRequired: "To use the analysis and save your report, sign up or sign in with your purchase email and verify it.",
+      claimCta: "Link my account and start",
+      linkExpiry: "This account-link link is valid for 30 days. It is separate from your pass's use-by date: if the link expires, your purchase and pass stay as they are — sign in with your purchase email or request a new link.",
+      refundLabel: "View the refund policy",
+      receiptLabel: "View payment receipt (by Toss Payments)",
+      footer: "This is a send-only email. Questions: contact@ahaitsme.com",
+    },
   },
   paymentRefund: {
     checkboxLabel:
@@ -3212,6 +3265,57 @@ export type MessageCatalog = {
     tossAttentionBody: string;
     tossInvalidTitle: string;
     tossInvalidBody: string;
+    loginPrompt: string;
+    quickSignIn: string;
+    guestSectionTitle: string;
+    guestEmailLabelGuide: string;
+    guestEmailLabelWithReceipt: string;
+    guestDescription: string;
+    guestRequiredConsent: string;
+    guestRequiredConsentMissing: string;
+    refundNotice: string;
+    resumeTitle: string;
+    continueToPayment: string;
+    memberGrantedTitle: string;
+    memberGrantedBody: string;
+    startAnalysisCta: string;
+    guestDoneTitle: string;
+    guestDoneBodyEmailSent: string;
+    guestDoneBodyEmailPending: string;
+    guestLinkCta: string;
+    testNoGrantTitle: string;
+    testNoGrantBody: string;
+    claimSignedOutTitle: string;
+    claimSignUpCta: string;
+    claimSignInCta: string;
+    claimNoPrefillBody: string;
+    claimTestNotAllowedTitle: string;
+    claimTestNotAllowedBody: string;
+    claimLinkExpiredNotice: string;
+    claimNewLinkCta: string;
+    claimNewLinkRequested: string;
+    guestPurchaseEmailMasked: (email: string) => string;
+    claimSignedOutBody: (email: string) => string;
+    guestEmail: {
+      subject: string;
+      testSubjectPrefix: string;
+      testBanner: string;
+      testAmountSuffix: string;
+      heading: string;
+      greeting: string;
+      productLabel: string;
+      amountLabel: string;
+      purchasedAtLabel: string;
+      validityLabel: string;
+      validityFallback: string;
+      notYetGranted: string;
+      accountRequired: string;
+      claimCta: string;
+      linkExpiry: string;
+      refundLabel: string;
+      receiptLabel: string;
+      footer: string;
+    };
   };
   paymentRefund: {
     checkboxLabel: string;

@@ -129,6 +129,8 @@ function tossFake(script: {
 }
 
 let passed = 0;
+// Claim results also carry planId (for the "start analysis" destination); compare on the core fields.
+const strip = (rs: { orderId: string; result: string }[]) => rs.map(({ orderId, result }) => ({ orderId, result }));
 function ok(name: string) {
   passed++;
   console.log(`ok - ${name}`);
@@ -166,6 +168,7 @@ async function main() {
       "20260928120000_payment_manual_reviews.sql",
       "20261007120000_one_time_membership_toss_and_refunds.sql",
       "20261007130000_toss_guest_checkout.sql",
+      "20261008090000_toss_guest_email_and_test_mode.sql",
     ]) {
       psqlFile(DB, resolve(root, "supabase/migrations", m));
     }
@@ -378,7 +381,8 @@ async function main() {
       assert.deepEqual(asMember, { status: "rejected", reason: "mismatch" });
 
       const r1 = await completeTossOrder(sb, { clerkUserId: null, orderId, paymentKey: "pk_g1", amount: 20000 }, t.deps);
-      assert.deepEqual(r1, { status: "awaiting_claim", planId: "kr_insight_pass_30d" });
+      // Mail is not configured in this test -> queued for retry, payment unaffected.
+      assert.deepEqual(r1, { status: "awaiting_claim", planId: "kr_insight_pass_30d", emailStatus: "pending" });
       assert.equal(psql(DB, `select count(*) from credit_lots where reference_id in (select id from kr_purchase_grants where provider_transaction_id = 'toss:pk_g1')`), "0");
       const r2 = await completeTossOrder(sb, { clerkUserId: null, orderId, paymentKey: "pk_g1", amount: 20000 }, t.deps);
       assert.equal(r2.status, "awaiting_claim");
@@ -388,12 +392,12 @@ async function main() {
       // pretend the buyer pays now but claims 2 days later
       psql(DB, `update toss_payment_orders set approved_at = now() - interval '2 days' where order_id = ${lit(orderId)}`);
 
-      const wrong = await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["someone@example.com"], orderIds: [orderId] });
+      const wrong = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["someone@example.com"], orderIds: [orderId] }));
       assert.equal(wrong[0].result, "email_mismatch");
-      const none = await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: [] });
+      const none = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: [] }));
       assert.equal(none.length, 0);
 
-      const good = await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["Buyer@Example.com "] });
+      const good = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["Buyer@Example.com "] }));
       assert.deepEqual(good, [{ orderId, result: "claimed" }]);
       assert.equal(psql(DB, "select count(*) from credit_lots where clerk_user_id = 'u_buyer'"), "2");
       assert.equal(
@@ -406,9 +410,9 @@ async function main() {
                   where g.provider_transaction_id = 'toss:pk_g1' and o.order_id = ${lit(orderId)}`),
         "t",
       );
-      const again = await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] });
+      const again = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] }));
       assert.equal(again[0].result, "already_claimed");
-      const stolen = await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] });
+      const stolen = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] }));
       assert.equal(stolen[0].result, "claimed_by_other");
       assert.equal(psql(DB, "select count(*) from credit_lots where clerk_user_id = 'u_buyer'"), "2");
       ok("guest claim: verified-email match only, windows anchored to payment time (30 days from purchase), no double grant or takeover");
@@ -422,7 +426,7 @@ async function main() {
       const t = tossFake({ confirm: () => ({ kind: "rejected", httpStatus: 400, code: "REJECT_CARD_PAYMENT", message: "" }) });
       const r = await completeTossOrder(sb, { clerkUserId: null, orderId, paymentKey: "pk_g2", amount: 7900 }, t.deps);
       assert.equal(r.status, "payment_failed");
-      const c = await claimGuestTossOrders(sb, { clerkUserId: "u_late", verifiedEmails: ["late@example.com"], orderIds: [orderId] });
+      const c = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_late", verifiedEmails: ["late@example.com"], orderIds: [orderId] }));
       assert.equal(c[0].result, "not_paid");
       ok("guest declined card: order failed, nothing claimable");
     }
