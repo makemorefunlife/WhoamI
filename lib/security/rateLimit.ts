@@ -28,7 +28,8 @@ export type RateLimitBucket =
   | "survey_write"
   | "survey_delete"
   | "invite"
-  | "redeem_code";
+  | "redeem_code"
+  | "guest_checkout";
 
 const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   llm: { max: 5, windowMs: 60 * 60 * 1000 },
@@ -50,6 +51,8 @@ const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   // Redeem-code attempts (gift + tester codes) -- generous enough for retries
   // after a typo, tight enough to blunt brute-forcing a code's entropy.
   redeem_code: { max: 20, windowMs: 60 * 60 * 1000 },
+  // Toss guest (signed-out) order creation + confirm, keyed by hashed client IP.
+  guest_checkout: { max: 20, windowMs: 60 * 60 * 1000 },
 };
 
 type Entry = { count: number; resetAt: number };

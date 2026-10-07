@@ -10,7 +10,8 @@ import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
-import { isTossPlan } from "@/lib/payment/tossCatalog";
+import { isGuestTossPlan, isTossPlan } from "@/lib/payment/tossCatalog";
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
 import { ROUTES } from "@/constants/routes";
 
@@ -108,6 +109,11 @@ export default function PurchaseSelectorContent({
   const { busy: tossBusy, startTossCheckout } = useTossCheckout();
   const busy = regionalBusy || tossBusy;
   const [planNotice, setPlanNotice] = useState<Record<string, string>>({});
+  // Signed-out Toss purchase (KR plans): email + consent, then pay; the
+  // purchase is claimed into an account after the email is verified.
+  const [guestFormPlan, setGuestFormPlan] = useState<string | null>(null);
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestAgreed, setGuestAgreed] = useState(false);
   const [result, setResult] = useState<Record<string, "success" | "error" | "review">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
@@ -190,6 +196,14 @@ export default function PurchaseSelectorContent({
     setResult((prev) => ({ ...prev, [planId]: undefined as unknown as "success" }));
     setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
     if (isTossPlan(planId)) {
+      if (!isSignedIn) {
+        if (isGuestTossPlan(planId)) {
+          setGuestFormPlan(planId);
+        } else {
+          setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.signInRequired }));
+        }
+        return;
+      }
       // Leaves the page on success (Toss redirects to /checkout/toss/success,
       // which confirms server-side and then returns the buyer here).
       const tossOutcome = await startTossCheckout(planId, locale, {
@@ -215,6 +229,29 @@ export default function PurchaseSelectorContent({
     } else if (outcome === "error" || outcome === "ineligible") {
       setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
+  }
+
+  async function handleGuestCheckout(planId: string) {
+    if (!guestAgreed || !guestEmail.trim()) {
+      setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.guestConsentRequired }));
+      return;
+    }
+    setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
+    const outcome = await startTossCheckout(planId, locale, {
+      guestEmail: guestEmail.trim(),
+      agreedToTerms: true,
+    });
+    const notice =
+      outcome === "invalid_email"
+        ? messages.payments.guestEmailInvalid
+        : outcome === "not_configured"
+          ? messages.payments.tossNotConfigured
+          : outcome === "sign_in_required"
+            ? messages.payments.signInRequired
+            : outcome === "error"
+              ? messages.payments.tossStartError
+              : "";
+    if (notice) setPlanNotice((prev) => ({ ...prev, [planId]: notice }));
   }
 
   /**
@@ -367,6 +404,50 @@ export default function PurchaseSelectorContent({
         >
           {plan.cta}
         </button>
+        {guestFormPlan === planId && !isSignedIn ? (
+          <div className="mt-4 space-y-3 rounded-2xl border border-[#D4CFC4] bg-[#F5F0E8]/60 p-4 text-left">
+            <p className="text-sm font-semibold text-[#1A3328]">{messages.payments.guestCheckoutTitle}</p>
+            <label className="block text-xs font-medium text-[#4A5C52]">
+              {messages.payments.guestEmailLabel}
+              <input
+                type="email"
+                autoComplete="email"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-[#FFFDF8] px-3 py-2 text-sm text-[#1A3328]"
+              />
+            </label>
+            <p className="text-[11px] leading-relaxed text-[#4A5C52]">{messages.payments.guestEmailHint}</p>
+            <label className="flex items-start gap-2 text-[11px] leading-relaxed text-[#1A3328]">
+              <input
+                type="checkbox"
+                checked={guestAgreed}
+                onChange={(e) => setGuestAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[#3A8F6E]"
+              />
+              <span>{messages.payments.guestConsentLabel}</span>
+            </label>
+            <p className="flex flex-wrap gap-x-3 text-[11px] text-[#3A8F6E]">
+              <LocaleLink href={ROUTES.terms} className="underline underline-offset-2">{messages.footer.terms}</LocaleLink>
+              <LocaleLink href={ROUTES.privacy} className="underline underline-offset-2">{messages.footer.privacy}</LocaleLink>
+              <LocaleLink href={ROUTES.refund} className="underline underline-offset-2">{messages.footer.refund}</LocaleLink>
+            </p>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void handleGuestCheckout(planId)}
+              className="w-full rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {messages.payments.guestPayCta}
+            </button>
+            <p className="text-[11px] text-[#4A5C52]">
+              {messages.payments.guestOrSignIn}{" "}
+              <LocaleLink href={ROUTES.signIn} className="font-semibold text-[#3A8F6E] underline underline-offset-2">
+                {messages.nav.signIn}
+              </LocaleLink>
+            </p>
+          </div>
+        ) : null}
       </article>
     );
   }

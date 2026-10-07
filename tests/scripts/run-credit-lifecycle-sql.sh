@@ -27,6 +27,7 @@ MIGRATIONS=(
   20260928000000_redeem_code_system.sql
   20260928120000_payment_manual_reviews.sql
   20261007120000_one_time_membership_toss_and_refunds.sql
+  20261007130000_toss_guest_checkout.sql
 )
 
 cleanup() { "${P[@]}" -d postgres -c "drop database if exists $DB;" >/dev/null 2>&1 || true; }

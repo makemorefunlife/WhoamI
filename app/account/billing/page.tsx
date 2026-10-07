@@ -89,6 +89,13 @@ export default function AccountBillingPage() {
     let cancelled = false;
     void (async () => {
       try {
+        // Attach any paid guest (signed-out) purchases made with one of this
+        // account's verified emails before reading entitlements. Best-effort.
+        await fetch("/api/payments/toss/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        }).catch(() => null);
         const res = await fetch("/api/account/entitlements");
         const body = (await res.json().catch(() => null)) as EntitlementsInfo | null;
         if (cancelled) return;

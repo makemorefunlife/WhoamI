@@ -14,7 +14,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { completeTossOrder, type TossDeps } from "../../lib/payment/tossConfirm";
+import { claimGuestTossOrders, completeTossOrder, type TossDeps } from "../../lib/payment/tossConfirm";
+import { TOSS_PLANS, resolveTossPaymentMethod } from "../../lib/payment/tossCatalog";
 import { executeMembershipRefundAttempt, refundTag, type RefundDeps } from "../../lib/payment/membershipRefund";
 import type { TossPayment, TossResult } from "../../lib/payment/tossServer";
 
@@ -31,6 +32,7 @@ function lit(v: unknown): string {
   if (v === null || v === undefined) return "null";
   if (typeof v === "number") return String(v);
   if (typeof v === "boolean") return v ? "true" : "false";
+  if (Array.isArray(v)) return `array[${v.map(lit).join(",")}]::text[]`;
   return `'${String(v).replace(/'/g, "''")}'`;
 }
 
@@ -49,19 +51,33 @@ function fakeSupabase(): SupabaseClient {
     }
   };
   const from = (table: string) => {
-    const filters: [string, unknown][] = [];
+    const filters: string[] = [];
+    let limit = "";
+    const run = () => {
+      const where = filters.length ? `where ${filters.join(" and ")}` : "";
+      const out = psql(DB, `select coalesce(json_agg(t), '[]') from (select * from public.${table} ${where} ${limit}) t`);
+      return JSON.parse(out) as unknown[];
+    };
     const q = {
       select: () => q,
       eq: (col: string, val: unknown) => {
-        filters.push([col, val]);
+        filters.push(`${col} = ${lit(val)}`);
         return q;
       },
-      maybeSingle: async () => {
-        const where = filters.map(([c, v]) => `${c} = ${lit(v)}`).join(" and ");
-        const out = psql(DB, `select coalesce(json_agg(t), '[]') from (select * from public.${table} where ${where}) t`);
-        const rows = JSON.parse(out) as unknown[];
-        return { data: rows[0] ?? null, error: null };
+      is: (col: string, val: null) => {
+        filters.push(`${col} is ${val === null ? "null" : lit(val)}`);
+        return q;
       },
+      in: (col: string, vals: unknown[]) => {
+        filters.push(`${col} in (${vals.map(lit).join(",")})`);
+        return q;
+      },
+      limit: (n: number) => {
+        limit = `limit ${n}`;
+        return q;
+      },
+      then: (resolve: (v: { data: unknown[]; error: null }) => unknown) => resolve({ data: run(), error: null }),
+      maybeSingle: async () => ({ data: run()[0] ?? null, error: null }),
       upsert: async (obj: Record<string, unknown>) => {
         const cols = Object.keys(obj);
         psql(DB, `insert into public.${table} (${cols.join(",")}) values (${cols.map((c) => lit(obj[c])).join(",")}) on conflict do nothing`);
@@ -149,6 +165,7 @@ async function main() {
       "20260928000000_redeem_code_system.sql",
       "20260928120000_payment_manual_reviews.sql",
       "20261007120000_one_time_membership_toss_and_refunds.sql",
+      "20261007130000_toss_guest_checkout.sql",
     ]) {
       psqlFile(DB, resolve(root, "supabase/migrations", m));
     }
@@ -314,6 +331,100 @@ async function main() {
       assert.deepEqual(a, { status: "succeeded", alreadySucceeded: false, providerReference: "tx_c2" });
       assert.equal(t.calls.filter((c) => c.op === "cancel").length, 1);
       ok("refund: ambiguous provider answer reconciled from payment history (full refund within 7 days)");
+    }
+
+    // 10. catalog: KR prices on the Toss window, USD closed until configured
+    {
+      assert.deepEqual(
+        ["kr_personal_premium", "kr_relationship_premium", "kr_insight_pass_30d", "kr_relationship_triple"].map((id) => [
+          TOSS_PLANS[id]?.amount,
+          TOSS_PLANS[id]?.currency,
+          TOSS_PLANS[id]?.guestCheckout,
+        ]),
+        [[7900, "KRW", true], [14900, "KRW", true], [20000, "KRW", true], [33000, "KRW", true]],
+      );
+      assert.equal(TOSS_PLANS.us_annual_membership?.currency, "USD");
+      assert.equal(TOSS_PLANS.us_annual_membership?.guestCheckout, false);
+      assert.equal(resolveTossPaymentMethod("KRW", undefined), "CARD");
+      assert.equal(resolveTossPaymentMethod("USD", undefined), null);
+      assert.equal(resolveTossPaymentMethod("USD", "KRW"), null);
+      assert.equal(resolveTossPaymentMethod("USD", "FOREIGN_EASY_PAY"), "FOREIGN_EASY_PAY");
+      ok("catalog: KR 7,900 / 14,900 / 20,000 / 33,000 KRW via card; USD has no default and never falls back");
+    }
+
+    // 11. KR member purchase on Toss: Triple grants 3 credits, 12 months
+    {
+      const orderId = `aha_${"b".repeat(31)}1`;
+      psql(DB, `insert into toss_payment_orders (order_id, clerk_user_id, plan_id, amount, currency, order_name)
+                values (${lit(orderId)}, 'u_kr', 'kr_relationship_triple', 33000, 'KRW', 'Relationship Triple')`);
+      const t = tossFake({ confirm: (p) => ({ kind: "ok", payment: payment(p.orderId, p.paymentKey, { totalAmount: 33000, currency: "KRW" }) }) });
+      const r = await completeTossOrder(sb, { clerkUserId: "u_kr", orderId, paymentKey: "pk_kr1", amount: 33000 }, t.deps);
+      assert.equal(r.status, "granted");
+      assert.equal(psql(DB, "select remaining from credit_lots where clerk_user_id = 'u_kr'"), "3");
+      assert.equal(psql(DB, "select (expires_at - created_at) between interval '364 days' and interval '366 days' from credit_lots where clerk_user_id = 'u_kr'"), "t");
+      assert.equal(psql(DB, "select payment_provider from kr_purchase_grants where clerk_user_id = 'u_kr'"), "toss");
+      ok("KR member purchase (Triple 33,000 KRW): 3 Relationship credits valid 12 months, provider toss");
+    }
+
+    // 12. guest checkout: pay -> awaiting claim -> email-verified claim
+    {
+      const orderId = `aha_${"c".repeat(31)}1`;
+      psql(DB, `insert into toss_payment_orders (order_id, clerk_user_id, guest_email, plan_id, amount, currency, order_name)
+                values (${lit(orderId)}, null, 'buyer@example.com', 'kr_insight_pass_30d', 20000, 'KRW', '30-Day Pass')`);
+      const t = tossFake({ confirm: (p) => ({ kind: "ok", payment: payment(p.orderId, p.paymentKey, { totalAmount: 20000, currency: "KRW" }) }) });
+
+      // a signed-in member cannot confirm someone's guest order as their own
+      const asMember = await completeTossOrder(sb, { clerkUserId: "u_thief", orderId, paymentKey: "pk_g1", amount: 20000 }, t.deps);
+      assert.deepEqual(asMember, { status: "rejected", reason: "mismatch" });
+
+      const r1 = await completeTossOrder(sb, { clerkUserId: null, orderId, paymentKey: "pk_g1", amount: 20000 }, t.deps);
+      assert.deepEqual(r1, { status: "awaiting_claim", planId: "kr_insight_pass_30d" });
+      assert.equal(psql(DB, `select count(*) from credit_lots where reference_id in (select id from kr_purchase_grants where provider_transaction_id = 'toss:pk_g1')`), "0");
+      const r2 = await completeTossOrder(sb, { clerkUserId: null, orderId, paymentKey: "pk_g1", amount: 20000 }, t.deps);
+      assert.equal(r2.status, "awaiting_claim");
+      assert.equal(t.calls.filter((c) => c.op === "confirm").length, 1);
+      ok("guest: paid once, nothing granted before claim, member cannot hijack, repeat confirm idempotent");
+
+      // pretend the buyer pays now but claims 2 days later
+      psql(DB, `update toss_payment_orders set approved_at = now() - interval '2 days' where order_id = ${lit(orderId)}`);
+
+      const wrong = await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["someone@example.com"], orderIds: [orderId] });
+      assert.equal(wrong[0].result, "email_mismatch");
+      const none = await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: [] });
+      assert.equal(none.length, 0);
+
+      const good = await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["Buyer@Example.com "] });
+      assert.deepEqual(good, [{ orderId, result: "claimed" }]);
+      assert.equal(psql(DB, "select count(*) from credit_lots where clerk_user_id = 'u_buyer'"), "2");
+      assert.equal(
+        psql(DB, `select bool_and(abs(extract(epoch from (cl.expires_at - (o.approved_at + interval '30 days')))) < 5)
+                  from credit_lots cl, toss_payment_orders o where cl.clerk_user_id = 'u_buyer' and o.order_id = ${lit(orderId)}`),
+        "t",
+      );
+      assert.equal(
+        psql(DB, `select abs(extract(epoch from (g.created_at - o.approved_at))) < 1 from kr_purchase_grants g, toss_payment_orders o
+                  where g.provider_transaction_id = 'toss:pk_g1' and o.order_id = ${lit(orderId)}`),
+        "t",
+      );
+      const again = await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] });
+      assert.equal(again[0].result, "already_claimed");
+      const stolen = await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] });
+      assert.equal(stolen[0].result, "claimed_by_other");
+      assert.equal(psql(DB, "select count(*) from credit_lots where clerk_user_id = 'u_buyer'"), "2");
+      ok("guest claim: verified-email match only, windows anchored to payment time (30 days from purchase), no double grant or takeover");
+    }
+
+    // 13. guest + declined card: nothing to claim
+    {
+      const orderId = `aha_${"d".repeat(31)}1`;
+      psql(DB, `insert into toss_payment_orders (order_id, guest_email, plan_id, amount, currency, order_name)
+                values (${lit(orderId)}, 'late@example.com', 'kr_personal_premium', 7900, 'KRW', 'Personal')`);
+      const t = tossFake({ confirm: () => ({ kind: "rejected", httpStatus: 400, code: "REJECT_CARD_PAYMENT", message: "" }) });
+      const r = await completeTossOrder(sb, { clerkUserId: null, orderId, paymentKey: "pk_g2", amount: 7900 }, t.deps);
+      assert.equal(r.status, "payment_failed");
+      const c = await claimGuestTossOrders(sb, { clerkUserId: "u_late", verifiedEmails: ["late@example.com"], orderIds: [orderId] });
+      assert.equal(c[0].result, "not_paid");
+      ok("guest declined card: order failed, nothing claimable");
     }
 
     console.log(`\ntoss-membership-flow: ${passed} passed`);

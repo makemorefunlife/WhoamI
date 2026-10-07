@@ -13,6 +13,8 @@ import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 export type TossConfirmOutcome =
   /** Entitlement granted (or was already granted by an earlier request). */
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
+  /** Guest checkout: paid, waiting for the buyer to claim it into an account. */
+  | { status: "awaiting_claim"; planId: string }
   /** Toss declined / buyer error. Nothing was charged. */
   | { status: "payment_failed"; code: string }
   /** Charged, but the grant has not finished -- safe to retry the same request. */
@@ -83,15 +85,23 @@ function paymentMatchesOrder(
  */
 export async function completeTossOrder(
   supabase: SupabaseClient,
-  input: { clerkUserId: string; orderId: string; paymentKey: string; amount: number },
+  /** clerkUserId null = guest checkout (the order must be a guest order). */
+  input: { clerkUserId: string | null; orderId: string; paymentKey: string; amount: number },
   deps: TossDeps = defaultDeps,
 ): Promise<TossConfirmOutcome> {
-  const { data: claimData, error: claimError } = await supabase.rpc("claim_toss_order_for_confirm", {
-    p_order_id: input.orderId,
-    p_clerk_user_id: input.clerkUserId,
-    p_payment_key: input.paymentKey,
-    p_amount: input.amount,
-  });
+  const guest = input.clerkUserId === null;
+  const { data: claimData, error: claimError } = guest
+    ? await supabase.rpc("claim_guest_toss_order_for_confirm", {
+        p_order_id: input.orderId,
+        p_payment_key: input.paymentKey,
+        p_amount: input.amount,
+      })
+    : await supabase.rpc("claim_toss_order_for_confirm", {
+        p_order_id: input.orderId,
+        p_clerk_user_id: input.clerkUserId,
+        p_payment_key: input.paymentKey,
+        p_amount: input.amount,
+      });
   if (claimError) {
     logServerError("toss.confirm", claimError, "claim_failed");
     return { status: "pending_retry", reason: "claim_failed" };
@@ -109,7 +119,10 @@ export async function completeTossOrder(
       return { status: "rejected", reason: "in_progress" };
     case "granted":
       return { status: "granted", alreadyProcessed: true, planId: claim.plan_id ?? "" };
+    case "awaiting_claim":
+      return { status: "awaiting_claim", planId: claim.plan_id ?? "" };
     case "paid":
+      if (guest) return { status: "rejected", reason: "closed" };
       return grant(supabase, input, claim.plan_id ?? "", deps);
     case "claimed":
       break;
@@ -121,7 +134,7 @@ export async function completeTossOrder(
   const planId = claim.plan_id ?? "";
   const order = { orderId: input.orderId, amount: Number(claim.amount), currency: claim.currency ?? "" };
 
-  if (planId === "us_annual_membership") {
+  if (planId === "us_annual_membership" && input.clerkUserId) {
     const active = await getActiveMembershipRow(supabase, input.clerkUserId);
     if (!active.ok) {
       // Leave 'confirming': nothing charged yet; a retry re-claims after the grace window.
@@ -182,14 +195,71 @@ export async function completeTossOrder(
     p_order_id: input.orderId,
     p_payment_key: input.paymentKey,
     p_method: result.payment.method,
-    p_approved_at: result.payment.approvedAt,
+    p_approved_at: result.payment.approvedAt ?? new Date().toISOString(),
   });
   if (paidError) {
     logServerError("toss.confirm", paidError, "mark_paid_failed");
     return { status: "pending_retry", reason: "mark_paid_failed" };
   }
 
+  // Guest: money is captured; the entitlement is granted only when the buyer
+  // claims the order into a verified account (claimGuestTossOrders).
+  if (guest) return { status: "awaiting_claim", planId };
+
   return grant(supabase, input, planId, deps);
+}
+
+export type GuestClaimResult = {
+  orderId: string;
+  result: "claimed" | "already_claimed" | "claimed_by_other" | "email_mismatch" | "not_paid" | "not_found" | "error";
+};
+
+/**
+ * Attaches paid guest orders to the signed-in account. Ownership proof is
+ * the account's VERIFIED email addresses (read server-side from Clerk by the
+ * caller) -- the order can only be claimed by an account that verified the
+ * same email the buyer entered at checkout. With no orderIds, claims every
+ * paid, unclaimed guest order for those emails.
+ */
+export async function claimGuestTossOrders(
+  supabase: SupabaseClient,
+  params: { clerkUserId: string; verifiedEmails: string[]; orderIds?: string[] },
+): Promise<GuestClaimResult[]> {
+  const emails = [...new Set(params.verifiedEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))];
+  if (emails.length === 0) return (params.orderIds ?? []).map((orderId) => ({ orderId, result: "email_mismatch" }));
+
+  let orderIds = params.orderIds ?? [];
+  if (orderIds.length === 0) {
+    const { data, error } = await supabase
+      .from("toss_payment_orders")
+      .select("order_id")
+      .is("clerk_user_id", null)
+      .eq("status", "paid")
+      .in("guest_email", emails)
+      .limit(20);
+    if (error) {
+      logServerError("toss.guestClaim", error, "list_failed");
+      return [];
+    }
+    orderIds = (data ?? []).map((r: { order_id: string }) => r.order_id);
+  }
+
+  const out: GuestClaimResult[] = [];
+  for (const orderId of orderIds) {
+    const { data, error } = await supabase.rpc("claim_paid_guest_toss_order", {
+      p_order_id: orderId,
+      p_clerk_user_id: params.clerkUserId,
+      p_verified_emails: emails,
+    });
+    if (error) {
+      logServerError("toss.guestClaim", error, "claim_failed");
+      out.push({ orderId, result: "error" });
+      continue;
+    }
+    const row = rpcRow<{ result: GuestClaimResult["result"] }>(data);
+    out.push({ orderId, result: row?.result ?? "error" });
+  }
+  return out;
 }
 
 async function grant(

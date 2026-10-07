@@ -1421,6 +1421,30 @@ export const messagesEnUS = {
       "Aha It's me does not currently sell or share your personal information for cross-context behavioral advertising. Learn how to reach us with privacy questions or requests.",
   },
   payments: {
+    guestEmailInvalid: "Please enter a valid email address.",
+    guestCheckoutTitle: "Buy without an account",
+    guestEmailLabel: "Email for this purchase",
+    guestEmailHint:
+      "After payment, sign in or sign up with this email and verify it to add the purchase to your account.",
+    guestConsentLabel:
+      "I agree to the Terms and the collection of my email for this purchase, and I understand that once generation of personalized digital content begins, withdrawal for a change of mind may be limited. (required)",
+    guestConsentRequired: "Please enter your email and check the agreement to continue.",
+    guestPayCta: "Pay as a guest",
+    guestOrSignIn: "Signed-in purchases are added to your account right away.",
+    signInRequired: "Please sign in to buy this plan.",
+    tossAwaitingClaimTitle: "Payment complete — one more step",
+    tossAwaitingClaimBody: (email: string) =>
+      `To receive your purchase, sign in or sign up with ${email} and verify that email. Your purchase is kept until then — please don't pay again.`,
+    tossClaimCta: "Sign in and receive my purchase",
+    claimWorkingTitle: "Adding your purchase…",
+    claimDoneTitle: "Your purchase has been added",
+    claimDoneBody: "You can use it from your account now.",
+    claimMismatchTitle: "This account can't receive that purchase",
+    claimMismatchBody:
+      "Sign in with the email you entered at checkout and make sure it is verified. If you no longer have access to it, reach us from the Contact page with your order details.",
+    claimNothingTitle: "No purchase to add",
+    claimNothingBody: "We couldn't find a paid guest purchase for this account's verified email.",
+    goToAccount: "Go to my account",
     tossAlreadyMember: "You already have an active membership, so there's nothing to buy right now.",
     tossNotConfigured: "Membership checkout isn't available yet. Please try again later.",
     tossStartError: "We couldn't open the payment window. Please try again.",
@@ -3139,6 +3163,26 @@ export type MessageCatalog = {
     metaDescription: string;
   };
   payments: {
+    guestEmailInvalid: string;
+    guestCheckoutTitle: string;
+    guestEmailLabel: string;
+    guestEmailHint: string;
+    guestConsentLabel: string;
+    guestConsentRequired: string;
+    guestPayCta: string;
+    guestOrSignIn: string;
+    signInRequired: string;
+    tossAwaitingClaimTitle: string;
+    tossAwaitingClaimBody: (email: string) => string;
+    tossClaimCta: string;
+    claimWorkingTitle: string;
+    claimDoneTitle: string;
+    claimDoneBody: string;
+    claimMismatchTitle: string;
+    claimMismatchBody: string;
+    claimNothingTitle: string;
+    claimNothingBody: string;
+    goToAccount: string;
     tossAlreadyMember: string;
     tossNotConfigured: string;
     tossStartError: string;

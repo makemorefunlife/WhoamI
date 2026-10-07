@@ -7,6 +7,8 @@ import {
 import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
 import { completeTossOrder } from "@/lib/payment/tossConfirm";
+import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
+import { clientIpKey, maskEmail } from "@/lib/payment/guestCheckout";
 
 export const runtime = "nodejs";
 
@@ -16,17 +18,26 @@ export const runtime = "nodejs";
  * lookup keys -- every check (owner, amount, currency, eligibility) is done
  * against the server-created order row and Toss's own response. Safe to
  * call repeatedly with the same params (see completeTossOrder).
+ *
+ * Guest orders ({ guest: true }) need no session: they are confirmed (money
+ * captured) and left 'awaiting_claim' -- nothing is granted until the buyer
+ * claims them via /api/payments/toss/claim from a verified account.
  */
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ status: "unauthorized" }, { status: 401 });
-    }
-
     const parsed = await readJsonBodyLimited(req);
     if (!parsed.ok) return parsed.response;
     const body = (parsed.body ?? {}) as Record<string, unknown>;
+    const guest = body.guest === true;
+
+    const { userId } = await auth();
+    if (!guest && !userId) {
+      return NextResponse.json({ status: "unauthorized" }, { status: 401 });
+    }
+    if (guest) {
+      const limited = await enforceRateLimit("guest_checkout", clientIpKey(req));
+      if (!limited.ok) return rateLimitResponse(limited);
+    }
     const paymentKey = typeof body.paymentKey === "string" ? body.paymentKey.trim() : "";
     const orderId = typeof body.orderId === "string" ? body.orderId.trim() : "";
     const amount = Number(body.amount);
@@ -37,7 +48,23 @@ export async function POST(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
-    const outcome = await completeTossOrder(supabase, { clerkUserId: userId, orderId, paymentKey, amount });
+    const outcome = await completeTossOrder(supabase, {
+      clerkUserId: guest ? null : (userId as string),
+      orderId,
+      paymentKey,
+      amount,
+    });
+
+    if (outcome.status === "awaiting_claim") {
+      // Show the buyer which address to verify (masked) -- never the full email.
+      const { data } = await supabase
+        .from("toss_payment_orders")
+        .select("guest_email")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      const email = (data?.guest_email as string | null) ?? null;
+      return NextResponse.json({ ...outcome, maskedEmail: email ? maskEmail(email) : null }, { status: 200 });
+    }
 
     const httpStatus =
       outcome.status === "granted"

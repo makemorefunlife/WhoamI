@@ -23,7 +23,7 @@ export function resolveRegionalPlan(planId: string): RegionalPlanMatch | null {
   }
   const kr = resolveKrPlan(planId);
   if (kr) {
-    return { region: "kr", planId: kr.planId, priceId: kr.priceId, billingType: kr.billingType, provider: "paddle" };
+    return { region: "kr", planId: kr.planId, priceId: kr.priceId, billingType: kr.billingType, provider: kr.provider };
   }
   return null;
 }

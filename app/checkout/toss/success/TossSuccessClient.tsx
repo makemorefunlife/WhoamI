@@ -9,6 +9,7 @@ import TossResultShell from "../TossResultShell";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
+  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null }
   | { status: "payment_failed"; code: string }
   | { status: "pending_retry"; reason: string }
   | { status: "refunded_automatically"; reason: string }
@@ -19,6 +20,7 @@ type ConfirmBody =
 type ViewState =
   | { kind: "confirming" }
   | { kind: "granted" }
+  | { kind: "awaiting_claim"; maskedEmail: string }
   | { kind: "pending" }
   | { kind: "failed" }
   | { kind: "refunded" }
@@ -41,6 +43,7 @@ function SuccessContent() {
   const orderId = params.get("orderId") ?? "";
   const amount = params.get("amount") ?? "";
   const hasParams = Boolean(paymentKey && orderId && amount);
+  const guest = params.get("guest") === "1";
   const [view, setView] = useState<ViewState>(() => (hasParams ? { kind: "confirming" } : { kind: "invalid" }));
   const returnPath = safeReturnPath(params.get("redirect")) ?? ROUTES.accountBilling;
 
@@ -52,7 +55,7 @@ function SuccessContent() {
         const res = await fetch("/api/payments/toss/confirm", {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-aha-locale": locale },
-          body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) }),
+          body: JSON.stringify({ paymentKey, orderId, amount: Number(amount), guest }),
         });
         body = (await res.json().catch(() => null)) as ConfirmBody | null;
       } catch {
@@ -60,6 +63,9 @@ function SuccessContent() {
       }
       const status = body?.status;
       if (status === "granted") return setView({ kind: "granted" });
+      if (status === "awaiting_claim" && body && "maskedEmail" in body) {
+        return setView({ kind: "awaiting_claim", maskedEmail: body.maskedEmail ?? "" });
+      }
       if (status === "payment_failed") return setView({ kind: "failed" });
       if (status === "refunded_automatically") return setView({ kind: "refunded" });
       if (status === "needs_attention") return setView({ kind: "attention" });
@@ -72,7 +78,7 @@ function SuccessContent() {
       if (attempt < AUTO_RETRIES) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
     }
     setView({ kind: "pending" });
-  }, [amount, locale, orderId, paymentKey]);
+  }, [amount, guest, locale, orderId, paymentKey]);
 
   useEffect(() => {
     if (!hasParams) return;
@@ -95,6 +101,20 @@ function SuccessContent() {
         <TossResultShell tone="success" title={t.tossSuccessTitle} body={t.tossSuccessBody}>
           <button type="button" className={primaryButton} onClick={goNext}>
             {t.tossContinue}
+          </button>
+        </TossResultShell>
+      );
+    case "awaiting_claim":
+      return (
+        <TossResultShell tone="success" title={t.tossAwaitingClaimTitle} body={t.tossAwaitingClaimBody(view.maskedEmail)}>
+          <button
+            type="button"
+            className={primaryButton}
+            onClick={() =>
+              router.push(localizedPath(`/checkout/toss/claim?${new URLSearchParams({ orderId }).toString()}`, locale))
+            }
+          >
+            {t.tossClaimCta}
           </button>
         </TossResultShell>
       );

@@ -15,11 +15,11 @@ import { localizedPath, type Locale } from "@/lib/i18n/locale";
  * requestPayment navigates away on success, so the returned promise only
  * resolves for outcomes that keep the buyer on this page.
  */
-type TossPaymentsFactory = (clientKey: string) => {
+type TossPaymentsFactory = ((clientKey: string) => {
   payment: (opts: { customerKey: string }) => {
     requestPayment: (params: Record<string, unknown>) => Promise<unknown>;
   };
-};
+}) & { ANONYMOUS?: string };
 
 declare global {
   interface Window {
@@ -48,7 +48,14 @@ function loadTossSdk(): Promise<TossPaymentsFactory> {
   return sdkPromise;
 }
 
-export type TossCheckoutOutcome = "redirecting" | "cancelled" | "already_member" | "not_configured" | "error";
+export type TossCheckoutOutcome =
+  | "redirecting"
+  | "cancelled"
+  | "already_member"
+  | "not_configured"
+  | "sign_in_required"
+  | "invalid_email"
+  | "error";
 
 type OrderResponse = {
   orderId: string;
@@ -56,7 +63,9 @@ type OrderResponse = {
   amount: number;
   currency: "USD" | "KRW";
   method: "CARD" | "FOREIGN_EASY_PAY";
-  customerKey: string;
+  guest: boolean;
+  customerKey: string | null;
+  customerEmail: string | null;
   clientKey: string;
 };
 
@@ -64,39 +73,61 @@ export function useTossCheckout() {
   const [busy, setBusy] = useState(false);
 
   const startTossCheckout = useCallback(
-    async (planId: string, locale: Locale, opts?: { returnPath?: string; customerEmail?: string }): Promise<TossCheckoutOutcome> => {
+    async (
+      planId: string,
+      locale: Locale,
+      opts?: {
+        returnPath?: string;
+        /** Signed-out purchase: the email the buyer will verify to claim it. */
+        guestEmail?: string;
+        /** Signed-out purchase: terms / privacy / withdrawal notice accepted. */
+        agreedToTerms?: boolean;
+      },
+    ): Promise<TossCheckoutOutcome> => {
       setBusy(true);
       try {
         const res = await fetch("/api/payments/toss/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-aha-locale": locale },
-          body: JSON.stringify({ planId }),
+          body: JSON.stringify({
+            planId,
+            ...(opts?.guestEmail !== undefined
+              ? { guestEmail: opts.guestEmail, agreedToTerms: opts.agreedToTerms === true }
+              : {}),
+          }),
         });
         const order = (await res.json().catch(() => ({}))) as Partial<OrderResponse> & { code?: string };
         if (!res.ok) {
           if (order.code === "already_member") return "already_member";
-          if (order.code === "toss_not_configured") return "not_configured";
+          if (order.code === "toss_not_configured" || order.code === "currency_not_enabled") return "not_configured";
+          if (order.code === "sign_in_required") return "sign_in_required";
+          if (order.code === "invalid_email" || order.code === "consent_required") return "invalid_email";
           return "error";
         }
-        if (!order.orderId || !order.clientKey || !order.customerKey || !order.amount || !order.currency) return "error";
+        if (!order.orderId || !order.clientKey || !order.amount || !order.currency || !order.method) return "error";
 
         const TossPayments = await loadTossSdk();
-        const payment = TossPayments(order.clientKey).payment({ customerKey: order.customerKey });
+        const customerKey = order.guest ? TossPayments.ANONYMOUS : order.customerKey;
+        if (!customerKey) return "error";
+        const payment = TossPayments(order.clientKey).payment({ customerKey });
 
         const origin = window.location.origin;
-        const q = opts?.returnPath ? `?${new URLSearchParams({ redirect: opts.returnPath }).toString()}` : "";
+        const qp = new URLSearchParams();
+        if (opts?.returnPath) qp.set("redirect", opts.returnPath);
+        if (order.guest) qp.set("guest", "1");
+        const q = qp.toString() ? `?${qp.toString()}` : "";
         const successUrl = `${origin}${localizedPath("/checkout/toss/success", locale)}${q}`;
         const failUrl = `${origin}${localizedPath("/checkout/toss/fail", locale)}${q}`;
 
         const params: Record<string, unknown> = {
-          method: order.method ?? "CARD",
+          method: order.method,
           amount: { currency: order.currency, value: order.amount },
           orderId: order.orderId,
           orderName: order.orderName,
           successUrl,
           failUrl,
         };
-        if (opts?.customerEmail) params.customerEmail = opts.customerEmail;
+        if (order.customerEmail) params.customerEmail = order.customerEmail;
         if (order.method === "FOREIGN_EASY_PAY") {
           params.foreignEasyPay = { provider: "PAYPAL", country: "US" };
         } else {

@@ -268,7 +268,7 @@ begin
     return;
   end if;
 
-  if v_o.clerk_user_id <> p_clerk_user_id or v_o.amount <> p_amount then
+  if v_o.clerk_user_id is distinct from p_clerk_user_id or v_o.amount <> p_amount then
     return query select 'mismatch'::text, v_o.plan_id, v_o.amount, v_o.currency;
     return;
   end if;
@@ -396,6 +396,10 @@ begin
   end if;
   if v_o.status <> 'paid' or v_o.payment_key is null then
     raise exception 'toss order not paid: %', v_o.status;
+  end if;
+  if v_o.clerk_user_id is null then
+    -- Guest order not yet claimed into an account (20261007130000).
+    raise exception 'toss order not claimed';
   end if;
 
   v_txn := 'toss:' || v_o.payment_key;
