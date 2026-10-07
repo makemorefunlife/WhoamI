@@ -62,8 +62,8 @@ import type { Locale } from "@/lib/i18n/locale";
  *   accounting/e-commerce recordkeeping. Neither step can guarantee
  *   instantaneous removal from Supabase's own periodic backups.
  * - Business address: unified to the one address already used in
- *   Terms of Service and the ko-KR footer -- "5F, 18 Eonju-ro 134-gil,
- *   Gangnam-gu, Seoul, Republic of Korea" -- as the single source of
+ *   Terms of Service and the ko-KR footer -- "5F, Ga-8, 18 Eonju-ro 134-gil,
+ *   Gangnam-gu, Seoul, 06053, Republic of Korea" -- as the single source of
  *   truth everywhere it appears.
  *
  * Open items this document does NOT resolve (see the accompanying audit
@@ -151,7 +151,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc. | United States (production functions run in the sfo1 / San Francisco region) | IP address, request/browser metadata | Application hosting and content delivery | Continuous and automated, with each request to our Service | Governed by Vercel's own data retention policy | See Vercel's published privacy policy for contact details.",
           "Supabase | United States (production database region: us-west-1 / Oregon) | Account identifiers, service input, questionnaire responses, relationship analysis data, transaction identifiers | Database hosting and storage | Continuous and automated | Retained while your account is active; backup copies are retained for a limited period in accordance with our database provider's own backup lifecycle policy | See Supabase's published privacy policy for contact details.",
           "Clerk | United States (Clerk offers no selectable regional data residency) | Email address, authentication and session data | Authentication and account management | Continuous and automated | Governed by Clerk's own data retention policy | See Clerk's published privacy policy for contact details.",
-          "Third-party payment service providers | Varies by provider; may include locations outside Korea such as the United Kingdom and the United States | Email address, payment/cardholder details, transaction history | Payment and refund processing | At checkout, directly between you and the provider | Governed by the provider's own data retention policy | Contact support@ahaitsme.com, or see the support information in your payment receipt.",
+          "Third-party payment service providers | Varies by provider; may include locations outside Korea such as the United Kingdom and the United States | Email address, payment/cardholder details, transaction history | Payment and refund processing | At checkout, directly between you and the provider | Governed by the provider's own data retention policy | Contact contact@ahaitsme.com, or see the support information in your payment receipt.",
           "OpenAI, L.L.C. | United States | Birth-derived analysis signals, questionnaire responses, and (where applicable) a name for personalization -- never your account email or payment data | AI-assisted report generation | At the time each report is generated, via API | Not used to train OpenAI's models by default; retained by OpenAI for up to 30 days for service delivery and abuse monitoring | See OpenAI's published API/privacy policy for contact details.",
           "Google LLC (Google Tag Manager / Google Analytics 4) | United States | IP address, device/browser information, usage/analytics events | Website usage analytics only -- no advertising or remarketing tag is currently configured | Continuous and automated, via tags loaded on each page | Governed by Google's own data retention policy | See Google's published privacy policy for contact details.",
         ],
@@ -191,7 +191,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         title: "10. California Privacy Rights",
         paragraphs: [
           "Aha It's me does not currently sell your personal information for monetary consideration or knowingly share your personal information with third parties for cross-context behavioral advertising. If our practices change in a way that creates an applicable right to opt out under the California Consumer Privacy Act (CCPA), we will update this Policy and our Do Not Sell or Share My Personal Information page and provide the required opt-out mechanism.",
-          "California residents have the right, under the CCPA and CalOPPA, to request details about the personal information we have collected about them, to request deletion of that information, and to exercise the rights described in Section 7. To exercise these rights, contact us at support@ahaitsme.com.",
+          "California residents have the right, under the CCPA and CalOPPA, to request details about the personal information we have collected about them, to request deletion of that information, and to exercise the rights described in Section 7. To exercise these rights, contact us at contact@ahaitsme.com.",
         ],
       },
       {
@@ -225,8 +225,8 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         title: "14. Contact",
         paragraphs: [
           "Company Name: Aha It's me",
-          "Address: 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea",
-          "Email: support@ahaitsme.com",
+          "Address: 5F, Ga-8, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, 06053, Republic of Korea",
+          "Email: contact@ahaitsme.com",
         ],
       },
     ],
@@ -308,7 +308,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc. | 미국(프로덕션 함수는 sfo1/샌프란시스코 리전에서 실행) | IP 주소, 요청·브라우저 메타데이터 | 애플리케이션 호스팅 및 콘텐츠 전송 | 서비스 이용 시마다 자동·지속적으로 발생 | Vercel 자체 보유기간 정책에 따름 | 문의처는 Vercel의 공식 개인정보처리방침 참고",
           "Supabase | 미국(프로덕션 데이터베이스 리전: us-west-1/오리건) | 계정 식별자, 서비스 입력 정보, 설문 응답, 관계 분석 데이터, 거래 식별자 | 데이터베이스 호스팅 및 저장 | 자동·지속적으로 발생 | 계정이 활성 상태인 동안 보유되며, 백업본은 데이터베이스 제공업체의 자체 백업 보관 정책에 따라 제한된 기간 동안 보관됨 | 문의처는 Supabase의 공식 개인정보처리방침 참고",
           "Clerk | 미국(Clerk는 리전 선택 옵션을 제공하지 않음) | 이메일 주소, 인증·세션 정보 | 인증 및 계정 관리 | 자동·지속적으로 발생 | Clerk 자체 보유기간 정책에 따름 | 문의처는 Clerk의 공식 개인정보처리방침 참고",
-          "제3자 결제 서비스 제공업체 | 업체에 따라 다름(영국, 미국 등 국외 소재 가능) | 이메일 주소, 결제·카드 정보, 거래 내역 | 결제 및 환불 처리 | 결제 시점에 이용자와 해당 업체 간 직접 처리 | 해당 업체 자체 보유기간 정책에 따름 | 문의처: support@ahaitsme.com 또는 결제 영수증의 고객지원 안내",
+          "제3자 결제 서비스 제공업체 | 업체에 따라 다름(영국, 미국 등 국외 소재 가능) | 이메일 주소, 결제·카드 정보, 거래 내역 | 결제 및 환불 처리 | 결제 시점에 이용자와 해당 업체 간 직접 처리 | 해당 업체 자체 보유기간 정책에 따름 | 문의처: contact@ahaitsme.com 또는 결제 영수증의 고객지원 안내",
           "OpenAI, L.L.C. | 미국 | 생년월일시 기반 분석 신호, 설문 응답, (해당 시) 개인화를 위한 이름 — 계정 이메일이나 결제 정보는 전송되지 않음 | AI 기반 리포트 생성 | 각 리포트 생성 시점에 API를 통해 발생 | 기본적으로 OpenAI 모델 학습에 사용되지 않으며, 서비스 제공·오남용 모니터링 목적으로 최대 30일간 보관 | 문의처는 OpenAI의 공식 개인정보처리방침 참고",
           "Google LLC(Google Tag Manager / Google Analytics 4) | 미국 | IP 주소, 기기·브라우저 정보, 이용·분석 이벤트 | 웹사이트 이용 분석 목적만 해당 — 이 문서 작성 시점 기준 광고·리마케팅 태그는 구성되어 있지 않음 | 페이지 로드 시마다 태그를 통해 자동·지속적으로 발생 | Google 자체 보유기간 정책에 따름 | 문의처는 Google의 공식 개인정보처리방침 참고",
         ],

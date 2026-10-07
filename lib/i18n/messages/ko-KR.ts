@@ -1285,7 +1285,7 @@ export const messagesKoKR: MessageCatalog = {
       phone: "+1 626-381-8420",
       phoneNote: "전화 상담은 제공하지 않습니다. 문의는 이메일을 이용해주세요.",
       emailLabel: "이메일",
-      email: "support@ahaitsme.com",
+      email: "contact@ahaitsme.com",
       bizVerifyLabel: "사업자정보 확인",
     },
   },

@@ -21,7 +21,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "about",
         title: "1. About the Service",
         paragraphs: [
-          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea, provides a self-serve online application that generates personality and relationship insights from the survey answers and birth information you provide. The Service combines a behavioral self-assessment, Saju (Four Pillars) and astrology calculations, and AI-generated written interpretation, and includes decision-support tools (the "Service"). Results are generated through the platform.',
+          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, Ga-8, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, 06053, Republic of Korea, provides a self-serve online application that generates personality and relationship insights from the survey answers and birth information you provide. The Service combines a behavioral self-assessment, Saju (Four Pillars) and astrology calculations, and AI-generated written interpretation, and includes decision-support tools (the "Service"). Results are generated through the platform.',
         ],
       },
       {
