@@ -803,6 +803,18 @@ export default function HomeContent() {
     buildReadyModalActions,
   ]);
 
+  // "/?start=self": arriving from the relationship hub ("add my details
+  // first") -- start the same free self-profile flow as the start button
+  // (name prompt included). Signed out: open the sign-in modal instead.
+  const startSelfRanRef = useRef(false);
+  useEffect(() => {
+    if (searchParams.get("start") !== "self" || startSelfRanRef.current) return;
+    if (!isLoaded || resume.loading) return;
+    startSelfRanRef.current = true;
+    router.replace(localize("/"), { scroll: false });
+    void createReportAndSurvey();
+  }, [searchParams, isLoaded, resume.loading, router, localize, createReportAndSurvey]);
+
   const startFreeSurvey = useCallback(async () => {
     if (creatingReport) return;
     setStartChoiceOpen(false);

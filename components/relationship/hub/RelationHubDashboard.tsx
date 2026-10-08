@@ -29,6 +29,13 @@ import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
 import RelationAnalyzeNavOverlay from "@/components/relationship/hub/RelationAnalyzeNavOverlay";
 import NoticeDialog from "@/components/common/NoticeDialog";
+import FriendAddGateDialog, { FriendAddGateContent } from "@/components/relationship/hub/FriendAddGate";
+import {
+  friendAddReturnPath,
+  selfProfileStepPath,
+  type FriendAddReadiness,
+} from "@/lib/relationship/friendAddReadiness";
+import { setSelfProfileReturn } from "@/lib/relationship/selfProfileReturn";
 import FadeInContent from "@/components/ui/stitch/FadeInContent";
 import {
   FriendStoryRowSkeleton,
@@ -137,6 +144,10 @@ export default function RelationHubDashboard() {
     null,
   );
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+  // What the viewer still needs before adding a friend (never a purchase).
+  const [readiness, setReadiness] = useState<FriendAddReadiness>({ status: "loading" });
+  const [surveyRequired, setSurveyRequired] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
 
   // Bottom sheets/dialogs anchor to the same screen region the floating
   // dock does — the dock must hide outright while any of these are open,
@@ -150,7 +161,8 @@ export default function RelationHubDashboard() {
       friendsListOpen ||
       allAnalysisOpen ||
       connectedFriendName != null ||
-      navOverlayPartner != null,
+      navOverlayPartner != null ||
+      gateOpen,
   );
 
   const loadWaiting = useCallback(async (reportIdOverride?: string) => {
@@ -246,6 +258,76 @@ export default function RelationHubDashboard() {
     void load("full");
   }, [load, reportIdReady, hubReportId]);
 
+  useEffect(() => {
+    if (!reportIdReady || recovering || isSignedIn === undefined) return;
+    if (!isSignedIn) {
+      setReadiness({ status: "signed_out" });
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/relationship/viewer-readiness?reportId=${encodeURIComponent(hubReportId)}`,
+          { headers: { "x-aha-locale": locale }, cache: "no-store" },
+        );
+        const data = (await res.json().catch(() => null)) as {
+          readiness?: FriendAddReadiness;
+          surveyRequired?: boolean;
+        } | null;
+        if (cancelled) return;
+        if (res.ok && data?.readiness) {
+          setReadiness(data.readiness);
+          setSurveyRequired(data.surveyRequired === true);
+        } else {
+          // Can't tell: don't block (the server still validates on add).
+          setReadiness(hubReportId ? { status: "ready", reportId: hubReportId } : { status: "no_profile" });
+        }
+      } catch {
+        if (!cancelled) {
+          setReadiness(hubReportId ? { status: "ready", reportId: hubReportId } : { status: "no_profile" });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reportIdReady, recovering, isSignedIn, hubReportId, locale]);
+
+  /** Opens the add-friend sheet, or the guide for what's missing first. */
+  const requestAddFriend = useCallback(() => {
+    if (readiness.status === "ready") {
+      setAddFriendOpen(true);
+      setAddFriendTab("invite");
+      return;
+    }
+    if (readiness.status === "loading") return;
+    setGateOpen(true);
+  }, [readiness]);
+
+  const gateSignIn = useCallback(() => {
+    setGateOpen(false);
+    openSignIn?.({ forceRedirectUrl: localize(friendAddReturnPath(hubReportId || null)) });
+  }, [openSignIn, localize, hubReportId]);
+
+  const gateBuyRelationship = useCallback(() => {
+    setGateOpen(false);
+    router.push(localize("/pricing?for=relationship"));
+  }, [router, localize]);
+
+  const gateFillProfile = useCallback(() => {
+    setGateOpen(false);
+    if (readiness.status === "no_profile") {
+      setSelfProfileReturn(friendAddReturnPath(null));
+      router.push(localize("/?start=self"));
+      return;
+    }
+    const step = selfProfileStepPath(readiness, surveyRequired);
+    if (!step) return;
+    setSelfProfileReturn(friendAddReturnPath(hubReportId || null));
+    router.push(localize(step));
+  }, [readiness, surveyRequired, hubReportId, router, localize]);
+
   // canonical reportId가 URL myReportId와 다르면 주소를 맞춰 진입 경로 분기를 없앤다.
   useEffect(() => {
     if (!reportIdReady || recovering || !hubReportId) return;
@@ -255,15 +337,14 @@ export default function RelationHubDashboard() {
   }, [reportIdReady, recovering, hubReportId, urlMyReportHint, router]);
 
   useEffect(() => {
-    if (!hubSection || loading) return;
+    if (!hubSection || loading || readiness.status === "loading") return;
     const t = window.setTimeout(() => {
-      if (hubSection === "add") {
-        setAddFriendOpen(true);
-        setAddFriendTab("invite");
-      }
+      if (hubSection === "add") requestAddFriend();
     }, 280);
     return () => window.clearTimeout(t);
-  }, [hubSection, loading]);
+    // Once per arrival with ?section=add (readiness settles once).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hubSection, loading, readiness.status]);
 
   const relationshipItems = useMemo(
     () => filterHubFriendList(items),
@@ -431,12 +512,8 @@ export default function RelationHubDashboard() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) {
-          alert(messages.hub.signInRequiredForFriend);
-          openSignIn?.({
-            forceRedirectUrl: localize(
-              `/relationships?myReportId=${encodeURIComponent(hubReportId)}`,
-            ),
-          });
+          setReadiness({ status: "signed_out" });
+          setGateOpen(true);
           return;
         }
         alert(data?.error ?? messages.hub.inviteCreateFailed);
@@ -501,8 +578,9 @@ export default function RelationHubDashboard() {
     surveyAnswers: Record<string, string> | null;
   }) {
     const reportIdForCreate = hubReportId.trim();
-    if (!reportIdForCreate) {
-      alert(messages.hub.viewerReportMissing);
+    if (!reportIdForCreate || readiness.status !== "ready") {
+      setAddFriendOpen(false);
+      setGateOpen(true);
       return;
     }
     if (manualBusy) return;
@@ -516,12 +594,9 @@ export default function RelationHubDashboard() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 401) {
-          alert(messages.hub.signInRequiredForFriend);
-          openSignIn?.({
-            forceRedirectUrl: localize(
-              `/relationships?myReportId=${encodeURIComponent(reportIdForCreate)}`,
-            ),
-          });
+          setAddFriendOpen(false);
+          setReadiness({ status: "signed_out" });
+          setGateOpen(true);
           return;
         }
         alert(data?.error ?? messages.hub.relationshipCreateFailed);
@@ -605,8 +680,9 @@ export default function RelationHubDashboard() {
       return;
     }
     const viewerId = hubReportId.trim();
-    if (!viewerId) {
-      alert(messages.hub.viewerReportMissing);
+    if (!viewerId || readiness.status !== "ready") {
+      setKindPickerTarget(null);
+      setGateOpen(true);
       return;
     }
     const partnerLabel = item.partner_name;
@@ -736,10 +812,7 @@ export default function RelationHubDashboard() {
               viewerReportId={hubReportId}
               refreshKey={mapRefreshKey}
               focusRelationshipReportId={focusRelationshipReportId}
-              onInvite={() => {
-                setAddFriendOpen(true);
-                setAddFriendTab("invite");
-              }}
+              onInvite={requestAddFriend}
               onExploreRelationship={(relationshipReportId, partnerName) =>
                 setKindPickerTarget({
                   relationship_report_id: relationshipReportId,
@@ -799,16 +872,19 @@ export default function RelationHubDashboard() {
         ) : (
           <FadeInContent>
             <div className="space-y-8">
-              {!hubReportId ? (
-                <p className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 px-4 py-3 text-center text-sm text-on-surface-variant">
-                  {messages.hub.emptyBlueprintRequired}
-                  {isSignedIn
-                    ? messages.hub.emptyBlueprintRequiredSignedInHint
-                    : ""}
-                </p>
+              {readiness.status !== "ready" && readiness.status !== "loading" ? (
+                <section className="stitch-hero-panel rounded-extra-large p-6">
+                  <FriendAddGateContent
+                    readiness={readiness}
+                    surveyRequired={surveyRequired}
+                    onSignIn={gateSignIn}
+                    onBuyRelationship={gateBuyRelationship}
+                    onFillProfile={gateFillProfile}
+                  />
+                </section>
               ) : null}
 
-              {loading && items.length === 0 ? (
+              {!hubReportId ? null : loading && items.length === 0 ? (
                 <>
                   <FriendStoryRowSkeleton />
                   <RelationHubActionSkeleton />
@@ -819,10 +895,7 @@ export default function RelationHubDashboard() {
                   emptyHub
                   canAnalyze={false}
                   onAnalyze={() => {}}
-                  onAddFriend={() => {
-                    setAddFriendOpen(true);
-                    setAddFriendTab("invite");
-                  }}
+                  onAddFriend={requestAddFriend}
                 />
               ) : (
                 <>
@@ -846,10 +919,7 @@ export default function RelationHubDashboard() {
                       favoritesOnly={favoritesOnly}
                       onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}
                       onSelect={handleSelectFriend}
-                      onAddFriend={() => {
-                        setAddFriendOpen(true);
-                        setAddFriendTab("invite");
-                      }}
+                      onAddFriend={requestAddFriend}
                       onShowAll={() => setFriendsListOpen(true)}
                       onRename={(item) => setRenameTarget(item)}
                       onRemove={(item) => {
@@ -873,10 +943,7 @@ export default function RelationHubDashboard() {
                         if (selectedFriend) openKindPicker(selectedFriend);
                         else alert(messages.hub.selectFriendFirst);
                       }}
-                      onAddFriend={() => {
-                        setAddFriendOpen(true);
-                        setAddFriendTab("invite");
-                      }}
+                      onAddFriend={requestAddFriend}
                     />
                   </div>
 
@@ -1012,6 +1079,16 @@ export default function RelationHubDashboard() {
         onLoadMore={() => void loadMoreAnalysis()}
         onClose={() => setAllAnalysisOpen(false)}
         onOpenLog={openAnalysisLog}
+      />
+
+      <FriendAddGateDialog
+        open={gateOpen && readiness.status !== "ready" && readiness.status !== "loading"}
+        onClose={() => setGateOpen(false)}
+        readiness={readiness}
+        surveyRequired={surveyRequired}
+        onSignIn={gateSignIn}
+        onBuyRelationship={gateBuyRelationship}
+        onFillProfile={gateFillProfile}
       />
 
       <NoticeDialog

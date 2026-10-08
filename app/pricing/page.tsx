@@ -15,7 +15,15 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function PricingPage() {
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ for?: string | string[] }>;
+}) {
+  // "/pricing?for=relationship" (e.g. from the relationship hub): show the
+  // relationship passes first. Same products, same guest checkout.
+  const sp = await searchParams;
+  const context = sp.for === "relationship" ? "relationship" : "personal";
   const locale = await getRequestLocale();
   const messages = getMessages(locale);
   const copy = messages.pricing;
@@ -37,7 +45,7 @@ export default async function PricingPage() {
         </div>
 
         <div className="mt-10 sm:mt-12">
-          <PurchaseSelectorPage context="personal" />
+          <PurchaseSelectorPage context={context} />
         </div>
       </main>
     </div>

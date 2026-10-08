@@ -25,6 +25,7 @@ import { clearLiteReports } from "@/lib/v2/lite/session";
 import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
 import { invalidateReportSession } from "@/lib/home/reportSession";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { consumeSelfProfileReturn } from "@/lib/relationship/selfProfileReturn";
 import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 
 function BirthOnboardingContent() {
@@ -75,8 +76,10 @@ function BirthOnboardingContent() {
       if (!wantReset && !wantEdit) {
         const birth = await ensureBirthSession(canonicalId);
         if (hasMinimalBirth(birth)) {
+          // Came here to add a friend: details are already in -> straight back.
+          const back = consumeSelfProfileReturn(canonicalId);
           router.replace(
-            localize(`/blueprint-preview?reportId=${encodeURIComponent(canonicalId)}`),
+            localize(back ?? `/blueprint-preview?reportId=${encodeURIComponent(canonicalId)}`),
           );
           return;
         }
@@ -165,8 +168,11 @@ function BirthOnboardingContent() {
         return;
       }
 
+      // Started from "add a friend": return there (the free result page
+      // stays available from the hub / home later).
+      const back = consumeSelfProfileReturn(reportId);
       router.push(
-        localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
+        localize(back ?? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
       );
     },
     [busy, messages, reportId, router, localize],

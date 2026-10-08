@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { consumeSelfProfileReturn } from "@/lib/relationship/selfProfileReturn";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -106,7 +107,8 @@ function SurveyCompleteContent() {
       const existing = readBirthV2Session(id);
 
       if (hasMinimalBirth(existing)) {
-        router.replace(localize(resultsDashboardPath(id)));
+        const back = consumeSelfProfileReturn(id);
+        router.replace(localize(back ?? resultsDashboardPath(id)));
         return;
       }
 
@@ -270,7 +272,9 @@ function SurveyCompleteContent() {
 
 
 
-    router.push(localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`));
+    // Started from "add a friend": return there.
+    const back = consumeSelfProfileReturn(reportId);
+    router.push(localize(back ?? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`));
 
   }, [birthForm, busy, canViewResults, reportId, router, messages, localize, locale]);
 

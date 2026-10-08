@@ -97,6 +97,23 @@ export const messagesEnUS = {
       "You can't start analysis while the invite is still pending.",
     viewerReportMissing:
       "We couldn't find your report. Please complete your blueprint first, then try again.",
+    friendGateEyebrow: "Before adding a friend",
+    friendGateSignedOutTitle: "Log in to add friends",
+    friendGateSignedOutBody: "Your friends and relationship analyses are saved to your account. Log in or sign up to add friends and use relationship analysis.",
+    friendGateSignIn: "Log in and add a friend",
+    friendGateBuyTitle: "You can buy a relationship pass without logging in",
+    friendGateBuyNote: "After purchase, sign up or log in with your purchase email and the pass is linked to your account.",
+    friendGateBuyCta: "See relationship passes",
+    friendGateProfileTitle: "First, add your own details",
+    friendGateProfileBody: "Relationship analysis compares your birth details with your friend's. Enter your birth date and you can add friends right away. It's fine if you don't know your birth time or place.",
+    friendGateProfileBodySurvey: "Relationship analysis compares your survey answers and birth details with your friend's. Answer the short survey and enter your birth date to add friends.",
+    friendGateFree: "It's free. You don't need to buy a personal analysis.",
+    friendGateSurveyOptional: "The short survey is optional and makes the analysis more accurate.",
+    friendGateReturnNote: "When you're done, you'll come straight back to adding a friend.",
+    friendGateStartCta: "Add my details (free)",
+    friendGateBirthCta: "Enter my birth date (free)",
+    friendGateSurveyCta: "Continue the survey (free)",
+    friendGateCheckFailed: "We couldn't check your details. Please try again shortly.",
     renameSaveFailed: "We couldn't save the name.",
     removeFriendTitle: "Remove friend",
     removeFriendConfirm: (name: string) =>
@@ -2327,6 +2344,23 @@ export type MessageCatalog = {
     ownBirthDateCollisionWarning: string;
     pendingFriendCannotAnalyze: string;
     viewerReportMissing: string;
+    friendGateEyebrow: string;
+    friendGateSignedOutTitle: string;
+    friendGateSignedOutBody: string;
+    friendGateSignIn: string;
+    friendGateBuyTitle: string;
+    friendGateBuyNote: string;
+    friendGateBuyCta: string;
+    friendGateProfileTitle: string;
+    friendGateProfileBody: string;
+    friendGateProfileBodySurvey: string;
+    friendGateFree: string;
+    friendGateSurveyOptional: string;
+    friendGateReturnNote: string;
+    friendGateStartCta: string;
+    friendGateBirthCta: string;
+    friendGateSurveyCta: string;
+    friendGateCheckFailed: string;
     renameSaveFailed: string;
     removeFriendTitle: string;
     removeFriendConfirm: (name: string) => string;
