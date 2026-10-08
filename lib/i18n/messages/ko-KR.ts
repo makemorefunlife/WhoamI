@@ -1463,6 +1463,7 @@ export const messagesKoKR: MessageCatalog = {
       lookupCta: "안내 메일 받기",
       lookupDone: "요청을 접수했어요. 결제가 확인된 구매가 있다면 그 이메일로 안내 메일을 보냈어요.",
       inputTitle: "생년월일과 출생지를 입력해 주세요",
+      inputCta: "다음",
       inputBody: "입력한 정보는 이 구매에 연결해 서버에 보관돼요. 분석을 생성하지 않으면 이용권 기한(구매일로부터 12개월)이 끝날 때 삭제돼요.",
       surveyNeeded: "이 분석에는 간단한 설문이 필요해요. 계정에 로그인해서 이어서 진행해 주세요.",
       generateTitle: "분석을 생성할까요?",

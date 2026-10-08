@@ -7,7 +7,11 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
-import BirthInputForm, { type BirthFormSubmitPayload } from "@/components/onboarding/BirthInputForm";
+import StitchBirthInputForm, {
+  isStitchBirthFormReady,
+  type StitchBirthFormState,
+} from "@/components/onboarding/StitchBirthInputForm";
+import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import StitchDeepEssenceView from "@/components/results/StitchDeepEssenceView";
 import { setAuthPrefillEmail } from "@/lib/auth/prefillEmail";
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
@@ -34,6 +38,7 @@ type State = {
     birthTime: string | null;
     birthTimeUnknown: boolean;
     birthPlace: string | null;
+    birthPlaceUnknown?: boolean;
     hasSurvey: boolean;
   } | null;
   report?: SlimV1ReportResult | null;
@@ -188,6 +193,7 @@ function UseContent() {
 
   const [state, setState] = useState<State | null>(null);
   const [editing, setEditing] = useState(false);
+  const [birthForm, setBirthForm] = useState<StitchBirthFormState | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const autoSaved = useRef(false);
@@ -235,10 +241,11 @@ function UseContent() {
     return () => clearTimeout(timer);
   }, [wantsSave, isLoaded, isSignedIn, state, save]);
 
-  const submitInput = async (payload: BirthFormSubmitPayload) => {
+  const submitInput = async (payload: StitchBirthFormState) => {
+    if (!isStitchBirthFormReady(payload)) return;
     setBusy(true);
     setNotice("");
-    const placeUnknown = !payload.birthPlace;
+    const placeUnknown = payload.birthPlaceUnknown || !payload.birthPlace;
     const res = await fetch("/api/guest/personal/input", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -246,7 +253,7 @@ function UseContent() {
         birthDate: payload.birthDate,
         birthTime: payload.birthTimeUnknown ? null : payload.birthTime,
         birthTimeUnknown: payload.birthTimeUnknown,
-        birthPlace: payload.birthPlace,
+        birthPlace: placeUnknown ? null : payload.birthPlace,
         birthPlaceUnknown: placeUnknown,
       }),
     }).catch(() => null);
@@ -310,6 +317,43 @@ function UseContent() {
     return <TossResultShell tone="warning" title={t.notAvailableTitle} body={t.notAvailableBody} />;
   }
 
+  // Input step: same shell, colors and form as the member flow (survey-v2/complete).
+  if (state.status === "needs_input" || editing) {
+    const ready = birthForm ? isStitchBirthFormReady(birthForm) : false;
+    return (
+      <StitchSurveyShell>
+        <div className="relative z-10 mx-auto flex max-w-lg flex-col items-center px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-12">
+          <StitchBirthInputForm
+            initialBirthDate={state.input?.birthDate ?? null}
+            initialBirthTime={state.input?.birthTime ?? null}
+            initialBirthTimeUnknown={state.input?.birthTimeUnknown}
+            initialBirthPlace={state.input?.birthPlace ?? null}
+            initialBirthPlaceUnknown={state.input?.birthPlaceUnknown}
+            busy={busy}
+            onChange={setBirthForm}
+          />
+          <div className="mt-6 w-full max-w-[420px]">
+            <button
+              type="button"
+              disabled={!ready || busy}
+              onClick={() => birthForm && void submitInput(birthForm)}
+              className="stitch-cta-primary w-full disabled:cursor-not-allowed"
+            >
+              {busy ? messages.survey.saving : t.inputCta}
+            </button>
+            {!ready ? (
+              <p className="mt-2 text-center text-[11px] text-on-surface-variant">
+                {messages.survey.birthFormIncompleteHint}
+              </p>
+            ) : null}
+            {notice ? <p role="status" className="mt-3 text-center text-sm text-amber-700">{notice}</p> : null}
+            <p className="mt-4 text-center text-[11px] leading-relaxed text-on-surface-variant">{t.inputBody}</p>
+          </div>
+        </div>
+      </StitchSurveyShell>
+    );
+  }
+
   const retention = state.retentionExpiresAt
     ? new Intl.DateTimeFormat(locale, { year: "numeric", month: "long", day: "numeric" }).format(new Date(state.retentionExpiresAt))
     : null;
@@ -317,21 +361,6 @@ function UseContent() {
   return (
     <div className="stitch-landing min-h-[80vh] bg-[#FAF7F0]">
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-8 sm:px-6">
-        {state.status === "needs_input" || editing ? (
-          <section className="stitch-hero-panel rounded-extra-large px-5 py-6 space-y-4">
-            <h1 className="text-lg font-bold text-[#1A3328]">{t.inputTitle}</h1>
-            <p className="text-sm leading-relaxed text-[#4A5C52]">{t.inputBody}</p>
-            <BirthInputForm
-              initialBirthDate={state.input?.birthDate ?? null}
-              initialBirthTime={state.input?.birthTime ?? null}
-              initialBirthTimeUnknown={state.input?.birthTimeUnknown}
-              initialBirthPlace={state.input?.birthPlace ?? null}
-              busy={busy}
-              onSubmit={(p) => void submitInput(p)}
-            />
-          </section>
-        ) : null}
-
         {state.status === "ready" && !editing ? (
           <section className="stitch-hero-panel rounded-extra-large px-5 py-6 space-y-4 text-center">
             <h1 className="text-lg font-bold text-[#1A3328]">{t.generateTitle}</h1>

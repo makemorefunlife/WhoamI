@@ -1535,6 +1535,7 @@ export const messagesEnUS = {
       lookupCta: "Send it",
       lookupDone: "Request received. If that email has a paid purchase, we've sent the purchase email there.",
       inputTitle: "Enter your birth date and birth place",
+      inputCta: "Next",
       inputBody: "Your details are kept on our server with this purchase. If you don't generate the analysis, they're deleted when the pass expires (12 months after purchase).",
       surveyNeeded: "This analysis needs the short survey. Please sign in to continue.",
       generateTitle: "Generate your analysis?",
@@ -3405,6 +3406,7 @@ export type MessageCatalog = {
       lookupCta: string;
       lookupDone: string;
       inputTitle: string;
+      inputCta: string;
       inputBody: string;
       surveyNeeded: string;
       generateTitle: string;
