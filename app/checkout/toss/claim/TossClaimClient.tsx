@@ -7,7 +7,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
-import { setAuthPrefillEmail } from "@/lib/auth/prefillEmail";
+import AccountLinkPanel, { useClaimInfo } from "../AccountLinkPanel";
 import { goAfterPurchase } from "@/lib/payment/goAfterPurchase";
 import { accountLinkCopy, linkedCopy } from "@/lib/payment/accountLinkCopy";
 
@@ -26,51 +26,11 @@ import { accountLinkCopy, linkedCopy } from "@/lib/payment/accountLinkCopy";
  * the existing entry rules for the plan bought.
  */
 
-type Info = {
-  status?: string;
-  planId?: string | null;
-  approvedAt?: string | null;
-  maskedEmail?: string | null;
-  prefillEmail?: string | null;
-  linkValid?: boolean;
-};
-
-function useClaimInfo(orderId: string): Info | null {
-  const [info, setInfo] = useState<Info | null>(null);
-  useEffect(() => {
-    if (!orderId) return;
-    let cancelled = false;
-    fetch("/api/payments/toss/claim-info", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId }),
-    })
-      .then((r) => r.json().catch(() => ({})))
-      .then((body: Info) => {
-        if (!cancelled) setInfo(body ?? {});
-      })
-      .catch(() => {
-        if (!cancelled) setInfo({});
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [orderId]);
-  return info;
-}
-
 function SignedOutClaim({ orderId, linkExpired }: { orderId: string; linkExpired: boolean }) {
-  const router = useRouter();
-  const { messages, href, locale } = useLocale();
+  const { messages, locale } = useLocale();
   const t = messages.payments;
   const info = useClaimInfo(orderId);
   const [renew, setRenew] = useState<"idle" | "sending" | "done">("idle");
-
-  const returnHere = href(`/checkout/toss/claim${orderId ? `?${new URLSearchParams({ orderId }).toString()}` : ""}`);
-  const openAuth = (path: string) => {
-    if (info?.prefillEmail) setAuthPrefillEmail(info.prefillEmail);
-    router.push(`${href(path)}?${new URLSearchParams({ redirect_url: returnHere }).toString()}`);
-  };
   const requestNewLink = async () => {
     setRenew("sending");
     await fetch("/api/payments/toss/claim-link/renew", {
@@ -85,38 +45,18 @@ function SignedOutClaim({ orderId, linkExpired }: { orderId: string; linkExpired
   if (info?.status === "test_not_allowed") {
     return <TossResultShell tone="warning" title={t.claimTestNotAllowedTitle} body={t.claimTestNotAllowedBody} />;
   }
-
-  const showRenew = Boolean(orderId) && info?.status === "awaiting_claim" && (linkExpired || !info?.linkValid);
+  // Recovery (new link) only when the emailed link actually expired -- not in the normal flow.
+  const showRenew = linkExpired && Boolean(orderId) && info?.status === "awaiting_claim";
   // Product + language come from the server-side order (same wording as the email).
   const copy = accountLinkCopy(messages, locale, info?.planId, { maskedEmail: info?.maskedEmail, approvedAt: info?.approvedAt });
   return (
     <TossResultShell
       tone="success"
       title={copy?.title ?? t.claimSignedOutTitle}
-      body={copy?.body ?? (info?.maskedEmail ? t.claimSignedOutBody(info.maskedEmail) : t.claimNoPrefillBody)}
+      body={copy?.body ?? ""}
     >
       {linkExpired ? <p className="mb-4 text-xs leading-relaxed text-amber-700">{t.claimLinkExpiredNotice}</p> : null}
-      {copy?.extras.length ? (
-        <div className="mb-4 space-y-1 rounded-xl bg-[#F5F0E8] px-3.5 py-2.5 text-left">
-          {copy.extras.map((x) => (
-            <p key={x} className="text-xs leading-relaxed text-[#4A5C52]">{x}</p>
-          ))}
-        </div>
-      ) : null}
-      {copy ? <p className="mb-4 text-sm font-semibold leading-relaxed text-[#1A3328]">{copy.emailLine}</p> : null}
-      <button type="button" className="stitch-cta-primary w-full" onClick={() => openAuth(ROUTES.signUp)}>
-        {copy?.primaryCta ?? t.claimSignUpCta}
-      </button>
-      <button type="button" className="stitch-cta-secondary mt-3 w-full" onClick={() => openAuth(ROUTES.signIn)}>
-        {copy?.secondaryCta ?? t.claimSignInCta}
-      </button>
-      {copy ? (
-        <div className="mt-4 space-y-1 text-center">
-          {copy.footers.map((x) => (
-            <p key={x} className="text-[11px] leading-relaxed text-[#4A5C52]">{x}</p>
-          ))}
-        </div>
-      ) : null}
+      <AccountLinkPanel orderId={orderId} info={info} />
       {showRenew ? (
         <div className="mt-5 border-t border-[#EDE8DD] pt-4">
           {renew === "done" ? (

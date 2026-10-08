@@ -11,6 +11,7 @@ import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
 import { isCheckoutEnabled, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { accountLinkGroup } from "@/lib/payment/accountLinkCopy";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
 import { ROUTES } from "@/constants/routes";
@@ -380,6 +381,16 @@ export default function PurchaseSelectorContent({
    *    agreement + refund notice + terms / refund / privacy links);
    *  - signed in after quick sign-in: "continue to payment" for the same plan.
    */
+  /** One short notice per product group: what it needs and why (shared with the account-link copy). */
+  function prePurchaseNotice(planId: string): string {
+    const pp = messages.payments.prePurchase;
+    if (isGuestUsePlan(planId)) return pp.noticePersonal;
+    const g = accountLinkGroup(planId);
+    if (g === "pass") return pp.noticePass;
+    if (g === "membership") return pp.noticeMembership;
+    return pp.noticeRelationship;
+  }
+
   function renderCheckoutModal() {
     const planId = isSignedIn ? resumePlan : guestFormPlan;
     if (!planId || typeof document === "undefined") return null;
@@ -438,14 +449,12 @@ export default function PurchaseSelectorContent({
                 {t.continueToPayment}
               </button>
             </div>
-          ) : guestAllowed && !isGuestUsePlan(planId) && !guestChosen ? (
-            // Relationship / Triple / 30-day pass: buyable without an account;
-            // an account is needed when it's used. Log-in keeps plan + language
-            // (?checkout=<planId> on the same localized page).
+          ) : guestAllowed && !guestChosen ? (
+            // Step 1 (signed out): what this product needs, then one choice.
+            // Log-in keeps plan + language (?checkout=<planId> on this page);
+            // guest purchase is never blocked.
             <div className="mt-5 space-y-3">
-              <p className="rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4 text-sm leading-relaxed text-[#1A3328]">
-                {t.prePurchase.accountProductNotice}
-              </p>
+              <GuestSignupNotice text={prePurchaseNotice(planId)} />
               <a
                 href={signInHrefFor(planId)}
                 className="flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
@@ -459,71 +468,69 @@ export default function PurchaseSelectorContent({
               >
                 {t.prePurchase.guestBuyCta}
               </button>
+              <p className="text-center text-xs leading-relaxed text-[#4A5C52]">
+                {isGuestUsePlan(planId) ? t.prePurchase.loginRecommendPersonal : t.prePurchase.loginRecommend}
+              </p>
+            </div>
+          ) : guestAllowed ? (
+            // Step 2: guest purchase -- only what the payment needs.
+            <div className="mt-5 space-y-3">
+              <button
+                type="button"
+                onClick={() => setGuestChosen(false)}
+                className="text-xs font-semibold text-[#3A8F6E]"
+              >
+                {t.prePurchase.backToChoice}
+              </button>
+              <label className="block text-xs font-medium text-[#4A5C52]">
+                {t.guestEmailLabelGuide}
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
+                />
+                <span className="mt-1 block text-[11px] text-[#4A5C52]">{t.prePurchase.emailHint}</span>
+              </label>
+              <label className="flex items-start gap-2 text-sm leading-relaxed text-[#1A3328]">
+                <input
+                  type="checkbox"
+                  checked={guestAgreed}
+                  onChange={(e) => setGuestAgreed(e.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-[#3A8F6E]"
+                />
+                <span>{t.guestRequiredConsent}</span>
+              </label>
+              <p className="text-xs leading-relaxed text-[#4A5C52]">{t.refundNotice}</p>
+              <p className="flex flex-wrap gap-x-3 text-xs text-[#3A8F6E]">
+                <LocaleLink href={ROUTES.terms} target="_blank" rel="noopener" className={linkCls}>{messages.footer.terms}</LocaleLink>
+                <LocaleLink href={ROUTES.refund} target="_blank" rel="noopener" className={linkCls}>{messages.footer.refund}</LocaleLink>
+                <LocaleLink href={ROUTES.privacy} target="_blank" rel="noopener" className={linkCls}>{messages.footer.privacy}</LocaleLink>
+              </p>
+              {planNotice[planId] ? (
+                <p role="status" className="text-[12px] font-medium text-amber-700">{planNotice[planId]}</p>
+              ) : null}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void handleGuestCheckout(planId)}
+                className="w-full rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {t.guestPayCta}
+              </button>
             </div>
           ) : (
-            <>
-              {isGuestUsePlan(planId) || !guestAllowed ? (
-                <div className="mt-5 rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4">
-                  <p className="text-sm font-semibold leading-relaxed text-[#1A3328]">{t.loginPrompt}</p>
-                  <a
-                    href={signInHrefFor(planId)}
-                    className="mt-3 flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
-                  >
-                    {t.quickSignIn}
-                  </a>
-                </div>
-              ) : (
-                <p className="mt-5 rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4 text-sm leading-relaxed text-[#1A3328]">
-                  {t.prePurchase.accountProductNotice}
-                </p>
-              )}
-
-              {guestAllowed ? (
-                <div className="mt-5 space-y-3">
-                  <p className="text-sm font-bold text-[#1A3328]">{t.guestSectionTitle}</p>
-                  <AccountNeedLine planId={planId} />
-                  <label className="block text-xs font-medium text-[#4A5C52]">
-                    {t.guestEmailLabelGuide}
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
-                    />
-                  </label>
-                  <GuestSignupNotice text={isGuestUsePlan(planId) ? t.guestUse.modalDescription : t.guestDescription} />
-                  <label className="flex items-start gap-2 text-sm leading-relaxed text-[#1A3328]">
-                    <input
-                      type="checkbox"
-                      checked={guestAgreed}
-                      onChange={(e) => setGuestAgreed(e.target.checked)}
-                      className="mt-1 h-4 w-4 shrink-0 accent-[#3A8F6E]"
-                    />
-                    <span>{t.guestRequiredConsent}</span>
-                  </label>
-                  <p className="rounded-xl bg-[#F5F0E8] px-3.5 py-2.5 text-xs leading-relaxed text-[#4A5C52]">{t.refundNotice}</p>
-                  <p className="flex flex-wrap gap-x-3 text-xs text-[#3A8F6E]">
-                    <LocaleLink href={ROUTES.terms} target="_blank" rel="noopener" className={linkCls}>{messages.footer.terms}</LocaleLink>
-                    <LocaleLink href={ROUTES.refund} target="_blank" rel="noopener" className={linkCls}>{messages.footer.refund}</LocaleLink>
-                    <LocaleLink href={ROUTES.privacy} target="_blank" rel="noopener" className={linkCls}>{messages.footer.privacy}</LocaleLink>
-                  </p>
-                  {planNotice[planId] ? (
-                    <p role="status" className="text-[12px] font-medium text-amber-700">{planNotice[planId]}</p>
-                  ) : null}
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => void handleGuestCheckout(planId)}
-                    className="w-full rounded-full border border-[#1A3328]/30 bg-[#FFFDF8] px-5 py-3 text-sm font-semibold text-[#1A3328] transition hover:bg-[#F5F0E8] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {t.guestPayCta}
-                  </button>
-                </div>
-              ) : (
-                <p className="mt-4 text-xs leading-relaxed text-[#4A5C52]">{t.signInRequired}</p>
-              )}
-            </>
+            // Not guest-eligible: log-in only.
+            <div className="mt-5 space-y-3">
+              <p className="text-sm leading-relaxed text-[#4A5C52]">{t.signInRequired}</p>
+              <a
+                href={signInHrefFor(planId)}
+                className="flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
+              >
+                {t.prePurchase.signInAndBuyCta}
+              </a>
+            </div>
           )}
         </div>
       </div>,

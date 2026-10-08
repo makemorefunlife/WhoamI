@@ -7,7 +7,8 @@ import { localizedPath } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
 import { goAfterPurchase } from "@/lib/payment/goAfterPurchase";
-import { linkedCopy } from "@/lib/payment/accountLinkCopy";
+import { accountLinkCopy, linkedCopy } from "@/lib/payment/accountLinkCopy";
+import AccountLinkPanel, { useClaimInfo } from "../AccountLinkPanel";
 import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
@@ -131,27 +132,14 @@ function SuccessContent() {
     }
     case "awaiting_claim":
       // Shown only after the server confirmed the Toss approval.
-      return (
-        <TossResultShell
-          tone="success"
-          title={t.guestDoneTitle}
-          body={
-            isGuestUsePlan(view.planId)
-              ? view.deviceReady
-                ? t.guestUse.successBodyDevice
-                : view.emailSent
-                ? t.guestUse.successBodySent
-                : t.guestUse.successBodyPending
-              : view.emailSent
-                ? t.guestDoneBodyEmailSent
-                : t.guestDoneBodyEmailPending
-          }
-        >
-          {view.maskedEmail ? (
-            <p className="mb-4 text-center text-xs text-[#4A5C52]">{t.guestPurchaseEmailMasked(view.maskedEmail)}</p>
-          ) : null}
-          {isGuestUsePlan(view.planId) ? (
-            // Single Personal: usable without an account (purchase verification first).
+      if (isGuestUsePlan(view.planId)) {
+        // Single Personal: no account. This browser paid -> usually starts now.
+        return (
+          <TossResultShell
+            tone="success"
+            title={t.guestDoneTitle}
+            body={view.deviceReady ? t.guestUse.successBodyDevice : view.emailSent ? t.guestUse.successBodySent : t.guestUse.successBodyPending}
+          >
             <button
               type="button"
               className={primaryButton}
@@ -159,19 +147,12 @@ function SuccessContent() {
             >
               {t.guestUse.useCtaFromSuccess}
             </button>
-          ) : (
-            <button
-              type="button"
-              className={primaryButton}
-              onClick={() =>
-                router.push(localizedPath(`/checkout/toss/claim?${new URLSearchParams({ orderId }).toString()}`, locale))
-              }
-            >
-              {t.guestLinkCta}
-            </button>
-          )}
-        </TossResultShell>
-      );
+          </TossResultShell>
+        );
+      }
+      // Account products: sign up / log in right here (no extra page in
+      // between); Clerk returns to the claim page, which links automatically.
+      return <GuestAccountLinkView orderId={orderId} title={t.guestDoneTitle} />;
     case "test_no_grant":
       return (
         <TossResultShell tone="warning" title={t.testNoGrantTitle} body={t.testNoGrantBody}>
@@ -226,5 +207,16 @@ export default function TossSuccessClient() {
     <Suspense fallback={null}>
       <SuccessContent />
     </Suspense>
+  );
+}
+
+function GuestAccountLinkView({ orderId, title }: { orderId: string; title: string }) {
+  const { messages, locale } = useLocale();
+  const info = useClaimInfo(orderId);
+  const copy = accountLinkCopy(messages, locale, info?.planId, { approvedAt: info?.approvedAt });
+  return (
+    <TossResultShell tone="success" title={title} body={copy?.body ?? ""}>
+      <AccountLinkPanel orderId={orderId} info={info} />
+    </TossResultShell>
   );
 }

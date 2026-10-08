@@ -104,18 +104,10 @@ export function buildGuestPurchaseEmail(params: {
   const intro = guestUse ? t.useIntro : link ? link.title : t.accountIntro;
   const introBody: string[] = guestUse ? [] : link ? [link.body, ...link.extras] : [];
   const cta = guestUse ? t.useCta : (link?.primaryCta ?? t.accountCta);
-  const steps: string[] = guestUse
-    ? t.useSteps
-    : [
-        t.accountStep1,
-        link ? `${link.emailLine} ${t.accountStep2}` : params.maskedEmail ? `${t.accountStep2} (${params.maskedEmail})` : t.accountStep2,
-        params.locale === "ko-KR"
-          ? `이용권이 계정에 연결되면 ${notes?.next ?? "이용 화면"}으로 이어져요.`
-          : `Once the pass is linked, you'll go straight to ${notes?.next ?? "your analysis"}.`,
-      ];
-  const afterCta: string[] = guestUse
-    ? [t.useStorage, t.useLinkExpiry]
-    : [...(link?.footers ?? []), t.notYetGranted, t.accountOnce, t.linkExpiry];
+  // One line right above the button: what to do. No numbered steps -- the
+  // button and the page do the rest.
+  const beforeCta: string = guestUse ? t.useNext : (link?.emailLine ?? t.accountStep2);
+  const afterCta: string[] = guestUse ? [t.useStorage, t.useLinkExpiry] : [t.linkExpiry, ...(link?.footers ?? [])];
   const refundLine = notes?.refund ?? t.validityFallback;
 
   const text = [
@@ -126,9 +118,7 @@ export function buildGuestPurchaseEmail(params: {
     "",
     ...rows.map(([k, v]) => `${k}: ${v}`),
     "",
-    `${t.stepsTitle}`,
-    ...steps.map((st, i) => `${i + 1}. ${st}`),
-    "",
+    beforeCta,
     `${cta}: ${params.claimUrl}`,
     "",
     ...afterCta,
@@ -157,8 +147,7 @@ ${introBody.map((x) => p(x)).join("\n")}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 16px;font-size:14px;border-top:1px solid #EDE8DD">
 ${rows.map(([k, v]) => `<tr><td style="padding:8px 0;color:#4A5C52;width:38%;vertical-align:top">${esc(k)}</td><td style="padding:8px 0;font-weight:600">${esc(v)}</td></tr>`).join("\n")}
 </table>
-<p style="margin:0 0 6px;font-size:14px;font-weight:700">${esc(t.stepsTitle)}</p>
-<ol style="margin:0 0 18px;padding-left:20px;font-size:14px;line-height:1.6">${steps.map((st) => `<li style="margin-bottom:4px">${esc(st)}</li>`).join("")}</ol>
+${p(beforeCta)}
 <p style="margin:0 0 16px;text-align:center"><a href="${esc(params.claimUrl)}" style="display:inline-block;padding:13px 22px;border-radius:999px;background:#3A8F6E;color:#fff;text-decoration:none;font-weight:600;font-size:15px">${esc(cta)}</a></p>
 ${afterCta.map((x) => p(x, "font-size:13px;color:#4A5C52")).join("\n")}
 <p style="margin:14px 0 4px;font-size:14px;font-weight:700">${esc(t.refundTitle)}</p>

@@ -375,7 +375,8 @@ async function main() {
       });
       assert.equal(en.subject, "[Aha! It's me] Your analysis pass purchase");
       assert.match(en.text, /Use all 3 report credits within 12 months of purchase/);
-      assert.match(en.text, /You'll receive your pass after linking an account/);
+      assert.match(en.text, /Continue your story together/);
+      assert.match(en.text, /One use per analysis/);
       assert.match(en.text, /Sign up and link my pass: /);
       assert.doesNotMatch(en.text, /receipt/i, "no receipt line when Toss gave no receipt URL");
       const s = { reportId: "r1", surveyCompleted: true, birthDate: "1990-01-01" };
