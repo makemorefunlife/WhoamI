@@ -1516,6 +1516,7 @@ export const messagesEnUS = {
       modalDescription: "After payment, we'll email you how to use it. Confirm with your purchase email (link or code) to use it without an account, and save the result to an account if you like.",
       successBodySent: "We sent the purchase guide to your purchase email. Tap below and confirm your purchase to use it right away, no account needed.",
       successBodyPending: "Your purchase is complete. Tap below and confirm with a code sent to your purchase email to use it, no account needed.",
+      successBodyDevice: "You can start right away in this browser, where you paid. On another device or later, confirm with the link in your purchase email or a verification code.",
       useCtaFromSuccess: "Use my pass",
       verifyTitle: "Please confirm your purchase",
       verifyBody: "To use your pass, confirm your purchase first. On any device, use the link in your purchase email or a code sent to your purchase email. Confirmation lasts 7 days on this device.",
@@ -1536,6 +1537,18 @@ export const messagesEnUS = {
       lookupDone: "Request received. If that email has a paid purchase, we've sent the purchase email there.",
       inputTitle: "Enter your birth date and birth place",
       inputCta: "Next",
+      surveyEyebrow: "Optional · about 2 min",
+      surveyEyebrowRequired: "Required · about 2 min",
+      surveyIntroTitle: "Tell us a little about yourself right now",
+      surveyIntroBody: "Your answers make the analysis more accurate. You can skip, but then it uses only your birth details and is less accurate.",
+      surveyIntroBodyRequired: "This analysis needs a short survey. Your answers are combined with your birth details.",
+      surveyStart: "Start the survey",
+      surveySkip: "Skip the survey",
+      surveySkipWarning: "Without the survey, the analysis is less accurate.",
+      surveyKeep: "Keep my previous answers",
+      surveyBackToBirth: "Edit birth details",
+      surveySkippedNote: "This will use only your birth details. For a more accurate analysis, answer the survey first.",
+      surveyTakeNow: "Take the survey first",
       inputBody: "Your details are kept on our server with this purchase. If you don't generate the analysis, they're deleted when the pass expires (12 months after purchase).",
       surveyNeeded: "This analysis needs the short survey. Please sign in to continue.",
       generateTitle: "Generate your analysis?",
@@ -3387,6 +3400,7 @@ export type MessageCatalog = {
       modalDescription: string;
       successBodySent: string;
       successBodyPending: string;
+      successBodyDevice: string;
       useCtaFromSuccess: string;
       verifyTitle: string;
       verifyBody: string;
@@ -3407,6 +3421,18 @@ export type MessageCatalog = {
       lookupDone: string;
       inputTitle: string;
       inputCta: string;
+      surveyEyebrow: string;
+      surveyEyebrowRequired: string;
+      surveyIntroTitle: string;
+      surveyIntroBody: string;
+      surveyIntroBodyRequired: string;
+      surveyStart: string;
+      surveySkip: string;
+      surveySkipWarning: string;
+      surveyKeep: string;
+      surveyBackToBirth: string;
+      surveySkippedNote: string;
+      surveyTakeNow: string;
       inputBody: string;
       surveyNeeded: string;
       generateTitle: string;

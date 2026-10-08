@@ -6,6 +6,7 @@ import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy
 import { runPersonalDeepEssenceGeneration } from "@/lib/report/personalDeepEssenceGeneration";
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
+import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
 import { maskEmail } from "@/lib/payment/guestCheckout";
 import { logServerError } from "@/lib/security/safeLog";
@@ -144,6 +145,8 @@ export type GuestInput = {
   birthPlace?: unknown;
   birthPlaceUnknown?: unknown;
   surveyAnswers?: unknown;
+  /** Editing birth details only: keep the survey answers already stored. */
+  keepSurvey?: unknown;
 };
 
 /** Validates and stores the guest's input (existing KR/US birth + survey rules). */
@@ -169,7 +172,16 @@ export async function saveGuestPersonalInput(
   if (input.surveyAnswers && typeof input.surveyAnswers === "object" && !Array.isArray(input.surveyAnswers)) {
     const json = JSON.stringify(input.surveyAnswers);
     if (json.length > 20_000) return { ok: false, code: "invalid_input" };
+    // Same completeness rule as the member survey (all 10 answered).
+    if (!isSurveyV2AnswersComplete(input.surveyAnswers as Record<string, string>)) return { ok: false, code: "invalid_input" };
     survey = input.surveyAnswers as SurveyAnswersInput;
+  } else if (input.keepSurvey === true) {
+    const { data: prev } = await supabase
+      .from("guest_personal_profiles")
+      .select("survey_answers")
+      .eq("order_id", orderId)
+      .maybeSingle();
+    survey = ((prev as { survey_answers: SurveyAnswersInput | null } | null)?.survey_answers) ?? null;
   }
   if (isPsychSurveyRequired(locale) && !survey) return { ok: false, code: "survey_required" };
 

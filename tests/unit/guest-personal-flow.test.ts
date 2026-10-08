@@ -20,7 +20,7 @@ import {
   saveGuestPersonalInput,
   saveGuestPersonalToAccount,
 } from "../../lib/payment/guestPersonal";
-import { hashVerificationCode, openGuestSession, resolveGuestSession } from "../../lib/payment/guestAccess";
+import { buyerCookieValue, hashVerificationCode, isBuyerCookieFor, openGuestSession, resolveGuestSession } from "../../lib/payment/guestAccess";
 import { claimGuestTossOrders, completeTossOrder, type TossDeps } from "../../lib/payment/tossConfirm";
 import { buildGuestPurchaseEmail } from "../../lib/email/guestPurchaseEmail";
 import { buildGuestCodeEmail } from "../../lib/email/guestCodeEmail";
@@ -229,6 +229,22 @@ async function main() {
       ok("guest session: 7 days, token never stored, expired -> re-verify");
     }
 
+    // 4a. optional survey after birth: complete answers stored, partial rejected, "keep" keeps stored answers
+    {
+      const o = paidGuestOrder("survey@example.com");
+      const full = { q1: "A", q2: "B", q3: "C", q4: "D", q5: "A", q6: "B", q7: "C", q8: "D", q9: "A", q10: "3" };
+      assert.deepEqual(await saveGuestPersonalInput(sb, o, "ko-KR", { ...input, surveyAnswers: { q1: "A" } }), { ok: false, code: "invalid_input" }, "partial survey rejected");
+      assert.deepEqual(await saveGuestPersonalInput(sb, o, "ko-KR", { ...input, surveyAnswers: full }), { ok: true });
+      assert.equal(JSON.parse(q1(`select survey_answers from guest_personal_profiles where order_id = ${lit(o)}`)).q10, "3");
+      assert.deepEqual(await saveGuestPersonalInput(sb, o, "ko-KR", { ...input, birthTime: "09:15", keepSurvey: true }), { ok: true });
+      assert.equal(JSON.parse(q1(`select survey_answers from guest_personal_profiles where order_id = ${lit(o)}`)).q1, "A", "edit keeps answers");
+      assert.deepEqual(await saveGuestPersonalInput(sb, o, "ko-KR", input), { ok: true });
+      assert.equal(q1(`select coalesce(survey_answers::text, 'null') from guest_personal_profiles where order_id = ${lit(o)}`), "null", "skip clears answers");
+      const u = paidGuestOrder("survey-us@example.com", { locale: "en-US" });
+      assert.deepEqual(await saveGuestPersonalInput(sb, u, "en-US", { ...input, surveyAnswers: full }), { ok: true }, "en-US with survey");
+      ok("survey after birth: optional in KR (complete answers only), kept on edit, cleared on skip; required in en-US");
+    }
+
     // 4. input rules (KR survey optional, en-US survey required) + generation once from stored input
     {
       const o = paidGuestOrder("gen@example.com");
@@ -283,6 +299,23 @@ async function main() {
       await loadGuestPersonalState(sb, viewOnly); // reading state (what a page / scanner load does)
       assert.equal(col(viewOnly, "guest_use_status"), "", "reading never uses the pass");
       ok("failure releases the pass; pass expires 12 months after purchase; reads never use it; unknown place uses the locale fallback");
+    }
+
+    // 5b. buyer's own browser right after paying: 'purchase' session; cookie bound to the order
+    {
+      const o = paidGuestOrder("buyer-browser@example.com");
+      const other = paidGuestOrder("someone@example.com");
+      const cookie = buyerCookieValue(o);
+      assert.ok(cookie);
+      assert.ok(isBuyerCookieFor(cookie, o));
+      assert.ok(!isBuyerCookieFor(cookie, other), "cookie for one order does not open another");
+      assert.ok(!isBuyerCookieFor(`${o}.forged`, o));
+      assert.ok(!isBuyerCookieFor(null, o));
+      const token = await openGuestSession(sb, o, "purchase");
+      assert.ok(token);
+      assert.equal(await resolveGuestSession(sb, token), o);
+      assert.equal(q1(`select via from guest_access_sessions where order_id = ${lit(o)}`), "purchase");
+      ok("buyer browser: purchase session opens only for the order its cookie is bound to");
     }
 
     // 6. save to account: verified matching email only, no re-entry, no extra credit, idempotent

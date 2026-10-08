@@ -12,7 +12,7 @@ import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
-  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string }
+  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean }
   | { status: "test_no_grant"; reason: string }
   | { status: "payment_failed"; code: string }
   | { status: "pending_retry"; reason: string }
@@ -24,7 +24,7 @@ type ConfirmBody =
 type ViewState =
   | { kind: "confirming" }
   | { kind: "granted"; planId: string }
-  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; planId: string }
+  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string }
   | { kind: "test_no_grant" }
   | { kind: "pending" }
   | { kind: "failed" }
@@ -76,6 +76,7 @@ function SuccessContent() {
           kind: "awaiting_claim",
           maskedEmail: body.maskedEmail ?? "",
           emailSent: body.emailStatus === "sent",
+          deviceReady: body.deviceReady === true,
           planId: body.planId,
         });
       }
@@ -139,7 +140,9 @@ function SuccessContent() {
           title={t.guestDoneTitle}
           body={
             isGuestUsePlan(view.planId)
-              ? view.emailSent
+              ? view.deviceReady
+                ? t.guestUse.successBodyDevice
+                : view.emailSent
                 ? t.guestUse.successBodySent
                 : t.guestUse.successBodyPending
               : view.emailSent

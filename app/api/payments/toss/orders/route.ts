@@ -10,11 +10,12 @@ import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
-import { resolveTossPaymentMethod, resolveTossPlan } from "@/lib/payment/tossCatalog";
+import { isGuestUsePlan, resolveTossPaymentMethod, resolveTossPlan } from "@/lib/payment/tossCatalog";
 import { tossSecretConfigured } from "@/lib/payment/tossServer";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { clientIpKey, normalizeGuestEmail } from "@/lib/payment/guestCheckout";
 import { claimTokenExpiry, newClaimNonce } from "@/lib/payment/guestClaimToken";
+import { GUEST_BUYER_COOKIE, buyerCookieOptions, buyerCookieValue } from "@/lib/payment/guestAccess";
 import { tossKeyIsTest } from "@/lib/payment/tossTestMode";
 
 export const runtime = "nodejs";
@@ -126,7 +127,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.errors.generic }, { status: 500 });
     }
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       orderId,
       orderName,
       amount: plan.amount,
@@ -139,6 +140,14 @@ export async function POST(req: Request) {
       customerEmail: guestEmail,
       clientKey,
     });
+    // Guest single Personal: remember that THIS browser created the order, so
+    // the buyer can start right after paying without re-verifying (see
+    // lib/payment/guestAccess.ts). The cookie alone grants nothing.
+    if (guestEmail && isGuestUsePlan(plan.planId)) {
+      const buyer = buyerCookieValue(orderId);
+      if (buyer) res.cookies.set(GUEST_BUYER_COOKIE, buyer, buyerCookieOptions());
+    }
+    return res;
   } catch (e) {
     logServerError("payments/toss/orders", e, "internal_error");
     return NextResponse.json({ error: messages.errors.generic }, { status: 500 });

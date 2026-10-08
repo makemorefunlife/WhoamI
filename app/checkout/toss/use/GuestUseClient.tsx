@@ -12,6 +12,7 @@ import StitchBirthInputForm, {
   type StitchBirthFormState,
 } from "@/components/onboarding/StitchBirthInputForm";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
+import GuestSurveyStep from "@/components/payment/GuestSurveyStep";
 import StitchDeepEssenceView from "@/components/results/StitchDeepEssenceView";
 import { setAuthPrefillEmail } from "@/lib/auth/prefillEmail";
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
@@ -194,6 +195,7 @@ function UseContent() {
   const [state, setState] = useState<State | null>(null);
   const [editing, setEditing] = useState(false);
   const [birthForm, setBirthForm] = useState<StitchBirthFormState | null>(null);
+  const [inputStep, setInputStep] = useState<"birth" | "survey">("birth");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const autoSaved = useRef(false);
@@ -241,7 +243,8 @@ function UseContent() {
     return () => clearTimeout(timer);
   }, [wantsSave, isLoaded, isSignedIn, state, save]);
 
-  const submitInput = async (payload: StitchBirthFormState) => {
+  /** survey: answers to store; "keep": keep stored answers; null: no survey (skipped). */
+  const submitInput = async (payload: StitchBirthFormState, survey: Record<string, string> | "keep" | null) => {
     if (!isStitchBirthFormReady(payload)) return;
     setBusy(true);
     setNotice("");
@@ -255,11 +258,14 @@ function UseContent() {
         birthTimeUnknown: payload.birthTimeUnknown,
         birthPlace: placeUnknown ? null : payload.birthPlace,
         birthPlaceUnknown: placeUnknown,
+        surveyAnswers: survey && survey !== "keep" ? survey : null,
+        keepSurvey: survey === "keep",
       }),
     }).catch(() => null);
     setBusy(false);
     if (res?.ok) {
       setEditing(false);
+      setInputStep("birth");
       await load();
     } else setNotice(t.generateFailed);
   };
@@ -320,15 +326,33 @@ function UseContent() {
   // Input step: same shell, colors and form as the member flow (survey-v2/complete).
   if (state.status === "needs_input" || editing) {
     const ready = birthForm ? isStitchBirthFormReady(birthForm) : false;
+    if (inputStep === "survey" && birthForm && ready) {
+      return (
+        <StitchSurveyShell>
+          <div className="relative z-10 mx-auto flex max-w-lg flex-col items-center px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-12">
+            <GuestSurveyStep
+              required={Boolean(state.surveyRequired)}
+              hasStoredSurvey={Boolean(state.input?.hasSurvey)}
+              busy={busy}
+              onBack={() => setInputStep("birth")}
+              onComplete={(answers) => void submitInput(birthForm, answers)}
+              onSkip={() => void submitInput(birthForm, null)}
+              onKeepStored={() => void submitInput(birthForm, "keep")}
+            />
+            {notice ? <p role="status" className="mt-3 text-center text-sm text-amber-700">{notice}</p> : null}
+          </div>
+        </StitchSurveyShell>
+      );
+    }
     return (
       <StitchSurveyShell>
         <div className="relative z-10 mx-auto flex max-w-lg flex-col items-center px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-12">
           <StitchBirthInputForm
-            initialBirthDate={state.input?.birthDate ?? null}
-            initialBirthTime={state.input?.birthTime ?? null}
-            initialBirthTimeUnknown={state.input?.birthTimeUnknown}
-            initialBirthPlace={state.input?.birthPlace ?? null}
-            initialBirthPlaceUnknown={state.input?.birthPlaceUnknown}
+            initialBirthDate={birthForm?.birthDate || state.input?.birthDate || null}
+            initialBirthTime={birthForm ? birthForm.birthTime : (state.input?.birthTime ?? null)}
+            initialBirthTimeUnknown={birthForm ? birthForm.birthTimeUnknown : state.input?.birthTimeUnknown}
+            initialBirthPlace={birthForm ? birthForm.birthPlace : (state.input?.birthPlace ?? null)}
+            initialBirthPlaceUnknown={birthForm ? birthForm.birthPlaceUnknown : state.input?.birthPlaceUnknown}
             busy={busy}
             onChange={setBirthForm}
           />
@@ -336,7 +360,10 @@ function UseContent() {
             <button
               type="button"
               disabled={!ready || busy}
-              onClick={() => birthForm && void submitInput(birthForm)}
+              onClick={() => {
+                setNotice("");
+                setInputStep("survey");
+              }}
               className="stitch-cta-primary w-full disabled:cursor-not-allowed"
             >
               {busy ? messages.survey.saving : t.inputCta}
@@ -369,12 +396,36 @@ function UseContent() {
             ) : (
               <>
                 <p className="text-sm leading-relaxed text-[#4A5C52]">{t.generateBody}</p>
+                {!state.input?.hasSurvey ? (
+                  <p className="rounded-xl bg-[#F5F0E8] px-3.5 py-2.5 text-xs leading-relaxed text-[#4A5C52]">{t.surveySkippedNote}</p>
+                ) : null}
                 <button type="button" className="stitch-cta-primary w-full" disabled={busy} onClick={() => void generate()}>
                   {t.generateCta}
                 </button>
               </>
             )}
-            <button type="button" className="text-xs font-semibold text-[#3A8F6E] underline underline-offset-2" disabled={busy} onClick={() => setEditing(true)}>
+            {!state.input?.hasSurvey && state.input?.birthDate ? (
+              <button
+                type="button"
+                className="stitch-cta-secondary w-full"
+                disabled={busy}
+                onClick={() => {
+                  const i = state.input!;
+                  setBirthForm({
+                    birthDate: i.birthDate as string,
+                    birthTime: i.birthTimeUnknown ? null : i.birthTime,
+                    birthTimeUnknown: i.birthTimeUnknown,
+                    birthPlace: i.birthPlaceUnknown ? null : i.birthPlace,
+                    birthPlaceUnknown: Boolean(i.birthPlaceUnknown) || !i.birthPlace,
+                  });
+                  setInputStep("survey");
+                  setEditing(true);
+                }}
+              >
+                {t.surveyTakeNow}
+              </button>
+            ) : null}
+            <button type="button" className="text-xs font-semibold text-[#3A8F6E] underline underline-offset-2" disabled={busy} onClick={() => { setInputStep("birth"); setEditing(true); }}>
               {t.editInput}
             </button>
           </section>

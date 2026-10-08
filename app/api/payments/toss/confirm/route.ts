@@ -12,6 +12,17 @@ import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
 import { clientIpKey, maskEmail } from "@/lib/payment/guestCheckout";
 import { decideTestGrant } from "@/lib/payment/tossTestMode";
 import { CLAIM_COOKIE, CLAIM_COOKIE_MAX_AGE_S, claimTokenFor } from "@/lib/payment/guestClaimToken";
+import { cookies } from "next/headers";
+import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import {
+  BUYER_SESSION_WINDOW_S,
+  GUEST_BUYER_COOKIE,
+  GUEST_SESSION_COOKIE,
+  buyerCookieOptions,
+  isBuyerCookieFor,
+  openGuestSession,
+  sessionCookieOptions,
+} from "@/lib/payment/guestAccess";
 
 export const runtime = "nodejs";
 
@@ -90,12 +101,31 @@ export async function POST(req: Request) {
         claim_token_expires_at: string | null;
       } | null;
       const email = row?.guest_email ?? null;
-      const res = NextResponse.json({ ...outcome, maskedEmail: email ? maskEmail(email) : null }, { status: 200 });
+      const approvedMs = row?.approved_at ? new Date(row.approved_at).getTime() : 0;
+
+      // Guest single Personal, same browser that created the order, right
+      // after approval: open the 7-day guest session now (no re-verification
+      // on this device). Anywhere else, the email link / code is still needed.
+      let deviceSession: string | null = null;
+      if (isGuestUsePlan(outcome.planId) && approvedMs > 0 && Date.now() - approvedMs < BUYER_SESSION_WINDOW_S * 1000) {
+        const buyerRaw = (await cookies()).get(GUEST_BUYER_COOKIE)?.value ?? null;
+        if (isBuyerCookieFor(buyerRaw, orderId)) {
+          deviceSession = await openGuestSession(supabase, orderId, "purchase");
+        }
+      }
+
+      const res = NextResponse.json(
+        { ...outcome, maskedEmail: email ? maskEmail(email) : null, deviceReady: deviceSession !== null },
+        { status: 200 },
+      );
+      if (deviceSession) {
+        res.cookies.set(GUEST_SESSION_COOKIE, deviceSession, sessionCookieOptions());
+        res.cookies.set(GUEST_BUYER_COOKIE, "", buyerCookieOptions(0));
+      }
       // The buyer's own browser, right after paying: a short-lived httpOnly
       // cookie (not readable by page scripts, not in any URL) lets the claim
       // page prefill the sign-up / sign-in email. Only within 30 minutes of
       // the approval, and the cookie alone grants nothing.
-      const approvedMs = row?.approved_at ? new Date(row.approved_at).getTime() : 0;
       const fresh = approvedMs > 0 && Date.now() - approvedMs < CLAIM_COOKIE_MAX_AGE_S * 1000;
       const token = fresh && row?.claim_token_nonce ? claimTokenFor(orderId, row.claim_token_nonce) : null;
       if (token) {

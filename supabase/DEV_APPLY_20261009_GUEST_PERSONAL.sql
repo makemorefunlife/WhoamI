@@ -413,12 +413,17 @@ create table if not exists public.guest_access_sessions (
   id uuid primary key default gen_random_uuid(),
   session_hash text not null unique,
   order_id text not null references public.toss_payment_orders(order_id) on delete cascade,
-  via text not null check (via in ('link', 'code')),
+  via text not null check (via in ('link', 'code', 'purchase')),
   created_at timestamptz not null default now(),
   expires_at timestamptz not null,
   revoked_at timestamptz
 );
 create index if not exists guest_access_sessions_order_idx on public.guest_access_sessions (order_id);
+-- 'purchase' = the buyer's own browser right after paying (order-creation
+-- cookie + fresh approval). Re-runnable widen for databases created earlier.
+alter table public.guest_access_sessions drop constraint if exists guest_access_sessions_via_check;
+alter table public.guest_access_sessions
+  add constraint guest_access_sessions_via_check check (via in ('link', 'code', 'purchase'));
 
 -- ---------------------------------------------------------------- guest Personal storage
 create table if not exists public.guest_personal_profiles (

@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, randomInt } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logServerError } from "@/lib/security/safeLog";
 
@@ -14,6 +14,14 @@ import { logServerError } from "@/lib/security/safeLog";
  *   - a 6-digit code emailed to the order email (never to an address taken
  *     from the request).
  * Either one creates a 7-day guest access session. Only hashes are stored.
+ *
+ * Exception -- the buyer's own browser right after paying: the guest order
+ * route sets an httpOnly "buyer" cookie bound to that order (HMAC, never in a
+ * URL); when /api/payments/toss/confirm approves that order within
+ * BUYER_SESSION_WINDOW_S and the same browser presents the cookie, it opens
+ * the session (via 'purchase'). A leaked success URL replayed elsewhere has
+ * no cookie and gets nothing. Other devices / later visits still verify.
+ * Saving to an account still needs the purchase email verified in Clerk.
  */
 
 export const GUEST_SESSION_COOKIE = "aha_gsess";
@@ -21,6 +29,12 @@ export const GUEST_SESSION_TTL_S = 7 * 24 * 60 * 60;
 /** Set by /api/payments/toss/claim-link after a valid purchase-link token. */
 export const GUEST_LINK_COOKIE = "aha_glink";
 export const GUEST_LINK_COOKIE_MAX_AGE_S = 30 * 60;
+
+/** Set by /api/payments/toss/orders on a guest Personal order (buyer's browser). */
+export const GUEST_BUYER_COOKIE = "aha_gbuy";
+export const GUEST_BUYER_COOKIE_MAX_AGE_S = 2 * 60 * 60;
+/** Confirm must happen this soon after approval to open a 'purchase' session. */
+export const BUYER_SESSION_WINDOW_S = 30 * 60;
 
 export const CODE_TTL_S = 10 * 60;
 export const CODE_MAX_PER_HOUR = 5;
@@ -33,6 +47,33 @@ function secret(): string | null {
 
 export function newVerificationCode(): string {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
+}
+
+function buyerMac(orderId: string): string | null {
+  const key = secret();
+  return key ? createHmac("sha256", key).update(`buyer:${orderId}`).digest("base64url") : null;
+}
+
+/** Cookie value proving "this browser created the order", or null without the secret. */
+export function buyerCookieValue(orderId: string): string | null {
+  const mac = buyerMac(orderId);
+  return mac ? `${orderId}.${mac}` : null;
+}
+
+export function isBuyerCookieFor(raw: string | null | undefined, orderId: string): boolean {
+  const expected = buyerCookieValue(orderId);
+  if (!raw || !expected || raw.length !== expected.length) return false;
+  return timingSafeEqual(Buffer.from(raw), Buffer.from(expected));
+}
+
+export function buyerCookieOptions(maxAge = GUEST_BUYER_COOKIE_MAX_AGE_S) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/api/payments/toss",
+    maxAge,
+  };
 }
 
 /** Keyed hash of a code (bound to the order), or null when the secret is missing. */
@@ -64,7 +105,7 @@ export function sessionCookieOptions(maxAge = GUEST_SESSION_TTL_S) {
 export async function openGuestSession(
   supabase: SupabaseClient,
   orderId: string,
-  via: "link" | "code",
+  via: "link" | "code" | "purchase",
 ): Promise<string | null> {
   const token = newSessionToken();
   const { data, error } = await supabase.rpc("create_guest_access_session", {
