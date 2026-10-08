@@ -1361,7 +1361,7 @@ export const messagesEnUS = {
     // satisfied for both locales.
     business: {
       companyLabel: "Company",
-      companyName: "Aha Its me (아하잇츠미)",
+      companyName: "Aha Its me",
       ceoLabel: "CEO",
       ceoName: "Hong Sunghyun",
       bizNumberLabel: "Business registration no.",
