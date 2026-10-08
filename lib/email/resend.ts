@@ -7,6 +7,9 @@
  *                    domain must be verified in Resend (SPF/DKIM). Resend's
  *                    shared test sender (onboarding@resend.dev) only delivers
  *                    to the Resend account owner's own address.
+ *   MAIL_REPLY_TO    optional Reply-To address (e.g. support@ahaitsme.com).
+ *                    Only sets the header; inbound mail routing / forwarding
+ *                    is configured at the mailbox provider, not here.
  *
  * Idempotency: every call carries an Idempotency-Key (Resend keeps it for 24
  * hours), so a retry after a timeout / crash with the same key does not send
@@ -58,6 +61,7 @@ export const sendResendEmail: MailSender = async (msg) => {
   const key = process.env.RESEND_API_KEY?.trim();
   const from = process.env.MAIL_FROM?.trim();
   if (!key || !from) return { kind: "not_configured" };
+  const replyTo = process.env.MAIL_REPLY_TO?.trim() || null;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -76,6 +80,7 @@ export const sendResendEmail: MailSender = async (msg) => {
         html: msg.html,
         text: msg.text,
         tags: [{ name: "category", value: msg.tag }],
+        ...(replyTo ? { reply_to: replyTo } : {}),
       }),
       signal: controller.signal,
     });
