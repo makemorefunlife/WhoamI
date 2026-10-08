@@ -8,6 +8,7 @@ import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
 import { loadReportSession } from "@/lib/home/reportSession";
 import { postPurchaseDestination } from "@/lib/payment/postPurchaseDestination";
+import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
@@ -23,7 +24,7 @@ type ConfirmBody =
 type ViewState =
   | { kind: "confirming" }
   | { kind: "granted"; planId: string }
-  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean }
+  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; planId: string }
   | { kind: "test_no_grant" }
   | { kind: "pending" }
   | { kind: "failed" }
@@ -71,7 +72,12 @@ function SuccessContent() {
       if (status === "granted" && body && "planId" in body) return setView({ kind: "granted", planId: body.planId });
       if (status === "awaiting_claim" && body && "maskedEmail" in body) {
         // "sent" only when the mail provider accepted the message.
-        return setView({ kind: "awaiting_claim", maskedEmail: body.maskedEmail ?? "", emailSent: body.emailStatus === "sent" });
+        return setView({
+          kind: "awaiting_claim",
+          maskedEmail: body.maskedEmail ?? "",
+          emailSent: body.emailStatus === "sent",
+          planId: body.planId,
+        });
       }
       if (status === "test_no_grant") return setView({ kind: "test_no_grant" });
       if (status === "payment_failed") return setView({ kind: "failed" });
@@ -131,20 +137,39 @@ function SuccessContent() {
         <TossResultShell
           tone="success"
           title={t.guestDoneTitle}
-          body={view.emailSent ? t.guestDoneBodyEmailSent : t.guestDoneBodyEmailPending}
+          body={
+            isGuestUsePlan(view.planId)
+              ? view.emailSent
+                ? t.guestUse.successBodySent
+                : t.guestUse.successBodyPending
+              : view.emailSent
+                ? t.guestDoneBodyEmailSent
+                : t.guestDoneBodyEmailPending
+          }
         >
           {view.maskedEmail ? (
             <p className="mb-4 text-center text-xs text-[#4A5C52]">{t.guestPurchaseEmailMasked(view.maskedEmail)}</p>
           ) : null}
-          <button
-            type="button"
-            className={primaryButton}
-            onClick={() =>
-              router.push(localizedPath(`/checkout/toss/claim?${new URLSearchParams({ orderId }).toString()}`, locale))
-            }
-          >
-            {t.guestLinkCta}
-          </button>
+          {isGuestUsePlan(view.planId) ? (
+            // Single Personal: usable without an account (purchase verification first).
+            <button
+              type="button"
+              className={primaryButton}
+              onClick={() => router.push(localizedPath(`/checkout/toss/use?${new URLSearchParams({ orderId }).toString()}`, locale))}
+            >
+              {t.guestUse.useCtaFromSuccess}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={primaryButton}
+              onClick={() =>
+                router.push(localizedPath(`/checkout/toss/claim?${new URLSearchParams({ orderId }).toString()}`, locale))
+              }
+            >
+              {t.guestLinkCta}
+            </button>
+          )}
         </TossResultShell>
       );
     case "test_no_grant":

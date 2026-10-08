@@ -10,7 +10,7 @@ import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
-import { isCheckoutEnabled, isGuestTossPlan } from "@/lib/payment/tossCatalog";
+import { isCheckoutEnabled, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
 import { ROUTES } from "@/constants/routes";
@@ -459,7 +459,7 @@ export default function PurchaseSelectorContent({
                       className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
                     />
                   </label>
-                  <GuestSignupNotice text={t.guestDescription} />
+                  <GuestSignupNotice text={isGuestUsePlan(planId) ? t.guestUse.modalDescription : t.guestDescription} />
                   <label className="flex items-start gap-2 text-sm leading-relaxed text-[#1A3328]">
                     <input
                       type="checkbox"

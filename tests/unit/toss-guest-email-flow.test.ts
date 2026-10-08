@@ -269,7 +269,7 @@ async function main() {
       assert.equal(other[0].result, "claimed_by_other");
       assert.equal(credits("u_owner"), 1);
       assert.equal(credits("u_thief"), 0);
-      assert.equal(await sendGuestPurchaseEmail(sb, o, { send: h.deps.mail }), "not_applicable", "no email after it is claimed");
+      assert.equal(await sendGuestPurchaseEmail(sb, o, { send: h.deps.mail! }), "not_applicable", "no email after it is claimed");
       ok("claim: unverified/other email refused, verified match grants exactly once, no takeover, no mail after claim");
     }
 

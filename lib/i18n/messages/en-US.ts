@@ -1508,6 +1508,58 @@ export const messagesEnUS = {
       `Purchase email: ${email}`,
     claimSignedOutBody: (email: string) =>
       `Sign up or sign in with ${email} and verify it, and your pass will be linked to your account.`,
+    guestUse: {
+      modalDescription: "After payment, we'll email you how to use it. Confirm with your purchase email (link or code) to use it without an account, and save the result to an account if you like.",
+      successBodySent: "We sent the purchase guide to your purchase email. Tap below and confirm your purchase to use it right away, no account needed.",
+      successBodyPending: "Your purchase is complete. Tap below and confirm with a code sent to your purchase email to use it, no account needed.",
+      useCtaFromSuccess: "Use my pass",
+      verifyTitle: "Please confirm your purchase",
+      verifyBody: "To use your pass, confirm your purchase first. On any device, use the link in your purchase email or a code sent to your purchase email. Confirmation lasts 7 days on this device.",
+      startOnDevice: "Start on this device",
+      sendCode: "Email me a code",
+      resendCode: "Send a new code",
+      codeLabel: "6-digit code",
+      verifyCta: "Confirm",
+      codeMismatch: "That code doesn't match.",
+      codeLocked: "Too many tries. Please get a new code.",
+      codeExpired: "That code has expired. Please get a new code.",
+      codeTooMany: "Too many code requests. Please try again a little later.",
+      codeSendFailed: "We couldn't send the email. Please try again shortly.",
+      linkExpiredNotice: "This link has expired or was replaced. Your purchase and pass are unchanged — confirm with a code instead.",
+      lookupTitle: "Get your purchase email again",
+      lookupBody: "Enter the email you used at checkout. If it has a paid purchase, we'll send a purchase email with a new link to that address.",
+      lookupCta: "Send it",
+      lookupDone: "Request received. If that email has a paid purchase, we've sent the purchase email there.",
+      inputTitle: "Enter your birth date and birth place",
+      inputBody: "Your details are kept on our server with this purchase. If you don't generate the analysis, they're deleted when the pass expires (12 months after purchase).",
+      surveyNeeded: "This analysis needs the short survey. Please sign in to continue.",
+      generateTitle: "Generate your analysis?",
+      generateBody: "Generating uses your pass once. Before that, you can get a full refund within 7 days of purchase.",
+      generateCta: "Generate my analysis",
+      editInput: "Edit details",
+      generateFailed: "We couldn't create the analysis. Your pass was not used. Please try again.",
+      generateInProgress: "Your analysis is already being created in another window. Please check again shortly.",
+      saveBanner: "Sign in or sign up to save your details and report to an account and reopen them anytime.",
+      saveSignUp: "Sign up and save",
+      saveSignIn: "Sign in and save",
+      saveNow: "Save to my account",
+      saveMismatch: "You can only save to an account whose verified email matches the purchase email. Please sign in with your purchase email.",
+      savedTitle: "Saved to your account",
+      savedBody: "You can reopen it from your account anytime.",
+      openReport: "Open my report",
+      linkedTitle: "This purchase is linked to an account",
+      linkedBody: "Please sign in with your purchase email to use it.",
+      expiredTitle: "This pass has expired",
+      expiredBody: "It can no longer be used: 12 months have passed since purchase.",
+      notAvailableTitle: "This purchase can't be used here",
+      notAvailableBody: "We couldn't confirm the payment, or this product is used from an account. Please try again from the button in your purchase email.",
+      codeSentTo: (email: string) =>
+        `We sent a code to ${email}. Enter it within 10 minutes.`,
+      linkReadyBody: (email: string) =>
+        `You came in from the link in the purchase email for ${email}. Start using your pass on this device?`,
+      retentionNote: (email: string) =>
+        `Even without saving, this report and your details are kept with this purchase until ${email} (12 months after the analysis was generated).`,
+    },
     guestEmail: {
       subject: "[Aha! It's me] Your analysis pass purchase",
       testSubjectPrefix: "[TEST purchase · no real charge]",
@@ -3318,6 +3370,55 @@ export type MessageCatalog = {
     claimNewLinkRequested: string;
     guestPurchaseEmailMasked: (email: string) => string;
     claimSignedOutBody: (email: string) => string;
+    guestUse: {
+      modalDescription: string;
+      successBodySent: string;
+      successBodyPending: string;
+      useCtaFromSuccess: string;
+      verifyTitle: string;
+      verifyBody: string;
+      startOnDevice: string;
+      sendCode: string;
+      resendCode: string;
+      codeLabel: string;
+      verifyCta: string;
+      codeMismatch: string;
+      codeLocked: string;
+      codeExpired: string;
+      codeTooMany: string;
+      codeSendFailed: string;
+      linkExpiredNotice: string;
+      lookupTitle: string;
+      lookupBody: string;
+      lookupCta: string;
+      lookupDone: string;
+      inputTitle: string;
+      inputBody: string;
+      surveyNeeded: string;
+      generateTitle: string;
+      generateBody: string;
+      generateCta: string;
+      editInput: string;
+      generateFailed: string;
+      generateInProgress: string;
+      saveBanner: string;
+      saveSignUp: string;
+      saveSignIn: string;
+      saveNow: string;
+      saveMismatch: string;
+      savedTitle: string;
+      savedBody: string;
+      openReport: string;
+      linkedTitle: string;
+      linkedBody: string;
+      expiredTitle: string;
+      expiredBody: string;
+      notAvailableTitle: string;
+      notAvailableBody: string;
+      codeSentTo: (email: string) => string;
+      linkReadyBody: (email: string) => string;
+      retentionNote: (email: string) => string;
+    };
     guestEmail: {
       subject: string;
       testSubjectPrefix: string;
