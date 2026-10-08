@@ -814,6 +814,12 @@ export default function HomeContent() {
     setStartChoiceOpen(true);
   }, [creatingReport]);
 
+  const browseProductsFromStart = useCallback(() => {
+    setStartChoiceOpen(false);
+    setAuthModalOpen(false);
+    router.push(localize(ROUTES.pricing));
+  }, [router, localize]);
+
   const openLoginFromStart = useCallback(() => {
     setStartChoiceOpen(false);
     setAuthModalOpen(true);
@@ -935,6 +941,7 @@ export default function HomeContent() {
         onClose={() => setStartChoiceOpen(false)}
         onStartFree={() => void startFreeSurvey()}
         onLogin={openLoginFromStart}
+        onBrowseProducts={browseProductsFromStart}
         onGoBlueprint={() => void safeNavigate("blueprint")}
         onGoRelationships={() => void safeNavigate("relationships")}
         onGoDecision={() => void safeNavigate("decision")}
@@ -1024,6 +1031,20 @@ export default function HomeContent() {
                 </button>
               </div>
               <HomeAuthSignInPanel />
+              {!isSignedIn ? (
+                <div className="mt-4 border-t border-outline-variant/30 pt-4 text-center">
+                  <p className="text-xs text-on-surface-variant/70">
+                    {messages.landing.authModalGuestBuyLead}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={browseProductsFromStart}
+                    className="mt-1 text-sm font-semibold text-primary underline underline-offset-4 hover:text-secondary"
+                  >
+                    {messages.landing.authModalGuestBuyCta}
+                  </button>
+                </div>
+              ) : null}
             </motion.div>
           </motion.div>
         )}

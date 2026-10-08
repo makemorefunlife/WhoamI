@@ -382,11 +382,20 @@ async function main() {
       assert.match(pe.text, /이용권 기한이 끝날 때 삭제돼요/);
       const pass = buildGuestPurchaseEmail({ ...base, amount: 20000, locale: "ko-KR", planId: "kr_insight_pass_30d", maskedEmail: "ab***@x.com" });
       assert.match(pass.text, /계정 연결하고 이용하기: https:\/\/x\/l/);
+      assert.match(pass.text, /이 상품은 계정이 필요해요/, "account products state the account requirement");
+      assert.doesNotMatch(pass.text, /회원가입 없이/);
+      for (const planId of ["kr_relationship_premium", "kr_relationship_triple"]) {
+        const m = buildGuestPurchaseEmail({ ...base, locale: "ko-KR", planId });
+        assert.match(m.text, /이 상품은 계정이 필요해요/, planId);
+      }
+      assert.match(pe.text, /결과를 계정에 저장하고 싶을 때만 선택해서 가입/, "Personal: sign-up is optional, only for saving");
+      assert.doesNotMatch(pe.text, /계정이 필요해요/);
       assert.match(pass.text, /계정 연결일이 아니라 구매일로부터 30일/);
       assert.match(pass.text, /ab\*\*\*@x\.com/);
       assert.match(pass.text, /계정 연결 후 이용권을 받을 수 있습니다/);
       const en = buildGuestPurchaseEmail({ ...base, amount: 280, currency: "USD", locale: "en-US", planId: "us_annual_membership" });
       assert.match(en.text, /prorated refund/);
+      assert.match(en.text, /This product requires an account/);
       assert.match(en.text, /Link my account: https:\/\/x\/l/);
       const code = buildGuestCodeEmail({ locale: "ko-KR", code: "123456", isTest: true });
       assert.match(code.subject, /^\[테스트\] \[Aha! It's me\] 구매 확인 인증코드$/);

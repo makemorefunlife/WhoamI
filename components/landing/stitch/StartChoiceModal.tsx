@@ -10,6 +10,8 @@ type Props = {
   onClose: () => void;
   onStartFree: () => void;
   onLogin: () => void;
+  /** Signed-out: browse products and buy as a guest (no login required). */
+  onBrowseProducts?: () => void;
   onGoBlueprint?: () => void;
   onGoRelationships?: () => void;
   onGoDecision?: () => void;
@@ -22,6 +24,7 @@ export default function StartChoiceModal({
   onClose,
   onStartFree,
   onLogin,
+  onBrowseProducts,
   onGoBlueprint,
   onGoRelationships,
   onGoDecision,
@@ -90,6 +93,11 @@ export default function StartChoiceModal({
               <span className="text-xs text-on-primary/80 font-normal mt-0.5">
                 {messages.startChoiceModal.personalDesc}
               </span>
+              {!signedIn ? (
+                <span className="text-[11px] text-on-primary/70 font-normal mt-0.5">
+                  {messages.startChoiceModal.freeNeedsLogin}
+                </span>
+              ) : null}
             </div>
             <span className="text-lg group-hover:translate-x-1 transition-transform" aria-hidden>
               →
@@ -137,8 +145,32 @@ export default function StartChoiceModal({
           </button>
         </div>
 
+        {!signedIn && onBrowseProducts ? (
+          <button
+            type="button"
+            className="mt-3 w-full flex items-center justify-between rounded-2xl border border-secondary/40 bg-secondary/5 px-6 py-4 text-left hover:border-secondary transition-all group"
+            disabled={busy}
+            onClick={onBrowseProducts}
+          >
+            <div className="flex flex-col">
+              <span className="text-base font-bold text-primary">
+                {messages.startChoiceModal.buyTitle}
+              </span>
+              <span className="text-xs text-on-surface-variant/80 font-normal mt-0.5">
+                {messages.startChoiceModal.buyDesc}
+              </span>
+            </div>
+            <span className="text-lg group-hover:translate-x-1 transition-transform text-primary" aria-hidden>
+              →
+            </span>
+          </button>
+        ) : null}
+
         {!signedIn ? (
           <div className="mt-5 text-center">
+            <p className="mb-1 text-[11px] text-on-surface-variant/60">
+              {messages.startChoiceModal.loginOptional}
+            </p>
             <button
               type="button"
               onClick={onLogin}

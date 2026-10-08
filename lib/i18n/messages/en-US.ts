@@ -1289,6 +1289,8 @@ export const messagesEnUS = {
       "Self-insight and relationship tools, built with care.",
     authModalTitle: "Continue your journey",
     authModalBody: "Sign in quickly with Google, or use email.",
+    authModalGuestBuyLead: "You can also buy without logging in.",
+    authModalGuestBuyCta: "Browse and buy without logging in",
   },
   dock: {
     home: "Home",
@@ -1478,6 +1480,8 @@ export const messagesEnUS = {
     loginPrompt: "Sign in to save your results automatically and run relationship analyses faster!",
     quickSignIn: "Quick sign-in",
     guestSectionTitle: "Or pay as a guest",
+    accountNeedNone: "No account needed · just verify your purchase email",
+    accountNeedRequired: "Account required · after purchase, sign up or log in with your purchase email to use it",
     guestEmailLabelGuide: "Email for your purchase details",
     guestEmailLabelWithReceipt: "Email for your purchase details & receipt",
     guestDescription: "After payment, we'll email you a link to start your analysis. To use the analysis and save your report, sign in or sign up with your purchase email and verify it.",
@@ -1581,12 +1585,12 @@ export const messagesEnUS = {
       footer: "This email is your purchase guide. Questions? Reply to this email or write to contact@ahaitsme.com.",
       stepsTitle: "How to use it",
       refundTitle: "Refunds",
-      useIntro: "You can use it right away, no account needed.",
+      useIntro: "You can use it right away, no account needed. Just verify your purchase email; signing up is optional and only needed if you want to save the result to an account.",
       useCta: "Use my pass",
       useSteps: ["Tap Use my pass below, or enter the code sent to your purchase email, to confirm your purchase. Confirmation is needed on any device and lasts 7 days.", "Enter your birth date and birth place (plus the short survey we need).", "See your personal analysis.", "Sign in or sign up to save your details and report to an account and reopen them anytime. Nothing has to be re-entered or regenerated."],
       useStorage: "The pass can be used once for this purchase within 12 months of purchase. Your details and report are kept with this purchase for 12 months from the date the analysis is generated. If you only enter details without generating, they are deleted when the pass expires.",
       useLinkExpiry: "This link is valid for 30 days. That is separate from the pass's use-by date: if the link expires, you can keep going with a code sent to your purchase email.",
-      accountIntro: "This product is used from an account.",
+      accountIntro: "This product requires an account. Sign up or log in with your purchase email, verify it, and link the pass to your account to use it.",
       accountCta: "Link my account",
       accountStep1: "Tap Link my account below.",
       accountStep2: "Sign up or sign in with your purchase email and verify it. Already have an account? Just sign in.",
@@ -2168,6 +2172,10 @@ export const messagesEnUS = {
     decisionTitle: "Decision Journal",
     decisionDesc: "Connect with Yourself through Choices & Reflection",
     loginLink: "Log in with an existing account",
+    buyTitle: "Browse and buy without logging in",
+    buyDesc: "Every product can be bought as a guest · We show whether an account is needed before you pay",
+    freeNeedsLogin: "The free trial starts after you log in",
+    loginOptional: "Logging in is optional. When you log in, results are saved to your account automatically.",
   },
   decisionSample: {
     dateBadge: "2026. 03. 14 · Daily Journal",
@@ -3180,6 +3188,8 @@ export type MessageCatalog = {
     footerTagline: string;
     authModalTitle: string;
     authModalBody: string;
+    authModalGuestBuyLead: string;
+    authModalGuestBuyCta: string;
   };
   dock: {
     home: string;
@@ -3342,6 +3352,8 @@ export type MessageCatalog = {
     loginPrompt: string;
     quickSignIn: string;
     guestSectionTitle: string;
+    accountNeedNone: string;
+    accountNeedRequired: string;
     guestEmailLabelGuide: string;
     guestEmailLabelWithReceipt: string;
     guestDescription: string;
@@ -3970,6 +3982,10 @@ export type MessageCatalog = {
     decisionTitle: string;
     decisionDesc: string;
     loginLink: string;
+    buyTitle: string;
+    buyDesc: string;
+    freeNeedsLogin: string;
+    loginOptional: string;
   };
   decisionSample: {
     dateBadge: string;

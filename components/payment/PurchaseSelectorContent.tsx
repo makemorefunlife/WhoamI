@@ -449,6 +449,7 @@ export default function PurchaseSelectorContent({
               {guestAllowed ? (
                 <div className="mt-5 space-y-3">
                   <p className="text-sm font-bold text-[#1A3328]">{t.guestSectionTitle}</p>
+                  <AccountNeedLine planId={planId} />
                   <label className="block text-xs font-medium text-[#4A5C52]">
                     {t.guestEmailLabelGuide}
                     <input
@@ -547,6 +548,9 @@ export default function PurchaseSelectorContent({
               </p>
             ))}
           </div>
+        ) : null}
+        {!isSignedIn && isGuestTossPlan(planId) && canBuy(planId) ? (
+          <AccountNeedLine planId={planId} className="mt-4" />
         ) : null}
         {planNotice[planId] && guestFormPlan !== planId ? (
           <p role="status" className="mt-4 text-[12px] font-medium text-amber-700">
@@ -686,6 +690,23 @@ export default function PurchaseSelectorContent({
  * "sign up / sign in with the same email and verify it" step is clear BEFORE
  * paying. Display only -- no effect on checkout or entitlement logic.
  */
+/** Before payment: states whether the product needs an account (per product). */
+function AccountNeedLine({ planId, className = "" }: { planId: string; className?: string }) {
+  const { messages } = useLocale();
+  const none = isGuestUsePlan(planId);
+  return (
+    <p
+      className={[
+        "rounded-xl border px-3 py-2 text-xs font-semibold leading-relaxed",
+        none ? "border-[#3A8F6E]/30 bg-[#EAF4EF] text-[#1A3328]" : "border-[#C98A2C]/40 bg-[#FBF3E6] text-[#7A4E12]",
+        className,
+      ].join(" ")}
+    >
+      {none ? messages.payments.accountNeedNone : messages.payments.accountNeedRequired}
+    </p>
+  );
+}
+
 function GuestSignupNotice({ text, className = "" }: { text: string; className?: string }) {
   return (
     <div
