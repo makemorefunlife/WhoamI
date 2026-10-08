@@ -20,7 +20,7 @@ import { claimGuestTossOrders, completeTossOrder, type TossDeps } from "../../li
 import { processDueGuestEmails, sendGuestPurchaseEmail, buildGuestPurchaseEmail } from "../../lib/email/guestPurchaseEmail";
 import type { MailMessage, MailResult } from "../../lib/email/resend";
 import { claimTokenFor, verifyClaimToken, newClaimNonce } from "../../lib/payment/guestClaimToken";
-import { postPurchaseDestination } from "../../lib/payment/postPurchaseDestination";
+import { postPurchaseDestination, resolvePostPurchase } from "../../lib/payment/postPurchaseDestination";
 import type { TossPayment, TossResult } from "../../lib/payment/tossServer";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -376,7 +376,7 @@ async function main() {
       assert.equal(en.subject, "[Aha! It's me] Your analysis pass purchase");
       assert.match(en.text, /Use all 3 report credits within 12 months of purchase/);
       assert.match(en.text, /You'll receive your pass after linking an account/);
-      assert.match(en.text, /Link my account: /);
+      assert.match(en.text, /Sign up and link my pass: /);
       assert.doesNotMatch(en.text, /receipt/i, "no receipt line when Toss gave no receipt URL");
       const s = { reportId: "r1", surveyCompleted: true, birthDate: "1990-01-01" };
       assert.equal(postPurchaseDestination({ planId: "kr_personal_premium", locale: "ko-KR", session: s }), "/blueprint-preview/r1/essence/deep?autostart=1");
@@ -386,6 +386,15 @@ async function main() {
       assert.equal(postPurchaseDestination({ planId: "kr_personal_premium", locale: "ko-KR", session: { ...s, surveyCompleted: false } }), "/blueprint-preview/r1/essence/deep?autostart=1", "KR survey optional");
       assert.equal(postPurchaseDestination({ planId: "kr_personal_premium", locale: "ko-KR", session: null }), "/");
       assert.equal(postPurchaseDestination({ planId: "x", locale: "ko-KR", session: s, explicitReturnPath: "/kr/blueprint-preview/r1/essence/deep" }), "/kr/blueprint-preview/r1/essence/deep");
+      // Relationship products: own details first (friend-add rules), then back to adding a friend.
+      const rel = resolvePostPurchase({ planId: "kr_relationship_premium", locale: "ko-KR", session: { ...s, birthDate: null } });
+      assert.deepEqual(rel, { path: "/onboarding/birth?reportId=r1", selfProfileReturn: "/relationships?section=add&myReportId=r1" });
+      assert.deepEqual(resolvePostPurchase({ planId: "kr_relationship_triple", locale: "ko-KR", session: null }), { path: "/?start=self", selfProfileReturn: "/relationships?section=add" });
+      assert.deepEqual(resolvePostPurchase({ planId: "us_relationship_premium", locale: "en-US", session: { ...s, surveyCompleted: false } }), { path: "/survey-v2?reportId=r1", selfProfileReturn: "/relationships?section=add&myReportId=r1" }, "US survey required first");
+      assert.equal(postPurchaseDestination({ planId: "kr_relationship_premium", locale: "ko-KR", session: { ...s, surveyCompleted: false } }), "/relationships?myReportId=r1", "KR survey optional for relationships");
+      // 30-day pass: the existing chooser (personal / relationship / Decision Journal).
+      assert.equal(postPurchaseDestination({ planId: "kr_insight_pass_30d", locale: "ko-KR", session: s }), "/?start=choice");
+      assert.equal(postPurchaseDestination({ planId: "kr_insight_pass_30d", locale: "ko-KR", session: null }), "/?start=choice");
       ok("English email copy; post-purchase destination follows plan / locale / survey / birth state");
     }
 

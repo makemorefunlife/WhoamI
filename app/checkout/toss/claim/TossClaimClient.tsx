@@ -1,15 +1,15 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
 import { setAuthPrefillEmail } from "@/lib/auth/prefillEmail";
-import { loadReportSession } from "@/lib/home/reportSession";
-import { postPurchaseDestination } from "@/lib/payment/postPurchaseDestination";
+import { goAfterPurchase } from "@/lib/payment/goAfterPurchase";
+import { accountLinkCopy, linkedCopy } from "@/lib/payment/accountLinkCopy";
 
 /**
  * Guest checkout, step 2 -- reached from the success page or the emailed
@@ -26,15 +26,17 @@ import { postPurchaseDestination } from "@/lib/payment/postPurchaseDestination";
  * the existing entry rules for the plan bought.
  */
 
-type Info = { status?: string; maskedEmail?: string | null; prefillEmail?: string | null; linkValid?: boolean };
+type Info = {
+  status?: string;
+  planId?: string | null;
+  approvedAt?: string | null;
+  maskedEmail?: string | null;
+  prefillEmail?: string | null;
+  linkValid?: boolean;
+};
 
-function SignedOutClaim({ orderId, linkExpired }: { orderId: string; linkExpired: boolean }) {
-  const router = useRouter();
-  const { messages, href } = useLocale();
-  const t = messages.payments;
+function useClaimInfo(orderId: string): Info | null {
   const [info, setInfo] = useState<Info | null>(null);
-  const [renew, setRenew] = useState<"idle" | "sending" | "done">("idle");
-
   useEffect(() => {
     if (!orderId) return;
     let cancelled = false;
@@ -54,6 +56,15 @@ function SignedOutClaim({ orderId, linkExpired }: { orderId: string; linkExpired
       cancelled = true;
     };
   }, [orderId]);
+  return info;
+}
+
+function SignedOutClaim({ orderId, linkExpired }: { orderId: string; linkExpired: boolean }) {
+  const router = useRouter();
+  const { messages, href, locale } = useLocale();
+  const t = messages.payments;
+  const info = useClaimInfo(orderId);
+  const [renew, setRenew] = useState<"idle" | "sending" | "done">("idle");
 
   const returnHere = href(`/checkout/toss/claim${orderId ? `?${new URLSearchParams({ orderId }).toString()}` : ""}`);
   const openAuth = (path: string) => {
@@ -76,19 +87,36 @@ function SignedOutClaim({ orderId, linkExpired }: { orderId: string; linkExpired
   }
 
   const showRenew = Boolean(orderId) && info?.status === "awaiting_claim" && (linkExpired || !info?.linkValid);
+  // Product + language come from the server-side order (same wording as the email).
+  const copy = accountLinkCopy(messages, locale, info?.planId, { maskedEmail: info?.maskedEmail, approvedAt: info?.approvedAt });
   return (
     <TossResultShell
       tone="success"
-      title={t.claimSignedOutTitle}
-      body={info?.maskedEmail ? t.claimSignedOutBody(info.maskedEmail) : t.claimNoPrefillBody}
+      title={copy?.title ?? t.claimSignedOutTitle}
+      body={copy?.body ?? (info?.maskedEmail ? t.claimSignedOutBody(info.maskedEmail) : t.claimNoPrefillBody)}
     >
       {linkExpired ? <p className="mb-4 text-xs leading-relaxed text-amber-700">{t.claimLinkExpiredNotice}</p> : null}
+      {copy?.extras.length ? (
+        <div className="mb-4 space-y-1 rounded-xl bg-[#F5F0E8] px-3.5 py-2.5 text-left">
+          {copy.extras.map((x) => (
+            <p key={x} className="text-xs leading-relaxed text-[#4A5C52]">{x}</p>
+          ))}
+        </div>
+      ) : null}
+      {copy ? <p className="mb-4 text-sm font-semibold leading-relaxed text-[#1A3328]">{copy.emailLine}</p> : null}
       <button type="button" className="stitch-cta-primary w-full" onClick={() => openAuth(ROUTES.signUp)}>
-        {t.claimSignUpCta}
+        {copy?.primaryCta ?? t.claimSignUpCta}
       </button>
       <button type="button" className="stitch-cta-secondary mt-3 w-full" onClick={() => openAuth(ROUTES.signIn)}>
-        {t.claimSignInCta}
+        {copy?.secondaryCta ?? t.claimSignInCta}
       </button>
+      {copy ? (
+        <div className="mt-4 space-y-1 text-center">
+          {copy.footers.map((x) => (
+            <p key={x} className="text-[11px] leading-relaxed text-[#4A5C52]">{x}</p>
+          ))}
+        </div>
+      ) : null}
       {showRenew ? (
         <div className="mt-5 border-t border-[#EDE8DD] pt-4">
           {renew === "done" ? (
@@ -115,8 +143,10 @@ type Result = { kind: "working" } | { kind: "done"; planId: string | null } | { 
 
 function SignedInClaim({ orderId }: { orderId: string }) {
   const router = useRouter();
-  const { locale, messages } = useLocale();
+  const { locale, messages, href } = useLocale();
+  const { signOut } = useClerk();
   const t = messages.payments;
+  const info = useClaimInfo(orderId);
   const [result, setResult] = useState<Result>({ kind: "working" });
   const [starting, setStarting] = useState(false);
 
@@ -148,8 +178,13 @@ function SignedInClaim({ orderId }: { orderId: string }) {
 
   const start = async (planId: string | null) => {
     setStarting(true);
-    const session = await loadReportSession({ forceRefresh: true }).catch(() => null);
-    router.push(localizedPath(postPurchaseDestination({ planId, locale, session }), locale));
+    await goAfterPurchase((h) => router.push(h), { planId, locale });
+  };
+  // Signed into a different account: sign out, then sign in with the purchase
+  // email and come back here (the server still checks the verified email).
+  const switchAccount = async () => {
+    const back = href(`/checkout/toss/claim${orderId ? `?${new URLSearchParams({ orderId }).toString()}` : ""}`);
+    await signOut({ redirectUrl: `${href(ROUTES.signIn)}?${new URLSearchParams({ redirect_url: back }).toString()}` });
   };
   const toAccount = (
     <button type="button" className="stitch-cta-primary w-full" onClick={() => router.push(localizedPath(ROUTES.accountBilling, locale))}>
@@ -160,19 +195,39 @@ function SignedInClaim({ orderId }: { orderId: string }) {
   switch (result.kind) {
     case "working":
       return <TossResultShell tone="progress" title={t.claimWorkingTitle} body={t.tossConfirmingBody} />;
-    case "done":
-      // Shown only after the server linked the order and granted the pass.
+    case "done": {
+      // Shown only after the server linked the order and granted the pass (once).
+      const linked = linkedCopy(messages, result.planId);
+      const copy = accountLinkCopy(messages, locale, result.planId, { approvedAt: info?.approvedAt });
       return (
-        <TossResultShell tone="success" title={t.memberGrantedTitle} body={t.memberGrantedBody}>
+        <TossResultShell tone="success" title={linked.title} body={linked.body}>
+          {copy?.extras.length ? (
+            <div className="mb-4 space-y-1 rounded-xl bg-[#F5F0E8] px-3.5 py-2.5 text-left">
+              {copy.extras.map((x) => (
+                <p key={x} className="text-xs leading-relaxed text-[#4A5C52]">{x}</p>
+              ))}
+            </div>
+          ) : null}
           <button type="button" className="stitch-cta-primary w-full" disabled={starting} onClick={() => void start(result.planId)}>
-            {t.startAnalysisCta}
+            {linked.cta}
           </button>
         </TossResultShell>
       );
+    }
     case "test":
       return <TossResultShell tone="warning" title={t.claimTestNotAllowedTitle} body={t.claimTestNotAllowedBody}>{toAccount}</TossResultShell>;
     case "mismatch":
-      return <TossResultShell tone="warning" title={t.claimMismatchTitle} body={t.claimMismatchBody}>{toAccount}</TossResultShell>;
+      return (
+        <TossResultShell
+          tone="warning"
+          title={t.accountLink.mismatchTitle}
+          body={info?.maskedEmail ? t.accountLink.mismatchBody(info.maskedEmail) : t.accountLink.mismatchBodyNoMask}
+        >
+          <button type="button" className="stitch-cta-primary w-full" onClick={() => void switchAccount()}>
+            {t.accountLink.switchAccountCta}
+          </button>
+        </TossResultShell>
+      );
     case "nothing":
       return <TossResultShell tone="warning" title={t.claimNothingTitle} body={t.claimNothingBody}>{toAccount}</TossResultShell>;
     default:

@@ -8,6 +8,7 @@
  * Run (needs a local Postgres you can create databases on; never prod):
  *   PGHOST=/tmp PGPORT=5432 PGUSER=postgres npx tsx tests/unit/toss-membership-flow.test.ts
  */
+import { passEndsAt } from "../../lib/payment/accountLinkCopy";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
@@ -410,6 +411,11 @@ async function main() {
                   where g.provider_transaction_id = 'toss:pk_g1' and o.order_id = ${lit(orderId)}`),
         "t",
       );
+      // The end date shown on the claim page / email equals the granted lots' expiry.
+      const approvedIso = psql(DB, `select to_char(approved_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') from toss_payment_orders where order_id = ${lit(orderId)}`);
+      const shownEnd = Date.parse(passEndsAt(approvedIso) as string) / 1000;
+      const lotEnd = Number(psql(DB, `select max(extract(epoch from expires_at)) from credit_lots where clerk_user_id = 'u_buyer'`));
+      assert.ok(Math.abs(shownEnd - lotEnd) < 5, "displayed pass end = actual expiry");
       const again = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_buyer", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] }));
       assert.equal(again[0].result, "already_claimed");
       const stolen = strip(await claimGuestTossOrders(sb, { clerkUserId: "u_other", verifiedEmails: ["buyer@example.com"], orderIds: [orderId] }));

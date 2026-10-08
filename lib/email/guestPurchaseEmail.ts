@@ -4,6 +4,7 @@ import { localizedPath, type Locale } from "@/lib/i18n/locale";
 import { claimTokenFor } from "@/lib/payment/guestClaimToken";
 import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
 import { maskEmail } from "@/lib/payment/guestCheckout";
+import { accountLinkCopy, formatPurchaseDate } from "@/lib/payment/accountLinkCopy";
 import { sendResendEmail, type MailSender } from "@/lib/email/resend";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 
@@ -57,12 +58,7 @@ export function formatOrderAmount(amount: number | string, currency: string, loc
   return `$${n.toFixed(2)}`;
 }
 
-function formatDate(iso: string | null, locale: Locale): string {
-  const d = iso ? new Date(iso) : new Date();
-  return locale === "ko-KR"
-    ? new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric" }).format(d)
-    : `${new Intl.DateTimeFormat("en-US", { timeZone: "UTC", year: "numeric", month: "long", day: "numeric" }).format(d)} (UTC)`;
-}
+const formatDate = formatPurchaseDate;
 
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -103,24 +99,30 @@ export function buildGuestPurchaseEmail(params: {
     [t.validityLabel, validity],
   ];
 
-  const intro = guestUse ? t.useIntro : t.accountIntro;
-  const cta = guestUse ? t.useCta : t.accountCta;
+  // Account products: the same wording as the claim page (lib/payment/accountLinkCopy.ts).
+  const link = guestUse ? null : accountLinkCopy(m, params.locale, params.planId, { maskedEmail: params.maskedEmail, approvedAt: params.approvedAt });
+  const intro = guestUse ? t.useIntro : link ? link.title : t.accountIntro;
+  const introBody: string[] = guestUse ? [] : link ? [link.body, ...link.extras] : [];
+  const cta = guestUse ? t.useCta : (link?.primaryCta ?? t.accountCta);
   const steps: string[] = guestUse
     ? t.useSteps
     : [
         t.accountStep1,
-        params.maskedEmail ? `${t.accountStep2} (${params.maskedEmail})` : t.accountStep2,
+        link ? `${link.emailLine} ${t.accountStep2}` : params.maskedEmail ? `${t.accountStep2} (${params.maskedEmail})` : t.accountStep2,
         params.locale === "ko-KR"
           ? `이용권이 계정에 연결되면 ${notes?.next ?? "이용 화면"}으로 이어져요.`
           : `Once the pass is linked, you'll go straight to ${notes?.next ?? "your analysis"}.`,
       ];
-  const afterCta: string[] = guestUse ? [t.useStorage, t.useLinkExpiry] : [t.notYetGranted, t.accountOnce, t.linkExpiry];
+  const afterCta: string[] = guestUse
+    ? [t.useStorage, t.useLinkExpiry]
+    : [...(link?.footers ?? []), t.notYetGranted, t.accountOnce, t.linkExpiry];
   const refundLine = notes?.refund ?? t.validityFallback;
 
   const text = [
     params.isTest ? `${t.testBanner}\n` : "",
     t.greeting,
     intro,
+    ...introBody,
     "",
     ...rows.map(([k, v]) => `${k}: ${v}`),
     "",
@@ -151,6 +153,7 @@ ${params.isTest ? `<p style="margin:0 0 16px;padding:10px 12px;border-radius:10p
 <h1 style="margin:0 0 16px;font-size:20px">${esc(t.heading)}</h1>
 ${p(t.greeting)}
 ${p(intro, "font-weight:600")}
+${introBody.map((x) => p(x)).join("\n")}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 16px;font-size:14px;border-top:1px solid #EDE8DD">
 ${rows.map(([k, v]) => `<tr><td style="padding:8px 0;color:#4A5C52;width:38%;vertical-align:top">${esc(k)}</td><td style="padding:8px 0;font-weight:600">${esc(v)}</td></tr>`).join("\n")}
 </table>

@@ -6,8 +6,8 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import TossResultShell from "../TossResultShell";
-import { loadReportSession } from "@/lib/home/reportSession";
-import { postPurchaseDestination } from "@/lib/payment/postPurchaseDestination";
+import { goAfterPurchase } from "@/lib/payment/goAfterPurchase";
+import { linkedCopy } from "@/lib/payment/accountLinkCopy";
 import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
@@ -108,13 +108,7 @@ function SuccessContent() {
   // not a fixed /analysis route.
   const startAnalysis = async (planId: string) => {
     setStarting(true);
-    let session = null;
-    try {
-      session = await loadReportSession({ forceRefresh: true });
-    } catch {
-      session = null;
-    }
-    router.push(localizedPath(postPurchaseDestination({ planId, locale, session, explicitReturnPath: explicitReturn }), locale));
+    await goAfterPurchase((h) => router.push(h), { planId, locale, explicitReturnPath: explicitReturn });
   };
   const goPricing = () => router.push(localizedPath(ROUTES.pricing, locale));
   const primaryButton = "stitch-cta-primary w-full";
@@ -123,15 +117,18 @@ function SuccessContent() {
   switch (view.kind) {
     case "confirming":
       return <TossResultShell tone="progress" title={t.tossConfirmingTitle} body={t.tossConfirmingBody} />;
-    case "granted":
-      // Shown only after the server confirmed the entitlement grant.
+    case "granted": {
+      // Shown only after the server confirmed the entitlement grant. Member
+      // purchase: already on the account -- no sign-up / link step.
+      const linked = linkedCopy(messages, view.planId);
       return (
-        <TossResultShell tone="success" title={t.memberGrantedTitle} body={t.memberGrantedBody}>
+        <TossResultShell tone="success" title={linked.title} body={linked.body}>
           <button type="button" className={primaryButton} disabled={starting} onClick={() => void startAnalysis(view.planId)}>
-            {t.startAnalysisCta}
+            {linked.cta}
           </button>
         </TossResultShell>
       );
+    }
     case "awaiting_claim":
       // Shown only after the server confirmed the Toss approval.
       return (

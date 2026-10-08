@@ -115,6 +115,9 @@ export default function PurchaseSelectorContent({
   const [guestFormPlan, setGuestFormPlan] = useState<string | null>(null);
   const [guestEmail, setGuestEmail] = useState("");
   const [guestAgreed, setGuestAgreed] = useState(false);
+  // Account products (Relationship / Triple / 30-day pass): the guest form
+  // opens after "buy as a guest" is chosen next to "log in and buy".
+  const [guestChosen, setGuestChosen] = useState(false);
   // Came back from "quick sign-in" with ?checkout=<planId>: offer to continue
   // the same plan's payment (same page, same locale).
   const [resumePlan, setResumePlan] = useState<string | null>(null);
@@ -246,6 +249,7 @@ export default function PurchaseSelectorContent({
         // Checkout modal: sign in, or (guest-eligible plans) pay as a guest.
         setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
         setGuestAgreed(false);
+        setGuestChosen(false);
         setGuestFormPlan(planId);
         return;
       }
@@ -434,17 +438,45 @@ export default function PurchaseSelectorContent({
                 {t.continueToPayment}
               </button>
             </div>
+          ) : guestAllowed && !isGuestUsePlan(planId) && !guestChosen ? (
+            // Relationship / Triple / 30-day pass: buyable without an account;
+            // an account is needed when it's used. Log-in keeps plan + language
+            // (?checkout=<planId> on the same localized page).
+            <div className="mt-5 space-y-3">
+              <p className="rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4 text-sm leading-relaxed text-[#1A3328]">
+                {t.prePurchase.accountProductNotice}
+              </p>
+              <a
+                href={signInHrefFor(planId)}
+                className="flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
+              >
+                {t.prePurchase.signInAndBuyCta}
+              </a>
+              <button
+                type="button"
+                onClick={() => setGuestChosen(true)}
+                className="w-full rounded-full border border-[#1A3328]/30 bg-[#FFFDF8] px-5 py-3 text-sm font-semibold text-[#1A3328] transition hover:bg-[#F5F0E8]"
+              >
+                {t.prePurchase.guestBuyCta}
+              </button>
+            </div>
           ) : (
             <>
-              <div className="mt-5 rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4">
-                <p className="text-sm font-semibold leading-relaxed text-[#1A3328]">{t.loginPrompt}</p>
-                <a
-                  href={signInHrefFor(planId)}
-                  className="mt-3 flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
-                >
-                  {t.quickSignIn}
-                </a>
-              </div>
+              {isGuestUsePlan(planId) || !guestAllowed ? (
+                <div className="mt-5 rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4">
+                  <p className="text-sm font-semibold leading-relaxed text-[#1A3328]">{t.loginPrompt}</p>
+                  <a
+                    href={signInHrefFor(planId)}
+                    className="mt-3 flex w-full items-center justify-center rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#33805f]"
+                  >
+                    {t.quickSignIn}
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-5 rounded-2xl border border-[#3A8F6E]/30 bg-[#EAF4EF] p-4 text-sm leading-relaxed text-[#1A3328]">
+                  {t.prePurchase.accountProductNotice}
+                </p>
+              )}
 
               {guestAllowed ? (
                 <div className="mt-5 space-y-3">

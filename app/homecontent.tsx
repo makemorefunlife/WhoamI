@@ -807,11 +807,18 @@ export default function HomeContent() {
   // first") -- start the same free self-profile flow as the start button
   // (name prompt included). Signed out: open the sign-in modal instead.
   const startSelfRanRef = useRef(false);
+  // "/?start=choice": after linking a 30-day pass -- open the existing
+  // "where to start" chooser (personal / relationship / Decision Journal).
   useEffect(() => {
-    if (searchParams.get("start") !== "self" || startSelfRanRef.current) return;
+    const start = searchParams.get("start");
+    if ((start !== "self" && start !== "choice") || startSelfRanRef.current) return;
     if (!isLoaded || resume.loading) return;
     startSelfRanRef.current = true;
     router.replace(localize("/"), { scroll: false });
+    if (start === "choice") {
+      setStartChoiceOpen(true);
+      return;
+    }
     void createReportAndSurvey();
   }, [searchParams, isLoaded, resume.loading, router, localize, createReportAndSurvey]);
 

@@ -1498,10 +1498,10 @@ export const messagesEnUS = {
     quickSignIn: "Quick sign-in",
     guestSectionTitle: "Or pay as a guest",
     accountNeedNone: "No account needed · just verify your purchase email",
-    accountNeedRequired: "Account required · after purchase, sign up or log in with your purchase email to use it",
+    accountNeedRequired: "Buy without an account · log in with your purchase email to use it",
     guestEmailLabelGuide: "Email for your purchase details",
     guestEmailLabelWithReceipt: "Email for your purchase details & receipt",
-    guestDescription: "After payment, we'll email you a link to start your analysis. To use the analysis and save your report, sign in or sign up with your purchase email and verify it.",
+    guestDescription: "After payment, we'll email you how to use it. When you use it, sign up or log in with your purchase email and the pass is linked at no extra cost.",
     guestRequiredConsent: "[Required] I agree to the purchase terms and the cancellation & refund policy.",
     guestRequiredConsentMissing: "Please enter your email and check the required agreement.",
     refundNotice: "Unused products can be fully refunded within 7 days of purchase. For refunds after use, please see each product's refund policy.",
@@ -1511,9 +1511,9 @@ export const messagesEnUS = {
     memberGrantedBody: "Enter the details we need and start your analysis.",
     startAnalysisCta: "Start my analysis now",
     guestDoneTitle: "Your purchase is complete!",
-    guestDoneBodyEmailSent: "We sent a link to start your analysis to your purchase email. Link an account to start your analysis.",
-    guestDoneBodyEmailPending: "Your purchase is complete. Use the button below to link an account and start your analysis.",
-    guestLinkCta: "Link my account and start",
+    guestDoneBodyEmailSent: "We emailed you how to use your pass. Sign up or log in with your purchase email to link it.",
+    guestDoneBodyEmailPending: "Your purchase is complete. Use the button below to sign up or log in with your purchase email and link your pass.",
+    guestLinkCta: "Sign up and link my pass",
     testNoGrantTitle: "Test payment processed",
     testNoGrantBody: "This was a test payment, so no real charge was made. It was cancelled automatically and no pass was issued.",
     claimSignedOutTitle: "Link an account to start your analysis",
@@ -1529,6 +1529,37 @@ export const messagesEnUS = {
       `Purchase email: ${email}`,
     claimSignedOutBody: (email: string) =>
       `Sign up or sign in with ${email} and verify it, and your pass will be linked to your account.`,
+    accountLink: {
+      relationshipTitle: "Continue your story together",
+      relationshipBody: "Log in to connect your details with the other person's, invite friends, and keep your reports.",
+      tripleExtra: "One use per analysis. Check how many you have left in your account.",
+      passTitle: "A month of insights, in one place",
+      passBody: "Log in to keep using and recording personal and relationship analyses and the Decision Journal.",
+      passEnds: (date: string) => `Valid until ${date} (30 days from purchase, regardless of when you link it)`,
+      membershipTitle: "A year, all in one place",
+      membershipBody: "Log in to keep using your membership benefits from your account.",
+      emailLine: (masked: string) => `Sign up or log in with your purchase email, ${masked}.`,
+      emailLineNoMask: "Sign up or log in with the email you used to purchase.",
+      primaryCta: "Sign up and link my pass",
+      secondaryCta: "I already have an account · Log in",
+      footerNoCharge: "Linking is free. No extra payment.",
+      footerFree: "With an account, you can also use the free personal and relationship analyses.",
+      mismatchTitle: "Log in with your purchase email",
+      mismatchBody: (masked: string) => `This purchase can only be linked to the ${masked} account, not the one you're logged into. Log in again with your purchase email.`,
+      mismatchBodyNoMask: "This purchase can only be linked to an account whose verified email matches the purchase email. Log in again with that email.",
+      switchAccountCta: "Log in with my purchase email",
+      linkedRelationshipTitle: "Your relationship pass is linked",
+      linkedRelationshipBody: "Confirm your own details, then add or invite someone to start the analysis.",
+      linkedPassTitle: "Your 30-day pass is linked",
+      linkedPassBody: "Start with a personal analysis, a relationship analysis, or the Decision Journal.",
+      linkedCtaRelationship: "Start a relationship analysis",
+      linkedCtaPass: "Choose where to start",
+    },
+    prePurchase: {
+      accountProductNotice: "You can buy without an account. To connect and keep your details, you'll log in when you use it. Signing up first makes it easier to get started.",
+      signInAndBuyCta: "Log in and buy",
+      guestBuyCta: "Buy as a guest",
+    },
     guestUse: {
       modalDescription: "After payment, we'll email you how to use it. Confirm with your purchase email (link or code) to use it without an account, and save the result to an account if you like.",
       successBodySent: "We sent the purchase guide to your purchase email. Tap below and confirm your purchase to use it right away, no account needed.",
@@ -1622,9 +1653,9 @@ export const messagesEnUS = {
       useStorage: "The pass can be used once for this purchase within 12 months of purchase. Your details and report are kept with this purchase for 12 months from the date the analysis is generated. If you only enter details without generating, they are deleted when the pass expires.",
       useLinkExpiry: "This link is valid for 30 days. That is separate from the pass's use-by date: if the link expires, you can keep going with a code sent to your purchase email.",
       accountIntro: "This product requires an account. Sign up or log in with your purchase email, verify it, and link the pass to your account to use it.",
-      accountCta: "Link my account",
-      accountStep1: "Tap Link my account below.",
-      accountStep2: "Sign up or sign in with your purchase email and verify it. Already have an account? Just sign in.",
+      accountCta: "Sign up and link my pass",
+      accountStep1: "Tap \"Sign up and link my pass\" below.",
+      accountStep2: "Once the email is verified, your pass is linked. Already have an account? Just log in.",
       accountOnce: "The pass links to an account once for this purchase.",
       plans: {
         kr_personal_premium: { next: "your personal analysis", refund: "Before a report is generated, you can get a full refund within 7 days of purchase. After generation, change-of-mind withdrawal may be limited by law." },
@@ -3430,6 +3461,37 @@ export type MessageCatalog = {
     claimNewLinkRequested: string;
     guestPurchaseEmailMasked: (email: string) => string;
     claimSignedOutBody: (email: string) => string;
+    accountLink: {
+      relationshipTitle: string;
+      relationshipBody: string;
+      tripleExtra: string;
+      passTitle: string;
+      passBody: string;
+      passEnds: (date: string) => string;
+      membershipTitle: string;
+      membershipBody: string;
+      emailLine: (masked: string) => string;
+      emailLineNoMask: string;
+      primaryCta: string;
+      secondaryCta: string;
+      footerNoCharge: string;
+      footerFree: string;
+      mismatchTitle: string;
+      mismatchBody: (masked: string) => string;
+      mismatchBodyNoMask: string;
+      switchAccountCta: string;
+      linkedRelationshipTitle: string;
+      linkedRelationshipBody: string;
+      linkedPassTitle: string;
+      linkedPassBody: string;
+      linkedCtaRelationship: string;
+      linkedCtaPass: string;
+    };
+    prePurchase: {
+      accountProductNotice: string;
+      signInAndBuyCta: string;
+      guestBuyCta: string;
+    };
     guestUse: {
       modalDescription: string;
       successBodySent: string;

@@ -414,22 +414,34 @@ async function main() {
       assert.match(pe.text, /분석 생성일로부터 12개월간/);
       assert.match(pe.text, /이용권 기한이 끝날 때 삭제돼요/);
       const pass = buildGuestPurchaseEmail({ ...base, amount: 20000, locale: "ko-KR", planId: "kr_insight_pass_30d", maskedEmail: "ab***@x.com" });
-      assert.match(pass.text, /계정 연결하고 이용하기: https:\/\/x\/l/);
-      assert.match(pass.text, /이 상품은 계정이 필요해요/, "account products state the account requirement");
+      // Account products: same wording as the claim page (lib/payment/accountLinkCopy.ts).
+      assert.match(pass.text, /가입하고 이용권 연결하기: https:\/\/x\/l/);
+      assert.match(pass.text, /한 달의 인사이트, 한곳에서/);
+      assert.match(pass.text, /Decision Journal을 이어서 이용하고 기록하려면 로그인이 필요해요/);
+      assert.match(pass.text, /이용 기간: 2026년 11월 7일까지 \(구매일부터 30일, 계정 연결일과 관계없어요\)/, "actual end date from purchase");
+      assert.match(pass.text, /구매 이메일 ab\*\*\*@x\.com로 가입하거나 로그인해 주세요/);
+      assert.match(pass.text, /추가 결제 없이 연결돼요/);
+      assert.match(pass.text, /가입하면 무료 개인·관계 분석도 이용할 수 있어요/);
       assert.doesNotMatch(pass.text, /회원가입 없이/);
-      for (const planId of ["kr_relationship_premium", "kr_relationship_triple"]) {
-        const m = buildGuestPurchaseEmail({ ...base, locale: "ko-KR", planId });
-        assert.match(m.text, /이 상품은 계정이 필요해요/, planId);
-      }
+      const rel = buildGuestPurchaseEmail({ ...base, locale: "ko-KR", planId: "kr_relationship_premium" });
+      assert.match(rel.text, /두 사람의 이야기를 이어가세요/);
+      assert.match(rel.text, /친구 초대와 보고서 보관도 할 수 있도록 로그인이 필요해요/);
+      assert.doesNotMatch(rel.text, /1회씩 사용돼요/, "usage line is Triple-only");
+      const tri = buildGuestPurchaseEmail({ ...base, locale: "ko-KR", planId: "kr_relationship_triple" });
+      assert.match(tri.text, /두 사람의 이야기를 이어가세요/);
+      assert.match(tri.text, /분석할 때마다 1회씩 사용돼요\. 남은 횟수도 계정에서 확인하세요/);
       assert.match(pe.text, /결과를 계정에 저장하고 싶을 때만 선택해서 가입/, "Personal: sign-up is optional, only for saving");
-      assert.doesNotMatch(pe.text, /계정이 필요해요/);
+      assert.doesNotMatch(pe.text, /로그인이 필요해요/);
       assert.match(pass.text, /계정 연결일이 아니라 구매일로부터 30일/);
-      assert.match(pass.text, /ab\*\*\*@x\.com/);
       assert.match(pass.text, /계정 연결 후 이용권을 받을 수 있습니다/);
       const en = buildGuestPurchaseEmail({ ...base, amount: 280, currency: "USD", locale: "en-US", planId: "us_annual_membership" });
       assert.match(en.text, /prorated refund/);
-      assert.match(en.text, /This product requires an account/);
-      assert.match(en.text, /Link my account: https:\/\/x\/l/);
+      assert.match(en.text, /Sign up and link my pass: https:\/\/x\/l/);
+      const enPass = buildGuestPurchaseEmail({ ...base, amount: 20, currency: "USD", locale: "en-US", planId: "us_insight_pass_30d" });
+      assert.match(enPass.text, /A month of insights, in one place/);
+      assert.match(enPass.text, /Valid until November 7, 2026 \(UTC\)/);
+      const enRel = buildGuestPurchaseEmail({ ...base, amount: 12, currency: "USD", locale: "en-US", planId: "us_relationship_premium" });
+      assert.match(enRel.text, /Continue your story together/);
       const code = buildGuestCodeEmail({ locale: "ko-KR", code: "123456", isTest: true });
       assert.match(code.subject, /^\[테스트\] \[Aha! It's me\] 구매 확인 인증코드$/);
       assert.match(code.text, /인증코드: 123456/);

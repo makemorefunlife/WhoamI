@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     });
     const { data, error } = await supabase
       .from("toss_payment_orders")
-      .select("order_id, plan_id, amount, currency, status, guest_email, clerk_user_id, is_test, test_grant_blocked_reason, claim_token_nonce, claim_token_expires_at")
+      .select("order_id, plan_id, amount, currency, status, guest_email, clerk_user_id, is_test, test_grant_blocked_reason, claim_token_nonce, claim_token_expires_at, approved_at, locale")
       .eq("order_id", orderId)
       .maybeSingle();
     if (error) {
@@ -68,6 +68,8 @@ export async function POST(req: Request) {
       test_grant_blocked_reason: string | null;
       claim_token_nonce: string | null;
       claim_token_expires_at: string | null;
+      approved_at: string | null;
+      locale: string | null;
     } | null;
     if (!row || !row.guest_email) return NextResponse.json({ status: "not_found" }, { status: 404 });
 
@@ -93,6 +95,10 @@ export async function POST(req: Request) {
         currency: row.currency,
         isTest: row.is_test === true,
         maskedEmail: maskEmail(row.guest_email),
+        // Purchase time (pass end date = this + 30 days) and order language,
+        // so the page shows the same wording as the purchase email.
+        approvedAt: row.approved_at,
+        locale: row.locale === "en-US" ? "en-US" : "ko-KR",
         linkValid: tokenValid,
         // Full email only for the link / cookie holder, only while unclaimed,
         // and only to prefill Clerk's form -- it proves nothing by itself.
