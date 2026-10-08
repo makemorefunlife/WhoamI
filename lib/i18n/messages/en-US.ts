@@ -1526,7 +1526,29 @@ export const messagesEnUS = {
       linkExpiry: "This account-link link is valid for 30 days. It is separate from your pass's use-by date: if the link expires, your purchase and pass stay as they are — sign in with your purchase email or request a new link.",
       refundLabel: "View the refund policy",
       receiptLabel: "View payment receipt (by Toss Payments)",
-      footer: "This is a send-only email. Questions: contact@ahaitsme.com",
+      footer: "This email is your purchase guide. Questions? Reply to this email or write to contact@ahaitsme.com.",
+      stepsTitle: "How to use it",
+      refundTitle: "Refunds",
+      useIntro: "You can use it right away, no account needed.",
+      useCta: "Use my pass",
+      useSteps: ["Tap Use my pass below, or enter the code sent to your purchase email, to confirm your purchase. Confirmation is needed on any device and lasts 7 days.", "Enter your birth date and birth place (plus the short survey we need).", "See your personal analysis.", "Sign in or sign up to save your details and report to an account and reopen them anytime. Nothing has to be re-entered or regenerated."],
+      useStorage: "The pass can be used once for this purchase within 12 months of purchase. Your details and report are kept with this purchase for 12 months from the date the analysis is generated. If you only enter details without generating, they are deleted when the pass expires.",
+      useLinkExpiry: "This link is valid for 30 days. That is separate from the pass's use-by date: if the link expires, you can keep going with a code sent to your purchase email.",
+      accountIntro: "This product is used from an account.",
+      accountCta: "Link my account",
+      accountStep1: "Tap Link my account below.",
+      accountStep2: "Sign up or sign in with your purchase email and verify it. Already have an account? Just sign in.",
+      accountOnce: "The pass links to an account once for this purchase.",
+      plans: {
+        kr_personal_premium: { next: "your personal analysis", refund: "Before a report is generated, you can get a full refund within 7 days of purchase. After generation, change-of-mind withdrawal may be limited by law." },
+        kr_relationship_premium: { next: "relationship analysis", refund: "Before a report is generated, you can get a full refund within 7 days of purchase. After generation, change-of-mind withdrawal may be limited by law." },
+        kr_relationship_triple: { next: "relationship analysis", refund: "If none of the credits has been used, you can get a full refund within 7 days of purchase. For refunds after use, see the refund policy." },
+        kr_insight_pass_30d: { next: "your analysis", refund: "If no pass benefit has been used, you can get a full refund within 7 days of purchase. For refunds after use, see the refund policy. The 30 days run from the purchase date, not the date you link an account." },
+        us_personal_premium: { next: "your personal analysis", refund: "Before a report is generated, you can get a full refund within 7 days of purchase. After generation, change-of-mind refunds are not offered." },
+        us_relationship_premium: { next: "relationship analysis", refund: "Before a report is generated, you can get a full refund within 7 days of purchase. After generation, change-of-mind refunds are not offered." },
+        us_insight_pass_30d: { next: "your analysis", refund: "If no included report or paid feature has been used, you can get a full refund within 7 days of purchase." },
+        us_annual_membership: { next: "your account home", refund: "Full refund within 7 days of purchase if no benefit has been used (including by a gift recipient); otherwise a prorated refund for the unused membership days. An account that already has an active membership can't take a second one — that purchase is refunded in full." },
+      } as Record<string, { next: string; refund: string }>,
     },
   },
   paymentRefund: {
@@ -3315,6 +3337,19 @@ export type MessageCatalog = {
       refundLabel: string;
       receiptLabel: string;
       footer: string;
+      stepsTitle: string;
+      refundTitle: string;
+      useIntro: string;
+      useCta: string;
+      useSteps: string[];
+      useStorage: string;
+      useLinkExpiry: string;
+      accountIntro: string;
+      accountCta: string;
+      accountStep1: string;
+      accountStep2: string;
+      accountOnce: string;
+      plans: Record<string, { next: string; refund: string }>;
     };
   };
   paymentRefund: {

@@ -347,7 +347,7 @@ async function main() {
         [[7900, "KRW", true], [14900, "KRW", true], [20000, "KRW", true], [33000, "KRW", true]],
       );
       assert.equal(TOSS_PLANS.us_annual_membership?.currency, "USD");
-      assert.equal(TOSS_PLANS.us_annual_membership?.guestCheckout, false);
+      assert.equal(TOSS_PLANS.us_annual_membership?.guestCheckout, true); // guest purchase -> account link; duplicate members refused at claim
       assert.equal(resolveTossPaymentMethod("KRW", undefined), "CARD");
       assert.equal(resolveTossPaymentMethod("USD", undefined), null);
       assert.equal(resolveTossPaymentMethod("USD", "KRW"), null);

@@ -25,10 +25,10 @@ export type TossPlan = {
   currency: "USD" | "KRW";
   orderName: { "en-US": string; "ko-KR": string };
   /**
-   * Can be bought without signing in (paid first, then claimed into an
-   * account after the buyer proves ownership of the order email). Never true
-   * for the membership: it depends on the buyer's existing membership state,
-   * which can only be checked for a known account before charging.
+   * Can be bought without signing in. Single Personal can then be used
+   * without an account (guest purchase verification); every other plan is
+   * used from an account after the buyer links the purchase with a
+   * Clerk-verified matching email.
    */
   guestCheckout: boolean;
 };
@@ -49,7 +49,11 @@ export const TOSS_PLANS: Partial<Record<string, TossPlan>> = {
     amount: US_PLANS.us_annual_membership.priceUsd,
     currency: "USD",
     orderName: { "en-US": "Aha It's me 12-Month Membership", "ko-KR": "Aha It's me 12개월 멤버십" },
-    guestCheckout: false,
+    // Guest purchase allowed; used from an account. An account that already
+    // has an active membership cannot take it: the claim is refused and the
+    // payment refunded in full (claimGuestTossOrders). US checkout itself is
+    // still switched off (NEXT_PUBLIC_US_CHECKOUT_ENABLED / TOSS_USD_PAYMENT_METHOD).
+    guestCheckout: true,
   },
   kr_personal_premium: krPlan("kr_personal_premium", "Personal 심화 분석", "Personal deep report"),
   kr_relationship_premium: krPlan("kr_relationship_premium", "Relationship 심화 분석", "Relationship deep report"),
@@ -63,6 +67,15 @@ export function resolveTossPlan(planId: string): TossPlan | null {
 
 export function isTossPlan(planId: string): boolean {
   return resolveTossPlan(planId) !== null;
+}
+
+/**
+ * Plans a guest can USE without an account (single Personal only). Every
+ * other guest-purchasable plan is used from an account after linking.
+ */
+const GUEST_USE_PLANS = new Set(["kr_personal_premium", "us_personal_premium"]);
+export function isGuestUsePlan(planId: string | null | undefined): boolean {
+  return Boolean(planId && GUEST_USE_PLANS.has(planId));
 }
 
 export function isGuestTossPlan(planId: string): boolean {

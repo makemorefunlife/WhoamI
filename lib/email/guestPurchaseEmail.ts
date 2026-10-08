@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getMessages } from "@/lib/i18n/messages";
 import { localizedPath, type Locale } from "@/lib/i18n/locale";
 import { claimTokenFor } from "@/lib/payment/guestClaimToken";
+import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { maskEmail } from "@/lib/payment/guestCheckout";
 import { sendResendEmail, type MailSender } from "@/lib/email/resend";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 
@@ -75,9 +77,12 @@ export function buildGuestPurchaseEmail(params: {
   currency: string;
   approvedAt: string | null;
   isTest: boolean;
+  /** Purchase link (claim-link). Personal: opens the no-account use page; others: account linking. */
   claimUrl: string;
   refundUrl: string;
   receiptUrl: string | null;
+  /** Masked purchase email, shown in the account-linking steps. */
+  maskedEmail?: string | null;
 }): GuestEmailContent {
   const m = getMessages(params.locale);
   const t = m.payments.guestEmail;
@@ -87,6 +92,8 @@ export function buildGuestPurchaseEmail(params: {
   const validity = (plan?.validityNotes ?? []).join(" · ") || t.validityFallback;
   const amount = formatOrderAmount(params.amount, params.currency, params.locale);
   const date = formatDate(params.approvedAt, params.locale);
+  const notes = t.plans[params.planId];
+  const guestUse = isGuestUsePlan(params.planId);
 
   const subject = params.isTest ? `${t.testSubjectPrefix} ${t.subject}` : t.subject;
   const rows: [string, string][] = [
@@ -96,18 +103,35 @@ export function buildGuestPurchaseEmail(params: {
     [t.validityLabel, validity],
   ];
 
+  const intro = guestUse ? t.useIntro : t.accountIntro;
+  const cta = guestUse ? t.useCta : t.accountCta;
+  const steps: string[] = guestUse
+    ? t.useSteps
+    : [
+        t.accountStep1,
+        params.maskedEmail ? `${t.accountStep2} (${params.maskedEmail})` : t.accountStep2,
+        params.locale === "ko-KR"
+          ? `이용권이 계정에 연결되면 ${notes?.next ?? "이용 화면"}으로 이어져요.`
+          : `Once the pass is linked, you'll go straight to ${notes?.next ?? "your analysis"}.`,
+      ];
+  const afterCta: string[] = guestUse ? [t.useStorage, t.useLinkExpiry] : [t.notYetGranted, t.accountOnce, t.linkExpiry];
+  const refundLine = notes?.refund ?? t.validityFallback;
+
   const text = [
     params.isTest ? `${t.testBanner}\n` : "",
     t.greeting,
+    intro,
     "",
     ...rows.map(([k, v]) => `${k}: ${v}`),
     "",
-    t.notYetGranted,
-    t.accountRequired,
+    `${t.stepsTitle}`,
+    ...steps.map((st, i) => `${i + 1}. ${st}`),
     "",
-    `${t.claimCta}: ${params.claimUrl}`,
-    t.linkExpiry,
+    `${cta}: ${params.claimUrl}`,
     "",
+    ...afterCta,
+    "",
+    `${t.refundTitle}: ${refundLine}`,
     `${t.refundLabel}: ${params.refundUrl}`,
     params.receiptUrl ? `${t.receiptLabel}: ${params.receiptUrl}` : "",
     "",
@@ -116,6 +140,8 @@ export function buildGuestPurchaseEmail(params: {
     .filter((line, i, arr) => !(line === "" && arr[i - 1] === ""))
     .join("\n");
 
+  const p = (txt: string, style = "") =>
+    `<p style="margin:0 0 10px;font-size:14px;line-height:1.6;${style}">${esc(txt)}</p>`;
   const html = `<!doctype html><html><body style="margin:0;background:#FAF7F0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#1A3328">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFDF8;border:1px solid #D4CFC4;border-radius:16px">
@@ -123,14 +149,17 @@ export function buildGuestPurchaseEmail(params: {
 ${params.isTest ? `<p style="margin:0 0 16px;padding:10px 12px;border-radius:10px;background:#FBEDEA;color:#A3301F;font-weight:600;font-size:14px">${esc(t.testBanner)}</p>` : ""}
 <p style="margin:0 0 6px;font-size:13px;color:#3A8F6E;font-weight:700">Aha! It's me</p>
 <h1 style="margin:0 0 16px;font-size:20px">${esc(t.heading)}</h1>
-<p style="margin:0 0 16px;font-size:14px;line-height:1.6">${esc(t.greeting)}</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;border-top:1px solid #EDE8DD">
+${p(t.greeting)}
+${p(intro, "font-weight:600")}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 16px;font-size:14px;border-top:1px solid #EDE8DD">
 ${rows.map(([k, v]) => `<tr><td style="padding:8px 0;color:#4A5C52;width:38%;vertical-align:top">${esc(k)}</td><td style="padding:8px 0;font-weight:600">${esc(v)}</td></tr>`).join("\n")}
 </table>
-<p style="margin:16px 0 4px;font-size:14px;line-height:1.6;font-weight:600">${esc(t.notYetGranted)}</p>
-<p style="margin:0 0 20px;font-size:14px;line-height:1.6">${esc(t.accountRequired)}</p>
-<p style="margin:0 0 8px;text-align:center"><a href="${esc(params.claimUrl)}" style="display:inline-block;padding:13px 22px;border-radius:999px;background:#3A8F6E;color:#fff;text-decoration:none;font-weight:600;font-size:15px">${esc(t.claimCta)}</a></p>
-<p style="margin:0 0 20px;text-align:center;font-size:12px;color:#4A5C52">${esc(t.linkExpiry)}</p>
+<p style="margin:0 0 6px;font-size:14px;font-weight:700">${esc(t.stepsTitle)}</p>
+<ol style="margin:0 0 18px;padding-left:20px;font-size:14px;line-height:1.6">${steps.map((st) => `<li style="margin-bottom:4px">${esc(st)}</li>`).join("")}</ol>
+<p style="margin:0 0 16px;text-align:center"><a href="${esc(params.claimUrl)}" style="display:inline-block;padding:13px 22px;border-radius:999px;background:#3A8F6E;color:#fff;text-decoration:none;font-weight:600;font-size:15px">${esc(cta)}</a></p>
+${afterCta.map((x) => p(x, "font-size:13px;color:#4A5C52")).join("\n")}
+<p style="margin:14px 0 4px;font-size:14px;font-weight:700">${esc(t.refundTitle)}</p>
+${p(refundLine, "font-size:13px")}
 <p style="margin:0 0 6px;font-size:13px"><a href="${esc(params.refundUrl)}" style="color:#3A8F6E">${esc(t.refundLabel)}</a></p>
 ${params.receiptUrl ? `<p style="margin:0 0 6px;font-size:13px"><a href="${esc(params.receiptUrl)}" style="color:#3A8F6E">${esc(t.receiptLabel)}</a></p>` : ""}
 <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#4A5C52">${esc(t.footer)}</p>
@@ -230,6 +259,7 @@ export async function sendGuestPurchaseEmail(
     claimUrl,
     refundUrl,
     receiptUrl: order.receipt_url,
+    maskedEmail: maskEmail(order.guest_email),
   });
 
   const result = await deps.send({

@@ -2,13 +2,14 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { processDueGuestEmails } from "@/lib/email/guestPurchaseEmail";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
  * Background sender for queued purchase-guide emails (pending, due retries,
- * expired 'sending' leases). Serverless-safe: each run is bounded and every
+ * expired 'sending' leases) + guest Personal retention sweep. Serverless-safe: each run is bounded and every
  * send is guarded by the DB lease + Resend Idempotency-Key.
  *
  * Auth: "Authorization: Bearer <CRON_SECRET>" -- what Vercel Cron sends when
@@ -29,7 +30,13 @@ async function run(req: Request) {
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
   const result = await processDueGuestEmails(supabase, { limit: 25 });
-  return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
+  // Guest Personal retention sweep (input-only rows at pass expiry, generated
+  // rows 12 months after generation, refunded / cancelled orders at once,
+  // expired sessions and codes).
+  const { data: purged, error } = await supabase.rpc("purge_guest_personal_data");
+  if (error) logServerError("cron/guest-emails", error, "purge_failed");
+  const purgedRows = Array.isArray(purged) ? Number(Object.values((purged[0] ?? {}) as Record<string, unknown>)[0] ?? 0) : Number(purged ?? 0);
+  return NextResponse.json({ ...result, purgedRows }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export const GET = run;

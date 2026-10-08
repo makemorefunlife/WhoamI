@@ -29,7 +29,9 @@ export type RateLimitBucket =
   | "survey_delete"
   | "invite"
   | "redeem_code"
-  | "guest_checkout";
+  | "guest_checkout"
+  | "guest_code_send"
+  | "guest_code_verify";
 
 const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   llm: { max: 5, windowMs: 60 * 60 * 1000 },
@@ -53,6 +55,10 @@ const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   redeem_code: { max: 20, windowMs: 60 * 60 * 1000 },
   // Toss guest (signed-out) order creation + confirm, keyed by hashed client IP.
   guest_checkout: { max: 20, windowMs: 60 * 60 * 1000 },
+  // Guest purchase verification (per hashed client IP). Per-order limits are
+  // enforced in SQL (codes per hour, attempts per code).
+  guest_code_send: { max: 10, windowMs: 60 * 60 * 1000 },
+  guest_code_verify: { max: 30, windowMs: 60 * 60 * 1000 },
 };
 
 type Entry = { count: number; resetAt: number };

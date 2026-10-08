@@ -187,7 +187,8 @@ async function main() {
       assert.match(m.text, /테스트 구매입니다\. 실제 청구는 발생하지 않았습니다/);
       assert.match(m.text, /7,900원/);
       assert.match(m.text, /구매일로부터 12개월 이내 생성권 사용/);
-      assert.match(m.text, /계정 연결 후 이용권을 받을 수 있습니다/);
+      assert.match(m.text, /회원가입 없이 바로 사용할 수 있어요/, "single Personal: usable without an account");
+      assert.match(m.text, /이용권 사용하기: https:\/\/example\.test\/api\/payments\/toss\/claim-link/);
       assert.match(m.text, /https:\/\/example\.test\/kr\/refund/);
       assert.match(m.text, /https:\/\/example\.test\/api\/payments\/toss\/claim-link\?orderId=aha_[a-f0-9e]{32}&t=[A-Za-z0-9_-]{43}/);
       assert.match(m.text, /결제 영수증 보기\(토스페이먼츠 제공\)/);
@@ -375,6 +376,7 @@ async function main() {
       assert.equal(en.subject, "[Aha! It's me] Your analysis pass purchase");
       assert.match(en.text, /Use all 3 report credits within 12 months of purchase/);
       assert.match(en.text, /You'll receive your pass after linking an account/);
+      assert.match(en.text, /Link my account: /);
       assert.doesNotMatch(en.text, /receipt/i, "no receipt line when Toss gave no receipt URL");
       const s = { reportId: "r1", surveyCompleted: true, birthDate: "1990-01-01" };
       assert.equal(postPurchaseDestination({ planId: "kr_personal_premium", locale: "ko-KR", session: s }), "/blueprint-preview/r1/essence/deep?autostart=1");

@@ -332,8 +332,13 @@ export type GuestClaimResult = {
     | "not_paid"
     | "not_found"
     | "test_not_allowed"
+    | "in_progress"
+    | "already_member_refunded"
+    | "needs_attention"
     | "error";
   planId?: string;
+  /** Guest Personal already used without an account: the report saved into this account. */
+  reportId?: string | null;
 };
 
 /**
@@ -346,6 +351,7 @@ export type GuestClaimResult = {
 export async function claimGuestTossOrders(
   supabase: SupabaseClient,
   params: { clerkUserId: string; verifiedEmails: string[]; orderIds?: string[] },
+  deps: TossDeps = defaultDeps,
 ): Promise<GuestClaimResult[]> {
   const emails = [...new Set(params.verifiedEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))];
   if (emails.length === 0) return (params.orderIds ?? []).map((orderId) => ({ orderId, result: "email_mismatch" }));
@@ -405,8 +411,60 @@ export async function claimGuestTossOrders(
       out.push({ orderId, result: "error" });
       continue;
     }
-    const row = rpcRow<{ result: GuestClaimResult["result"] }>(data);
-    out.push({ orderId, result: row?.result ?? "error", planId: meta?.plan_id });
+    const row = rpcRow<{ result: string }>(data);
+    const result = row?.result ?? "error";
+
+    if (result === "guest_used") {
+      // Used without an account: save that report into this account (same
+      // verified-email rule) -- never a second credit.
+      const { data: saved, error: saveError } = await supabase.rpc("save_guest_personal_to_account", {
+        p_order_id: orderId,
+        p_clerk_user_id: params.clerkUserId,
+        p_verified_emails: emails,
+      });
+      const s = rpcRow<{ result: string; report_id: string | null }>(saved);
+      if (saveError || !s) {
+        if (saveError) logServerError("toss.guestClaim", saveError, "guest_save_failed");
+        out.push({ orderId, result: "error", planId: meta?.plan_id });
+      } else {
+        out.push({
+          orderId,
+          result: s.result === "saved" || s.result === "already_saved" ? "claimed" : "error",
+          planId: meta?.plan_id,
+          reportId: s.report_id,
+        });
+      }
+      continue;
+    }
+    if (result === "guest_use_in_progress") {
+      out.push({ orderId, result: "in_progress", planId: meta?.plan_id });
+      continue;
+    }
+    if (result === "already_member") {
+      // Guest-bought membership, but this account already has an active one:
+      // refund the new purchase in full instead of a second membership.
+      const cancel = meta?.payment_key
+        ? await deps.cancel({
+            paymentKey: meta.payment_key,
+            cancelReason: `already_member:${orderId}`,
+            idempotencyKey: `already-member-cancel-${orderId}`,
+          })
+        : ({ kind: "unknown", reason: "no_payment_key" } as const);
+      if (cancel.kind === "ok") {
+        await supabase.rpc("mark_toss_order_canceled", { p_order_id: orderId, p_error: "active_membership_exists" });
+        out.push({ orderId, result: "already_member_refunded", planId: meta?.plan_id });
+      } else {
+        await flagForOperator(supabase, {
+          paymentKey: meta?.payment_key ?? orderId,
+          orderId,
+          planId: meta?.plan_id ?? "",
+          reason: "guest_membership_duplicate_cancel_failed",
+        });
+        out.push({ orderId, result: "needs_attention", planId: meta?.plan_id });
+      }
+      continue;
+    }
+    out.push({ orderId, result: result as GuestClaimResult["result"], planId: meta?.plan_id });
   }
   return out;
 }
