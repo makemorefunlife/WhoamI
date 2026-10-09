@@ -1,5 +1,6 @@
 "use client";
 
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useEffect, useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Info } from "lucide-react";
@@ -70,7 +71,8 @@ export default function StitchResultsDashboard({
   birthTimeUnknown,
 }: {
   reportId: string;
-  current: CurrentSelfProfile;
+  /** null = no survey (KR, optional): show birth-based results only, never made-up survey values. */
+  current: CurrentSelfProfile | null;
   essence: EssenceSelfLiteProfile;
   birth: BirthV2Session;
   birthTimeUnknown: boolean;
@@ -146,9 +148,11 @@ export default function StitchResultsDashboard({
             )}
           </h1>
         </div>
-        <span className="shrink-0 rounded-full bg-accent-emerald-soft px-3.5 py-1.5 text-xs font-semibold text-primary">
-          {messages.report.surveyCompleteBadge}
-        </span>
+        {current ? (
+          <span className="shrink-0 rounded-full bg-accent-emerald-soft px-3.5 py-1.5 text-xs font-semibold text-primary">
+            {messages.report.surveyCompleteBadge}
+          </span>
+        ) : null}
       </header>
 
       {isGuest ? <GuestDashboardAuthNotice /> : null}
@@ -165,7 +169,7 @@ export default function StitchResultsDashboard({
               </span>
             </div>
             <h2 className="stitch-headline mt-1.5 text-xl leading-snug sm:text-2xl">
-              {messages.report.currentVsEssenceTitle}
+              {current ? messages.report.currentVsEssenceTitle : messages.report.essenceOnlyTitle}
             </h2>
           </div>
           <div className="relative shrink-0">
@@ -217,7 +221,7 @@ export default function StitchResultsDashboard({
         ) : null}
 
         <DualAxisRadarChart
-          current={current.primary_axes}
+          current={current?.primary_axes ?? null}
           essence={essence.primary_axes}
           theme={STITCH_RADAR_THEME}
           axisLabels={locale === "ko-KR" ? PRIMARY_AXIS_LABELS : PRIMARY_AXIS_EN_LABELS}
@@ -227,31 +231,47 @@ export default function StitchResultsDashboard({
         />
       </section>
 
-      <section className="stitch-hero-panel space-y-5 rounded-extra-large p-6 sm:p-8">
-        <AxisSummaryCards
-          scores={current.primary_axes}
-          axisOrder={PRIMARY_AXIS_ORDER}
-          title={messages.report.currentStateAxisSummaryTitle}
-          locale={locale}
-        />
-        <div className="rounded-2xl border border-outline-variant/35 bg-surface-container-low/40 px-4 py-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
-            {messages.report.overallSummary}
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-on-surface">
-            {buildOverallAxisSummary(current.primary_axes, PRIMARY_AXIS_ORDER, locale)}
-          </p>
-        </div>
-      </section>
+      {current ? (
+        <section className="stitch-hero-panel space-y-5 rounded-extra-large p-6 sm:p-8">
+          <AxisSummaryCards
+            scores={current.primary_axes}
+            axisOrder={PRIMARY_AXIS_ORDER}
+            title={messages.report.currentStateAxisSummaryTitle}
+            locale={locale}
+          />
+          <div className="rounded-2xl border border-outline-variant/35 bg-surface-container-low/40 px-4 py-3.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
+              {messages.report.overallSummary}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-on-surface">
+              {buildOverallAxisSummary(current.primary_axes, PRIMARY_AXIS_ORDER, locale)}
+            </p>
+          </div>
+        </section>
+      ) : (
+        // KR without a survey: offer it (optional) instead of showing survey-based parts.
+        <section className="stitch-hero-panel space-y-3 rounded-extra-large p-6 text-center sm:p-8">
+          <h3 className="text-base font-semibold text-primary">{messages.report.surveyForCurrentTitle}</h3>
+          <p className="text-sm leading-relaxed text-on-surface-variant">{messages.report.surveyForCurrentBody}</p>
+          <LocaleLink
+            href={`/survey-v2?reportId=${encodeURIComponent(reportId)}`}
+            className="stitch-cta-secondary inline-flex w-full justify-center"
+          >
+            {messages.report.surveyForCurrentCta}
+          </LocaleLink>
+        </section>
+      )}
 
       <section className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <FreeAnalysisButton
-            active={activeTab === "current"}
-            onClick={() => toggleTab("current")}
-            title={messages.report.currentStateLabel}
-            subtitle={messages.report.currentStateSubtitle}
-          />
+        <div className={current ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 gap-3"}>
+          {current ? (
+            <FreeAnalysisButton
+              active={activeTab === "current"}
+              onClick={() => toggleTab("current")}
+              title={messages.report.currentStateLabel}
+              subtitle={messages.report.currentStateSubtitle}
+            />
+          ) : null}
           <FreeAnalysisButton
             active={activeTab === "essence"}
             onClick={() => toggleTab("essence")}

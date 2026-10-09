@@ -1,5 +1,7 @@
 "use client";
 
+import { blueprintMissingStepPath } from "@/lib/v2/blueprint/blueprintMissingStep";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
@@ -14,13 +16,13 @@ import {
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
-import { ROUTES, withReportId } from "@/constants/routes";
+import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { PwaReportActionCard } from "@/components/account/InstallAppButton";
 
 function EssenceDeepContent() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
   const params = useParams();
   const reportId = decodeURIComponent(String(params.reportId ?? ""));
   const [ready, setReady] = useState(false);
@@ -105,21 +107,12 @@ function EssenceDeepContent() {
     if (bundle) return;
 
     void (async () => {
-      if (!readSurveyV2Session(reportId)) {
-        await hydrateSurveySession(reportId);
-      }
-      if (!readSurveyV2Session(reportId)) {
-        router.replace(localize(ROUTES.surveyV2));
-        return;
-      }
-      const birth = await ensureBirthSession(reportId);
-      if (!hasMinimalBirth(birth)) {
-        router.replace(
-          localize(withReportId(ROUTES.surveyV2Complete, reportId)),
-        );
-      }
+      // ko-KR: the survey is optional -- a paid Personal deep report works
+      // from birth data alone (the generator takes surveyAnswers: null).
+      const next = await blueprintMissingStepPath(reportId, isPsychSurveyRequired(locale));
+      if (next) router.replace(localize(next));
     })();
-  }, [ready, booting, reportId, bundle, bundleLoading, router, localize]);
+  }, [ready, booting, reportId, bundle, bundleLoading, router, localize, locale]);
 
   if (!ready || booting || bundleLoading) {
     return (

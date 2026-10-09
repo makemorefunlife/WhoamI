@@ -8,7 +8,7 @@ import {
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
-import { cleanupStaleOpenInvites } from "@/lib/relationship/cleanupStaleOpenInvites";
+import { inviteExpiryCutoffIso } from "@/lib/relationship/inviteExpiry";
 import {
   partnerNameFromLogSnapshot,
 } from "@/lib/relationship/resolvePartnerDisplayName";
@@ -87,8 +87,11 @@ export async function GET(req: Request) {
     const access = await assertOwnedReportAccess(supabase, reportId, userId, locale);
     if (access.error) return access.error;
 
-    await cleanupStaleOpenInvites(supabase, reportId);
-
+    // Reading the list must never delete anything. (It used to call
+    // cleanupStaleOpenInvites here, which removed every open invite of a
+    // viewer who already had a relationship -- including the one just
+    // created and shared.) Expired invites are only hidden here; removing
+    // them is a separate, deliberate job.
     const [favoriteIds, rows, openInvitesResult] = await Promise.all([
       fetchFavoriteRelationshipIds(supabase, reportId),
       fetchRelationshipReportRowsForHub(supabase, reportId),
@@ -97,6 +100,7 @@ export async function GET(req: Request) {
         .select("id, invite_token, status, relationship_report_id, created_at")
         .eq("from_report_id", reportId)
         .eq("status", "open")
+        .gt("created_at", inviteExpiryCutoffIso())
         .order("created_at", { ascending: false }),
     ]);
 
@@ -277,6 +281,7 @@ export async function GET(req: Request) {
         at,
         r.result_premium_by_kind,
         r.relationship_kind,
+        locale,
       );
       const completed = basicDone && (at !== "premium" || premiumDone);
 

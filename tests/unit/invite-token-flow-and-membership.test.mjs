@@ -69,7 +69,8 @@ section("C. app/api/invite/info/route.ts — Minimal info endpoint with NO PII l
   assert.ok(src.includes("export async function GET"));
   assert.ok(src.includes("isAcceptableInviteToken"));
   assert.ok(src.includes("resolvePartnerDisplayName"));
-  assert.ok(src.includes("return NextResponse.json({ inviterName })"));
+  // 2026-10-09: also returns two booleans (availability / 30-day expiry) -- no PII.
+  assert.ok(src.includes("return NextResponse.json({ inviterName, available, expired })"));
   assert.ok(src.includes("return NextResponse.json({ inviterName: null })"));
 
   // Check all NextResponse.json calls in the file to guarantee only inviterName is returned

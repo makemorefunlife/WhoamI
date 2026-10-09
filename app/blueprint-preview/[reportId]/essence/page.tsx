@@ -1,5 +1,7 @@
 "use client";
 
+import { blueprintMissingStepPath } from "@/lib/v2/blueprint/blueprintMissingStep";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 import { Suspense, useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -24,7 +26,7 @@ import EssenceDeepEntryButton from "@/components/v2/EssenceDeepEntryButton";
 
 function EssenceDetailContent() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
   const params = useParams();
   const reportId = decodeURIComponent(String(params.reportId ?? ""));
   const [ready, setReady] = useState(false);
@@ -47,9 +49,13 @@ function EssenceDetailContent() {
   );
 
   useEffect(() => {
-    if (!ready || bundleLoading) return;
-    if (!bundle) router.replace(localize("/survey-v2"));
-  }, [ready, bundle, bundleLoading, router, localize]);
+    if (!ready || bundleLoading || bundle) return;
+    // Birth-based page: in ko-KR it opens without a survey.
+    void (async () => {
+      const next = await blueprintMissingStepPath(reportId, isPsychSurveyRequired(locale));
+      if (next) router.replace(localize(next));
+    })();
+  }, [ready, bundle, bundleLoading, router, localize, reportId, locale]);
 
   if (!ready || bundleLoading || !bundle || !essence || !birth) {
     return (

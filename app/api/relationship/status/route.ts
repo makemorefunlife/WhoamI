@@ -7,6 +7,7 @@ import {
 } from "@/lib/supabase/serverClient";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromOutboundInvites,
@@ -17,7 +18,13 @@ export const runtime = "nodejs";
 /** 로그인 + reportId 소유자만 관계 상태 목록 조회 */
 export async function GET(req: Request) {
   try {
-    const reportId = new URL(req.url).searchParams.get("reportId")?.trim();
+    const url = new URL(req.url);
+    const reportId = url.searchParams.get("reportId")?.trim();
+    // "Ready" means a premium report exists in the language being viewed.
+    const locale = resolveRequestLocale({
+      bodyLanguage: url.searchParams.get("locale"),
+      headerLanguage: req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
     if (!reportId) {
       return NextResponse.json(
         { error: "reportId가 필요합니다." },
@@ -69,6 +76,7 @@ export async function GET(req: Request) {
         r.analysis_type,
         r.result_premium_by_kind,
         r.relationship_kind,
+        locale,
       );
 
       return {

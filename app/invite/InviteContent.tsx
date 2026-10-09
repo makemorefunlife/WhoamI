@@ -15,6 +15,9 @@ export default function InviteContent() {
     searchParams.get("token") || searchParams.get("invite") || "";
 
   const [inviterName, setInviterName] = useState<string | null>(null);
+  // Server says the one-time invite can't be used (used, cancelled, or the
+  // unused link passed its 30 days). null = unknown (keep the normal page).
+  const [unavailable, setUnavailable] = useState<null | "expired" | "used">(null);
 
   useEffect(() => {
     if (!token) return;
@@ -25,6 +28,9 @@ export default function InviteContent() {
       .then((data) => {
         if (active && data?.inviterName && typeof data.inviterName === "string") {
           setInviterName(data.inviterName);
+        }
+        if (active && data?.available === false) {
+          setUnavailable(data.expired === true ? "expired" : "used");
         }
       })
       .catch(() => {
@@ -38,11 +44,13 @@ export default function InviteContent() {
 
   const message = useMemo(() => {
     if (!token) return messages.invite.invalidToken;
+    if (unavailable === "expired") return messages.errors.inviteExpired;
+    if (unavailable === "used") return messages.errors.inviteUnavailable;
     if (inviterName) {
       return messages.invite.inviteMessageWithInviter(inviterName);
     }
     return messages.invite.inviteMessage;
-  }, [token, inviterName, messages]);
+  }, [token, inviterName, unavailable, messages]);
 
   const handleStart = () => {
     if (!token) {
@@ -80,6 +88,7 @@ export default function InviteContent() {
           ) : null}
         </div>
 
+        {unavailable ? null : (
         <div className="flex w-full flex-col items-center gap-3">
           <p className="text-sm leading-relaxed text-on-surface-variant/80">
             {messages.invite.startBody}
@@ -109,6 +118,7 @@ export default function InviteContent() {
             </button>
           </div>
         </div>
+        )}
       </div>
     </main>
   );

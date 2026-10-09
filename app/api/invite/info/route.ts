@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isInviteExpired } from "@/lib/relationship/inviteExpiry";
 import { createRouteSupabaseClient } from "@/lib/supabase/serverClient";
 import { isAcceptableInviteToken } from "@/lib/security/inviteToken";
 import { logServerError } from "@/lib/security/safeLog";
@@ -40,7 +41,7 @@ export async function GET(req: Request) {
 
     const { data: invite, error: inviteErr } = await supabase
       .from("invites")
-      .select("from_report_id")
+      .select("from_report_id, status, created_at")
       .eq("invite_token", token)
       .maybeSingle();
 
@@ -71,7 +72,11 @@ export async function GET(req: Request) {
       messages.report.partnerFallbackLabel,
     );
 
-    return NextResponse.json({ inviterName });
+    // available=false: already used, cancelled, or the unused link expired
+    // (30 days, lib/relationship/inviteExpiry.ts). Read-only, no state change.
+    const expired = invite.status === "open" && isInviteExpired(invite.created_at);
+    const available = invite.status === "open" && !expired;
+    return NextResponse.json({ inviterName, available, expired });
   } catch (e) {
     logServerError("invite/info", e);
     return NextResponse.json({ inviterName: null });

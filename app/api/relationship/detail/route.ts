@@ -9,7 +9,6 @@ import {
   getCohabitationDeepReport,
   getFamilyParentDeepReport,
   getFriendSocialDeepReport,
-  hasPremiumCacheForKind,
   hasPremiumCacheForKindLocale,
   isRelationshipFavorite,
   parseRelationshipKind,
@@ -427,8 +426,10 @@ export async function GET(req: Request) {
       friendship_deep_report: friendshipDeepReport,
       /** Same completion rule as analyze cache / hub — non-stale report ready. */
       premium_ready: activeKindReportReady,
+      // Per kind, in the language being viewed (another language's report
+      // doesn't count -- it is generated separately).
       premium_kinds_ready: RELATIONSHIP_KINDS.filter((k) =>
-        hasPremiumCacheForKind(byKind, k),
+        hasPremiumCacheForKindLocale(byKind, k, locale),
       ),
       locale,
       /** Locale the stored result_basic was generated in; null = unknown/legacy row. */

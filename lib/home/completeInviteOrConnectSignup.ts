@@ -98,7 +98,7 @@ export async function completeInviteOrConnectSignup(params: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ inviteToken, reportId }),
       });
-      if (res.ok || res.status === 404) {
+      if (res.ok || res.status === 404 || res.status === 410) {
         localStorage.removeItem("inviteToken");
       }
       const body = (await res.json().catch(() => ({}))) as {

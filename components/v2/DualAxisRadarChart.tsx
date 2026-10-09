@@ -178,7 +178,8 @@ export default function DualAxisRadarChart({
   interactiveLabels = true,
   hintText = "Tap an axis label to see what it means",
 }: {
-  current: PrimaryAxesScores;
+  /** null = no survey yet (KR survey is optional): essence only, no "current" series. */
+  current: PrimaryAxesScores | null;
   essence: PrimaryAxesScores;
   theme?: RadarChartTheme;
   axisOrder?: PrimaryAxisKey[];
@@ -301,13 +302,15 @@ export default function DualAxisRadarChart({
           glowId="essenceNeonGlow"
           axisOrder={axisOrder}
         />
-        <SeriesLayer
-          scores={current}
-          stroke={theme.currentStroke}
-          fill={theme.currentFill}
-          glowId="currentGlow"
-          axisOrder={axisOrder}
-        />
+        {current ? (
+          <SeriesLayer
+            scores={current}
+            stroke={theme.currentStroke}
+            fill={theme.currentFill}
+            glowId="currentGlow"
+            axisOrder={axisOrder}
+          />
+        ) : null}
 
         <polygon
           points={polygonPoints(levelScores(50, axisOrder), axisOrder)}
@@ -330,13 +333,15 @@ export default function DualAxisRadarChart({
       ) : null}
 
       <div className={`mt-4 flex items-center justify-center gap-6 text-xs ${theme.legendTextClass}`}>
-        <span className="inline-flex items-center gap-2">
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: theme.currentStroke }}
-          />
-          {currentLabel}
-        </span>
+        {current ? (
+          <span className="inline-flex items-center gap-2">
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: theme.currentStroke }}
+            />
+            {currentLabel}
+          </span>
+        ) : null}
         <span className="inline-flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"

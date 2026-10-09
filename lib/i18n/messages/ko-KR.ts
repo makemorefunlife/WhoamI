@@ -240,6 +240,10 @@ export const messagesKoKR: MessageCatalog = {
     dashboardGreetingTrail: "님, 안녕하세요.",
     dashboardTitleDefault: "나의 블루프린트",
     surveyCompleteBadge: "설문 완료",
+    essenceOnlyTitle: "생년월일로 본 타고난 성향",
+    surveyForCurrentTitle: "지금의 나와 비교해 보고 싶다면",
+    surveyForCurrentBody: "짧은 설문(약 2분)에 답하면 현재 행동 성향을 함께 보여드려요. 설문은 선택이에요.",
+    surveyForCurrentCta: "설문하고 비교하기",
     behavioralBlueprintEyebrow: "행동 블루프린트",
     actualResultBadge: "내 실제 분석 결과",
     chartInfoPopover:
@@ -465,6 +469,7 @@ export const messagesKoKR: MessageCatalog = {
     inviteInvalid: "유효하지 않은 초대예요.",
     inviteCompleteFailed: "초대를 완료하지 못했어요.",
     inviteUnavailable: "더 이상 사용할 수 없는 초대예요.",
+    inviteExpired: "초대 링크 기한(30일)이 지났어요. 친구에게 새 링크를 요청해 주세요.",
   },
   account: {
     title: "계정",

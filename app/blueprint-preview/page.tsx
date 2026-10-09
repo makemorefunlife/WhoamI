@@ -6,18 +6,15 @@ import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import StitchResultsDashboard from "@/components/results/StitchResultsDashboard";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
-import {
-  ensureBirthSession,
-  hasMinimalBirth,
-} from "@/lib/v2/onboarding/hydrateBirthSession";
-import { readSurveyV2Session } from "@/lib/v2/survey/session";
-import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
+import { blueprintMissingStepPath } from "@/lib/v2/blueprint/blueprintMissingStep";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 
 function BlueprintPreviewPageContent() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
+  const surveyRequired = isPsychSurveyRequired(locale);
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
 
@@ -36,22 +33,11 @@ function BlueprintPreviewPageContent() {
     if (!canonicalReportId || bundleLoading || bundle) return;
 
     void (async () => {
-      if (!readSurveyV2Session(canonicalReportId)) {
-        await hydrateSurveySession(canonicalReportId);
-      }
-      if (!readSurveyV2Session(canonicalReportId)) {
-        router.replace(
-          localize(`/survey-v2?reportId=${encodeURIComponent(canonicalReportId)}`),
-        );
-        return;
-      }
-      if (!hasMinimalBirth(await ensureBirthSession(canonicalReportId))) {
-        router.replace(
-          localize(`/survey-v2/complete?reportId=${encodeURIComponent(canonicalReportId)}`),
-        );
-      }
+      // Survey is a missing step only where the locale requires it (en-US).
+      const next = await blueprintMissingStepPath(canonicalReportId, surveyRequired);
+      if (next) router.replace(localize(next));
     })();
-  }, [canonicalReportId, bundle, bundleLoading, router, localize]);
+  }, [canonicalReportId, bundle, bundleLoading, router, localize, surveyRequired]);
 
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
@@ -72,7 +58,7 @@ function BlueprintPreviewPageContent() {
         ) : bundle ? (
           <StitchResultsDashboard
             reportId={canonicalReportId}
-            current={bundle.survey.profile}
+            current={bundle.survey?.profile ?? null}
             essence={bundle.essence}
             birth={bundle.birth}
             birthTimeUnknown={bundle.birth.birthTimeUnknown}

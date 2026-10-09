@@ -13,9 +13,16 @@ import { syncBirthSessionFromDb } from "@/lib/v2/onboarding/hydrateBirthSession"
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { calculateEssenceSelfLite } from "@/lib/v2/saju/essenceLite";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 
 export type BlueprintBundle = {
-  survey: NonNullable<ReturnType<typeof readSurveyV2Session>>;
+  /**
+   * null only where the survey is optional (ko-KR, lib/i18n/localePolicy.ts):
+   * the birth-based results still work; survey-based parts are left out
+   * (never filled with made-up values). en-US keeps the survey mandatory.
+   */
+  survey: ReturnType<typeof readSurveyV2Session> | null;
   birth: BirthV2Session;
   essence: ReturnType<typeof calculateEssenceSelfLite>;
   birthSource: "db" | "session" | "merged";
@@ -23,8 +30,11 @@ export type BlueprintBundle = {
 
 /**
  * Blueprint — 설문(session) + 출생(DB 우선) + Essence 계산.
+ * 설문: en-US 필수, ko-KR 선택(없으면 survey=null).
  */
 export function useBlueprintBundle(reportId: string, enabled: boolean) {
+  const { locale } = useLocale();
+  const surveyRequired = isPsychSurveyRequired(locale);
   const [bundle, setBundle] = useState<BlueprintBundle | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +53,7 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
         await hydrateSurveySession(reportId);
         survey = readSurveyV2Session(reportId);
       }
-      if (!survey) {
+      if (!survey && surveyRequired) {
         if (!cancelled) {
           setBundle(null);
           setLoading(false);
@@ -93,7 +103,7 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
       });
 
       if (!cancelled) {
-        setBundle({ survey, birth, essence, birthSource: source });
+        setBundle({ survey: survey ?? null, birth, essence, birthSource: source });
         setLoading(false);
       }
     })();
@@ -101,7 +111,7 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
     return () => {
       cancelled = true;
     };
-  }, [reportId, enabled]);
+  }, [reportId, enabled, surveyRequired]);
 
   return { bundle, loading };
 }

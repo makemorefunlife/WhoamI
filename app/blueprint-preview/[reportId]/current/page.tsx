@@ -1,5 +1,7 @@
 "use client";
 
+import { blueprintMissingStepPath } from "@/lib/v2/blueprint/blueprintMissingStep";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 import { Suspense, useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -29,7 +31,7 @@ function CurrentDetailContent() {
   }, [reportId, router, localize]);
 
   const { bundle, loading: bundleLoading } = useBlueprintBundle(reportId, ready);
-  const profile = bundle?.survey.profile ?? null;
+  const profile = bundle?.survey?.profile ?? null;
   const { report, loading, error, retry } = useCurrentLiteReport(
     reportId,
     profile,
@@ -37,9 +39,34 @@ function CurrentDetailContent() {
   );
 
   useEffect(() => {
-    if (!ready || bundleLoading) return;
-    if (!bundle) router.replace(localize("/survey-v2"));
-  }, [ready, bundle, bundleLoading, router, localize]);
+    if (!ready || bundleLoading || bundle) return;
+    void (async () => {
+      const next = await blueprintMissingStepPath(reportId, isPsychSurveyRequired(locale));
+      if (next) router.replace(localize(next));
+    })();
+  }, [ready, bundle, bundleLoading, router, localize, reportId, locale]);
+
+  if (ready && !bundleLoading && bundle && !profile) {
+    // KR without a survey: this page is survey-based, so offer the
+    // (optional) survey instead of showing made-up results.
+    return (
+      <StitchSurveyShell className="stitch-survey stitch-results">
+        <main className="mx-auto flex max-w-2xl flex-col gap-4 px-5 py-16 text-center">
+          <h1 className="stitch-headline text-xl text-primary">{messages.report.surveyForCurrentTitle}</h1>
+          <p className="text-sm leading-relaxed text-on-surface-variant">{messages.report.surveyForCurrentBody}</p>
+          <LocaleLink href={`/survey-v2?reportId=${encodeURIComponent(reportId)}`} className="stitch-cta-primary w-full">
+            {messages.report.surveyForCurrentCta}
+          </LocaleLink>
+          <LocaleLink
+            href={`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`}
+            className="text-sm text-on-surface-variant underline-offset-2 hover:text-primary hover:underline"
+          >
+            {messages.blueprint.backToBlueprint}
+          </LocaleLink>
+        </main>
+      </StitchSurveyShell>
+    );
+  }
 
   if (!ready || bundleLoading || !bundle || !profile) {
     return (

@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { inviteExpiryCutoffIso, isInviteExpired } from "@/lib/relationship/inviteExpiry";
 import { NextResponse } from "next/server";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 import {
@@ -85,6 +86,8 @@ export async function POST(req: Request) {
       })
       .eq("invite_token", inviteToken)
       .eq("status", "open")
+      // Unused invites expire 30 days after creation (lib/relationship/inviteExpiry.ts).
+      .gt("created_at", inviteExpiryCutoffIso())
       .select("id, from_report_id")
       .maybeSingle();
 
@@ -108,7 +111,7 @@ export async function POST(req: Request) {
       // /api/connect/complete's idempotent re-completion.
       const { data: existing, error: existingErr } = await supabase
         .from("invites")
-        .select("id, status, from_report_id, accepted_report_id")
+        .select("id, status, from_report_id, accepted_report_id, created_at")
         .eq("invite_token", inviteToken)
         .maybeSingle();
 
@@ -122,6 +125,11 @@ export async function POST(req: Request) {
         existing.accepted_report_id === idCheck.value
       ) {
         data = { id: existing.id, from_report_id: existing.from_report_id };
+      } else if (existing && existing.status === "open" && isInviteExpired(existing.created_at)) {
+        return NextResponse.json(
+          { error: messages.errors.inviteExpired, code: "invite_expired" },
+          { status: 410 },
+        );
       } else {
         return NextResponse.json(
           { error: messages.errors.inviteUnavailable },

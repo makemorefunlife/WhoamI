@@ -57,9 +57,11 @@ section("2. Data Provenance — Actual Results Dashboard (/blueprint-preview) Us
 {
   const dashboardSrc = readSrc("components/results/StitchResultsDashboard.tsx");
 
+  // 2026-10-09: KR survey is optional -> without a survey the "current"
+  // series is omitted (null), never filled with sample/made-up values.
   assert.ok(
-    dashboardSrc.includes("current={current.primary_axes}"),
-    "Dashboard DualAxisRadarChart must use current.primary_axes computed from user survey",
+    dashboardSrc.includes("current={current?.primary_axes ?? null}"),
+    "Dashboard DualAxisRadarChart must use current.primary_axes computed from user survey (or nothing)",
   );
   assert.ok(
     dashboardSrc.includes("essence={essence.primary_axes}"),

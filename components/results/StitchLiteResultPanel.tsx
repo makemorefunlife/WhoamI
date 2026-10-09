@@ -28,7 +28,8 @@ export default function StitchLiteResultPanel({
   active,
 }: {
   reportId: string;
-  profile: CurrentSelfProfile;
+  /** null when there is no survey (KR optional): the "current" tab is not offered. */
+  profile: CurrentSelfProfile | null;
   essence: EssenceSelfLiteProfile;
   birth: BirthV2Session;
   active: LiteTab | null;
@@ -42,7 +43,7 @@ export default function StitchLiteResultPanel({
     loading: currentLoading,
     error: currentError,
     retry: retryCurrent,
-  } = useCurrentLiteReport(reportId, profile, active === "current");
+  } = useCurrentLiteReport(reportId, profile, active === "current" && Boolean(profile));
 
   const {
     report: essenceReport,
@@ -86,7 +87,7 @@ export default function StitchLiteResultPanel({
 
   return (
     <div className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
-      {active === "current" ? (
+      {active === "current" && profile ? (
         <>
           <h3 className="mb-4 inline-flex flex-wrap items-center gap-2 text-base font-semibold text-primary">
             {messages.report.currentStateLabel}

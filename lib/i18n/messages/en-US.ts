@@ -248,6 +248,10 @@ export const messagesEnUS = {
     dashboardGreetingTrail: ".",
     dashboardTitleDefault: "Your blueprint",
     surveyCompleteBadge: "Survey complete",
+    essenceOnlyTitle: "Your natural tendencies from your birth details",
+    surveyForCurrentTitle: "Want to compare with how you are now?",
+    surveyForCurrentBody: "Answer a short survey (about 2 min) and we'll show your current tendencies alongside.",
+    surveyForCurrentCta: "Take the survey to compare",
     behavioralBlueprintEyebrow: "Behavioral blueprint",
     actualResultBadge: "Your actual analysis",
     chartInfoPopover:
@@ -492,6 +496,7 @@ export const messagesEnUS = {
     inviteInvalid: "This invite is invalid.",
     inviteCompleteFailed: "We couldn't complete the invite.",
     inviteUnavailable: "This invite is no longer available.",
+    inviteExpired: "This invite link has expired (30 days). Ask your friend for a new one.",
   },
   account: {
     title: "Account",
@@ -2524,6 +2529,10 @@ export type MessageCatalog = {
     dashboardGreetingTrail: string;
     dashboardTitleDefault: string;
     surveyCompleteBadge: string;
+    essenceOnlyTitle: string;
+    surveyForCurrentTitle: string;
+    surveyForCurrentBody: string;
+    surveyForCurrentCta: string;
     behavioralBlueprintEyebrow: string;
     actualResultBadge: string;
     chartInfoPopover: string;
@@ -2719,6 +2728,7 @@ export type MessageCatalog = {
     inviteInvalid: string;
     inviteCompleteFailed: string;
     inviteUnavailable: string;
+    inviteExpired: string;
   };
   account: {
     title: string;
