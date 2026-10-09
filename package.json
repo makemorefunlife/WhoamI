@@ -25,6 +25,8 @@
     "test:guest-personal-flow": "npx tsx tests/unit/guest-personal-flow.test.ts",
     "test:friend-add-readiness": "npx tsx tests/unit/friend-add-readiness.test.ts",
     "test:stage0-fixes": "npx tsx tests/unit/stage0-fixes.test.ts",
+    "test:personal-locale-view": "npx tsx tests/unit/personal-locale-view.test.ts",
+    "test:personal-locale-sql": "bash tests/scripts/run-personal-locale-sql.sh",
     "test:credit-lifecycle-sql": "bash tests/scripts/run-credit-lifecycle-sql.sh",
     "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
     "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",

@@ -62,7 +62,8 @@ export function DeepEssenceReport({
   locale,
 }: {
   structured: DeepEssenceStructuredReport;
-  radarCurrent: PrimaryAxesScores;
+  /** null = no survey. */
+  radarCurrent: PrimaryAxesScores | null;
   locale: Locale;
 }) {
   const t = getDeepEssenceUiStrings(locale);

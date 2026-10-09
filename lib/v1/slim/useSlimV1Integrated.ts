@@ -1,166 +1,125 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { clearBlueprintAnalysisCaches } from "@/lib/v1/slim/clearBlueprintCaches";
-import {
-  readSlimIntegratedCache,
-  writeSlimIntegratedCache,
-} from "@/lib/v1/slim/slimIntegratedCache";
-import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
+import type { EssenceDeepPreviewResponse, SlimV1ReportResult } from "@/lib/v1/slim/types";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import { readBirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import { hasMinimalBirth } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+/**
+ * Personal deep report -- viewing and generating are separate.
+ *
+ *   - Opening the page, refreshing, switching language: GET only
+ *     (/api/v2/deep/essence?reportId=). Never generates, never charges.
+ *   - generate() / regenerate(): the ONLY calls that POST, and only from the
+ *     explicit button (regenerate after an in-page confirmation). The server
+ *     returns the saved report instead of generating when this language
+ *     already has one, so a double click or a retry never charges twice.
+ */
+export type PersonalDeepStatus =
+  | "idle"
+  | "loading"
+  | "ready"
+  | "legacy_unknown"
+  | "not_generated"
+  | "in_progress"
+  | "error";
+
+type ViewResponse = {
+  ok?: boolean;
+  state?: "ready" | "legacy_unknown" | "not_generated" | "in_progress";
+  slim_v1?: SlimV1ReportResult;
+  otherLocales?: string[];
+  error?: string;
+  in_progress?: boolean;
+};
+
+const POLL_MS = 2500;
+
 export function useSlimV1Integrated(
   reportId: string,
   enabled: boolean,
   birthFromBundle?: BirthV2Session | null,
 ) {
-  const { locale, messages, href } = useLocale();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { locale, messages } = useLocale();
+  const [status, setStatus] = useState<PersonalDeepStatus>("idle");
   const [data, setData] = useState<EssenceDeepPreviewResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [inProgress, setInProgress] = useState(false);
+  const [otherLocales, setOtherLocales] = useState<string[]>([]);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Set on a 402 from /api/v2/deep/essence (reservePersonalCredit rejected
-  // for insufficient balance -- see creditEnforcementPolicy.ts). Mirrors
-  // useRelationshipDetail.ts's premiumCreditExhausted: the page shows a
-  // Purchase Selector instead of the generic error state, and a retry()
-  // after a successful purchase re-attempts generation against the fresh
-  // credit with no further user action needed.
+  // 402 from the generate POST: no usable credit for this language.
   const [creditExhausted, setCreditExhausted] = useState(false);
 
-  // Explicit-intent signal, mirroring useRelationshipDetail.ts's
-  // ?autostart=1 / autostartCreditExhausted convention: only the dedicated
-  // "start Personal Deep analysis" entry points (EssenceDeepEntryButton,
-  // the Lite/Current report upsell CTAs) attach ?autostart=1. A direct URL
-  // visit, a bookmark, or a plain page refresh never carries it, so those
-  // keep today's manual "credit needed" CTA instead of forcing a purchase
-  // modal open. Read into a ref (never a fetchReport/effect dependency) so
-  // clearing it later via clearAutostartParam can't change fetchReport's
-  // own identity and re-trigger the mount effect a second time.
-  const urlAutostart = searchParams.get("autostart") === "1";
-  const urlAutostartRef = useRef(urlAutostart);
-  urlAutostartRef.current = urlAutostart;
-  const searchParamsRef = useRef(searchParams);
-  searchParamsRef.current = searchParams;
-  // True only once the very first, explicit-intent-triggered attempt hits
-  // a 402 -- distinct from `creditExhausted`, which also covers manual
-  // retry()/regenerateFresh() attempts. Gates auto-opening the Purchase
-  // Selector so a direct visit or revisit never gets the modal forced on
-  // it, matching useRelationshipDetail.ts's autostartCreditExhausted.
-  const [autostartCreditExhausted, setAutostartCreditExhausted] = useState(false);
-  // Flips once, from false to true, after the very first fetch attempt
-  // this hook instance makes fully resolves (any outcome). A separate
-  // effect below reacts to it to strip ?autostart=1 from the URL, mirroring
-  // useRelationshipDetail.ts's clearAutostartParam -- done as its own
-  // effect (not inline inside fetchReport) so router.replace's own
-  // searchParams update can never feed back into fetchReport's identity.
-  const [autostartResolved, setAutostartResolved] = useState(false);
-  // Guards the "is this the very first attempt" check; never resets, so
-  // only the literal first call (always the mount-triggered auto-fetch)
-  // can ever be treated as the explicit-intent attempt.
-  const hasAttemptedRef = useRef(false);
-
-  const isFetchingRef = useRef(false);
+  const busyRef = useRef(false);
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const clearPollTimer = () => {
+  const clearPoll = () => {
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
     }
   };
+  useEffect(() => () => clearPoll(), []);
 
-  useEffect(() => {
-    return () => clearPollTimer();
+  const applyView = useCallback((json: ViewResponse) => {
+    setOtherLocales(json.otherLocales ?? []);
+    if ((json.state === "ready" || json.state === "legacy_unknown") && json.slim_v1?.report) {
+      setData({ ok: true, slim_v1: json.slim_v1 });
+      setStatus(json.state);
+      return;
+    }
+    setData(null);
+    setStatus(json.state === "in_progress" ? "in_progress" : "not_generated");
   }, []);
 
-  const clearAutostartParam = useCallback(() => {
-    const sp = searchParamsRef.current;
-    if (sp.get("autostart") !== "1" || !reportId) return;
-    const q = new URLSearchParams(sp.toString());
-    q.delete("autostart");
-    const qs = q.toString();
-    const path = `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`;
-    router.replace(href(qs ? `${path}?${qs}` : path), { scroll: false });
-  }, [router, reportId, href]);
-
-  useEffect(() => {
-    if (!autostartResolved) return;
-    clearAutostartParam();
-  }, [autostartResolved, clearAutostartParam]);
-
-  const fetchReport = useCallback(
-    async (opts?: { clearCaches?: boolean; isPolling?: boolean }) => {
+  /** Read-only. Safe to call any number of times. */
+  const refresh = useCallback(
+    async (opts?: { quiet?: boolean }) => {
       if (!reportId) return;
-      if (isFetchingRef.current && !opts?.isPolling) return;
-
-      clearPollTimer();
-
-      // See the urlAutostart/hasAttemptedRef comments above: only the
-      // literal first non-polling call this hook instance ever makes can
-      // be an "explicit intent" attempt.
-      const isAutostartAttempt =
-        urlAutostartRef.current && !opts?.isPolling && !hasAttemptedRef.current;
-      if (!opts?.isPolling) {
-        hasAttemptedRef.current = true;
+      clearPoll();
+      if (!opts?.quiet) setStatus("loading");
+      try {
+        const res = await fetch(
+          `/api/v2/deep/essence?reportId=${encodeURIComponent(reportId)}&locale=${encodeURIComponent(locale)}`,
+          { headers: { "x-aha-locale": locale }, cache: "no-store" },
+        );
+        const json = (await res.json()) as ViewResponse;
+        if (!res.ok) throw new Error(json.error ?? messages.errors.analysisFailed);
+        applyView(json);
+        if (json.state === "in_progress") {
+          pollTimerRef.current = setTimeout(() => void refresh({ quiet: true }), POLL_MS);
+        }
+        setError(null);
+      } catch (e) {
+        setStatus("error");
+        setError(e instanceof Error ? e.message : messages.errors.analysisFailed);
       }
-      if (isAutostartAttempt) {
-        setAutostartCreditExhausted(false);
-      }
-      const finishAutostartAttempt = () => {
-        if (isAutostartAttempt) setAutostartResolved(true);
-      };
+    },
+    [reportId, locale, applyView, messages.errors.analysisFailed],
+  );
 
-      if (opts?.clearCaches) {
-        clearBlueprintAnalysisCaches(reportId);
-      }
-
+  const postGenerate = useCallback(
+    async (regenerate: boolean) => {
+      if (!reportId || busyRef.current) return;
       const birth = birthFromBundle ?? readBirthV2Session(reportId);
       if (!hasMinimalBirth(birth)) {
-        setData(null);
         setError(messages.errors.birthMissing);
-        setLoading(false);
-        setInProgress(false);
-        finishAutostartAttempt();
+        setStatus("error");
         return;
       }
-
-      if (!opts?.clearCaches) {
-        const cached = readSlimIntegratedCache(reportId, locale);
-        if (cached) {
-          setData(cached);
-          setError(null);
-          setLoading(false);
-          setInProgress(false);
-          finishAutostartAttempt();
-          return;
-        }
-      } else {
-        setData(null);
-      }
-
+      busyRef.current = true;
+      clearPoll();
+      setGenerating(true);
+      setError(null);
+      setCreditExhausted(false);
+      if (regenerate) clearBlueprintAnalysisCaches(reportId);
       const survey = readSurveyV2Session(reportId);
-
-      isFetchingRef.current = true;
-      setLoading(true);
-      if (!opts?.isPolling) {
-        setError(null);
-        setCreditExhausted(false);
-      }
-
       try {
         const res = await fetch("/api/v2/deep/essence", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-aha-locale": locale,
-          },
+          headers: { "Content-Type": "application/json", "x-aha-locale": locale },
           cache: "no-store",
           body: JSON.stringify({
             reportId,
@@ -171,79 +130,55 @@ export function useSlimV1Integrated(
             surveyAnswers: survey?.answers ?? null,
             currentSelfProfile: survey?.profile ?? null,
             language: locale,
-            forceRegenerate: opts?.clearCaches === true,
+            confirmGenerate: true,
+            regenerate,
           }),
         });
-
-        const json = (await res.json()) as EssenceDeepPreviewResponse & {
-          error?: string;
-          in_progress?: boolean;
-        };
-
+        const json = (await res.json()) as ViewResponse;
         if (res.status === 409 || json.in_progress === true) {
-          setInProgress(true);
-          setError(null);
-          pollTimerRef.current = setTimeout(() => {
-            void fetchReport({ isPolling: true });
-          }, 2500);
+          // Another tab/click holds the generation: watch it with GET only.
+          setStatus("in_progress");
+          pollTimerRef.current = setTimeout(() => void refresh({ quiet: true }), POLL_MS);
           return;
         }
-
         if (res.status === 402) {
           setCreditExhausted(true);
-          setError(null);
-          if (isAutostartAttempt) {
-            setAutostartCreditExhausted(true);
-          }
           return;
         }
-
         if (!res.ok || !json.slim_v1?.report) {
           throw new Error(json.error ?? messages.errors.analysisFailed);
         }
-
-        const payload = { ok: true as const, slim_v1: json.slim_v1 };
-        writeSlimIntegratedCache(reportId, payload, locale);
-        setData(payload);
-        setInProgress(false);
-        setError(null);
+        setData({ ok: true, slim_v1: json.slim_v1 });
+        setStatus("ready");
       } catch (e) {
-        setInProgress(false);
-        setError(
-          e instanceof Error ? e.message : messages.errors.analysisFailed,
-        );
+        setError(e instanceof Error ? e.message : messages.errors.analysisFailed);
       } finally {
-        isFetchingRef.current = false;
-        setLoading(false);
-        finishAutostartAttempt();
+        busyRef.current = false;
+        setGenerating(false);
       }
     },
-    [reportId, birthFromBundle, locale, messages.errors.birthMissing, messages.errors.analysisFailed],
+    [reportId, birthFromBundle, locale, refresh, messages.errors.birthMissing, messages.errors.analysisFailed],
   );
 
-  const regenerateFresh = useCallback(() => {
-    return fetchReport({ clearCaches: true });
-  }, [fetchReport]);
+  const generate = useCallback(() => postGenerate(false), [postGenerate]);
+  const regenerate = useCallback(() => postGenerate(true), [postGenerate]);
 
   useEffect(() => {
     if (!enabled || !reportId) return;
-    void fetchReport();
-  }, [enabled, reportId, fetchReport]);
+    void refresh();
+  }, [enabled, reportId, refresh]);
 
   return {
+    status,
     data,
-    loading,
-    inProgress,
+    otherLocales,
+    /** True while this tab's own generate POST is running. */
+    loading: generating,
+    inProgress: status === "in_progress",
     error,
     creditExhausted,
-    // True from mount (when ?autostart=1 is present) until either a report
-    // shows up or the explicit-intent attempt resolves and the param is
-    // cleared. Lets the page show one "Preparing..." message instead of
-    // ever flashing the manual "credit needed" CTA before the Purchase
-    // Selector auto-opens.
-    autostartPending: urlAutostart && !data,
-    autostartCreditExhausted,
-    retry: fetchReport,
-    regenerateFresh,
+    refresh,
+    generate,
+    regenerate,
   };
 }

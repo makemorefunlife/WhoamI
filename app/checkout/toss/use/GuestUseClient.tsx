@@ -431,6 +431,12 @@ function UseContent() {
           </section>
         ) : null}
 
+        {state.status === "generated" && state.report && !state.report.radar_current ? (
+          <p className="rounded-2xl border border-outline-variant/40 bg-surface/60 px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
+            {messages.blueprint.deepGenerate.noSurveyNote}
+          </p>
+        ) : null}
+
         {state.status === "generating" || state.status === "generated" ? (
           <StitchDeepEssenceView
             data={state.report ? { ok: true, slim_v1: state.report } : null}

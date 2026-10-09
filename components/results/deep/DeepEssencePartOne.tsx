@@ -36,12 +36,13 @@ export function DeepEssencePartOne({
   t,
 }: {
   structured: DeepEssenceStructuredReport;
-  radarCurrent: PrimaryAxesScores;
+  /** null = no survey: the survey-based "current" series and extremes are omitted. */
+  radarCurrent: PrimaryAxesScores | null;
   locale: Locale;
   t: DeepEssenceUiStrings;
 }) {
   const { summary, radar_potential } = structured;
-  const { highest, lowest } = findExtremeAxes(radarCurrent);
+  const extremes = radarCurrent ? findExtremeAxes(radarCurrent) : null;
 
   return (
     <div className="space-y-12">
@@ -82,35 +83,37 @@ export function DeepEssencePartOne({
         </div>
       </div>
 
-      {/* 주요 성향 경향성 — 결정론적 최고/최저 점수 축의 실제 행동 문장 번역 */}
+      {/* 주요 성향 경향성 — 설문(현재 행동) 점수가 있을 때만 */}
+      {extremes ? (
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="rounded-xl border border-outline-variant/60 bg-surface/50 p-4">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">
-              {axisLabel(highest, locale)}
+              {axisLabel(extremes.highest, locale)}
             </span>
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
               {t.part1.highestTag}
             </span>
           </div>
           <p className="mt-2 text-[14.5px] font-medium leading-snug text-on-surface" style={serifStyle}>
-            {t.axisBehaviorSentences[highest]?.high}
+            {t.axisBehaviorSentences[extremes.highest]?.high}
           </p>
         </div>
         <div className="rounded-xl border border-outline-variant/60 bg-surface/50 p-4">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
-              {axisLabel(lowest, locale)}
+              {axisLabel(extremes.lowest, locale)}
             </span>
             <span className="rounded-full bg-outline-variant/40 px-2 py-0.5 text-[10px] font-medium text-on-surface-variant">
               {t.part1.lowestTag}
             </span>
           </div>
           <p className="mt-2 text-[14.5px] font-medium leading-snug text-on-surface-variant" style={serifStyle}>
-            {t.axisBehaviorSentences[lowest]?.low}
+            {t.axisBehaviorSentences[extremes.lowest]?.low}
           </p>
         </div>
       </div>
+      ) : null}
 
       {/* 여섯 가지 기준은 무엇을 의미하나요? 설명 아코디언 */}
       <details className="group rounded-xl border border-outline-variant/60 bg-surface/50 p-4 transition-colors">

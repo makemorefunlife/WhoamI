@@ -4,11 +4,8 @@ import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/su
 import { NextResponse } from "next/server";
 import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
-import {
-  readPersistedDeepEssenceAnalysis,
-  writePersistedDeepEssenceAnalysis,
-} from "@/lib/report/reportAnalyses";
-import { decideStoredDeepEssenceReuse } from "@/lib/report/personalDeepEssenceReuse";
+import { readPersonalDeepRows, savePersonalDeepAnalysis } from "@/lib/report/reportAnalyses";
+import { decidePersonalDeepPost, decidePersonalDeepView } from "@/lib/report/personalDeepEssenceView";
 import { runPersonalDeepEssenceGeneration } from "@/lib/report/personalDeepEssenceGeneration";
 import type {
   CurrentSelfProfile,
@@ -19,6 +16,7 @@ import { getMessages } from "@/lib/i18n/messages";
 import { reservePersonalCredit, consumeCredit, releaseCredit } from "@/lib/credits/creditEngine";
 import {
   acquirePersonalPremiumGenerationLock,
+  isPersonalPremiumGenerationInProgress,
   releasePersonalPremiumGenerationLock,
   stillOwnsPersonalPremiumGenerationLock,
 } from "@/lib/report/personalPremiumGenerationLock";
@@ -42,9 +40,59 @@ type Body = {
   currentSelfProfile?: CurrentSelfProfile | null;
   language?: string;
   locale?: string;
-  /** Explicit user-initiated "Regenerate" — bypasses the stored read-before-generate reuse below. */
+  /**
+   * Must be true: generation (and the credit it uses) only happens from the
+   * explicit "generate" button. Opening, refreshing or switching language
+   * uses GET, which never generates or charges.
+   */
+  confirmGenerate?: boolean;
+  /** Explicit, confirmed "generate again" for a language that already has a report. */
+  regenerate?: boolean;
+  /** @deprecated old clients; treated as `regenerate` only together with confirmGenerate. */
   forceRegenerate?: boolean;
 };
+
+/**
+ * GET ?reportId= -- read only. Returns this language's saved report state:
+ *   ready | legacy_unknown (previous report, language not recorded) |
+ *   not_generated | in_progress. Never generates, never touches credits.
+ */
+export async function GET(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const locale = resolveRequestLocale({
+      bodyLanguage: url.searchParams.get("locale") ?? undefined,
+      headerLanguage: req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
+    const messages = getMessages(locale);
+    const reportId = url.searchParams.get("reportId")?.trim();
+    if (!reportId) {
+      return NextResponse.json({ error: messages.errors.reportIdRequired }, { status: 400 });
+    }
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
+    const { userId } = await auth();
+    const access = await assertOwnedReportAccess(supabase, reportId, userId, locale);
+    if (access.error) return access.error;
+
+    const rows = await readPersonalDeepRows(supabase, reportId);
+    if (!rows) {
+      return NextResponse.json({ error: messages.errors.analysisFailed }, { status: 503 });
+    }
+    const view = decidePersonalDeepView({ locale, ...rows });
+    const headers = { "Cache-Control": "no-store" };
+    if (view.state === "not_generated" || view.state === "legacy_unknown") {
+      const inProgress = await isPersonalPremiumGenerationInProgress(supabase, reportId, locale);
+      if (inProgress) {
+        return NextResponse.json({ ok: true, locale, state: "in_progress", otherLocales: view.otherLocales }, { headers });
+      }
+    }
+    return NextResponse.json({ ok: true, locale, ...view }, { headers });
+  } catch (e) {
+    logServerError("v2/deep/essence:get", e, "internal_error");
+    return NextResponse.json({ error: "request failed" }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -82,23 +130,26 @@ export async function POST(req: Request) {
     );
     if (access.error) return access.error;
 
-    // Read-before-generate: this report is a paid, "lifetime access" feature --
-    // a report the user already generated is always served from the saved copy.
-    // Internal generation versions / cache versions NEVER decide access
-    // (see lib/report/personalDeepEssenceReuse.ts); a newer version is only
-    // produced by an explicit user action (`forceRegenerate`).
-    // report_analyses has no locale column, so the stored copy is only reused
-    // when its recorded locale matches the current request; a locale switch
-    // regenerates (and overwrites the single stored row for this report).
-    const stored = body.forceRegenerate
-      ? null
-      : await readPersistedDeepEssenceAnalysis(supabase, reportId);
-    const reuse = decideStoredDeepEssenceReuse(stored, locale);
-    if (reuse.reuse) {
-      return NextResponse.json({ ok: true, locale, slim_v1: reuse.slim_v1 });
+    // Generation only from the explicit button (see GET for viewing).
+    if (body.confirmGenerate !== true) {
+      return NextResponse.json(
+        { error: messages.errors.analysisFailed, code: "confirm_required" },
+        { status: 400 },
+      );
     }
-    if (reuse.reason === "invalid_json") {
-      logServerError("v2/deep/essence:stored_parse", new Error("stored row is not valid JSON"), "invalid_json");
+    const regenerate = body.regenerate === true || body.forceRegenerate === true;
+
+    // Read-before-generate: a saved report for THIS language is returned as-is
+    // with no charge (re-open, refresh, a second click after the first
+    // finished). Only an explicit, confirmed regenerate replaces it, and the
+    // previous copy is archived (save_personal_deep_analysis).
+    const rows = await readPersonalDeepRows(supabase, reportId);
+    if (!rows) {
+      return NextResponse.json({ error: messages.errors.analysisFailed }, { status: 503 });
+    }
+    const first = decidePersonalDeepPost(decidePersonalDeepView({ locale, ...rows }), { regenerate });
+    if (!first.generate) {
+      return NextResponse.json({ ok: true, locale, state: "ready", generated: false, slim_v1: first.slim_v1 });
     }
 
     // DB-backed atomic lock — one in-flight slot per (reportId, locale).
@@ -124,6 +175,16 @@ export async function POST(req: Request) {
     }
 
     try {
+      // A request that finished between our read and taking the lock already
+      // saved this language's report: return it, no second generation/charge.
+      if (!regenerate) {
+        const again = await readPersonalDeepRows(supabase, reportId);
+        const recheck = again ? decidePersonalDeepPost(decidePersonalDeepView({ locale, ...again }), { regenerate: false }) : null;
+        if (recheck && !recheck.generate) {
+          return NextResponse.json({ ok: true, locale, state: "ready", generated: false, slim_v1: recheck.slim_v1 });
+        }
+      }
+
       const outcome = await runPersonalDeepEssenceGeneration({
         reserveCredit: userId
           ? async () => {
@@ -156,19 +217,20 @@ export async function POST(req: Request) {
         stillOwnsLock: () =>
           stillOwnsPersonalPremiumGenerationLock(supabase, lock.lockId, generationRequestId),
         persist: (slim_v1) =>
-          writePersistedDeepEssenceAnalysis(
-            supabase,
+          savePersonalDeepAnalysis(supabase, {
             reportId,
-            JSON.stringify({ locale, slim_v1 }),
-            { locale },
-          ),
+            locale,
+            content: JSON.stringify({ locale, slim_v1 }),
+            metadata: { locale, has_survey: Boolean(body.surveyAnswers || body.currentSelfProfile) },
+            reason: first.reason,
+          }),
         consumeCredit: () => consumeCredit(supabase, generationRequestId),
         releaseCredit: () => releaseCredit(supabase, generationRequestId),
         log: (tag, error, code) => logServerError(tag, error, code),
       });
 
       if (outcome.kind === "ok") {
-        return NextResponse.json({ ok: true, locale, slim_v1: outcome.slim_v1 });
+        return NextResponse.json({ ok: true, locale, state: "ready", generated: true, slim_v1: outcome.slim_v1 });
       }
       if (outcome.kind === "insufficient_credit") {
         return NextResponse.json(

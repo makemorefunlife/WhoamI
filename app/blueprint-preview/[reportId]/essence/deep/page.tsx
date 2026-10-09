@@ -56,51 +56,33 @@ function EssenceDeepContent() {
     ready && !booting && Boolean(bundle?.birth && hasMinimalBirth(bundle.birth));
 
   const {
+    status,
     data,
+    otherLocales,
     loading,
     inProgress,
     error,
     creditExhausted,
-    autostartPending,
-    autostartCreditExhausted,
-    retry,
-    regenerateFresh,
+    refresh,
+    generate,
+    regenerate,
   } = useSlimV1Integrated(reportId, canGenerate, bundle?.birth ?? null);
+  const g = messages.blueprint.deepGenerate;
+  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
 
-  // Personal entitlement recovery: mirrors useRelationshipDetail.ts's
-  // premiumCreditExhausted -> PurchaseSelectorModal pattern (already live
-  // for Relationship). successRedirectPath points back at this same page
-  // so Paddle's own successUrl redirect lands here even if it wins the
-  // race against onSuccess -- see useRegionalCheckout.ts.
+  // Purchase Selector opens only from the explicit "buy" button after a 402
+  // on an explicit generate. After a purchase the page re-reads its state;
+  // generating still needs the user's own click (nothing auto-generates).
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const deepHref = localize(
     `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`,
   );
   function handlePurchaseSuccess() {
     setPurchaseOpen(false);
-    void retry();
+    void refresh();
   }
-
-  // Explicit-intent autostart, mirroring useRelationshipDetail.ts's
-  // autostartCreditExhausted -> setPurchaseOpen(true) wiring: opens the
-  // Purchase Selector with no click only when the user just navigated here
-  // from a dedicated "start Personal Deep analysis" entry point
-  // (?autostart=1). A direct URL visit or a plain revisit never sets
-  // autostartCreditExhausted, so it keeps today's manual CTA below.
-  useEffect(() => {
-    if (autostartCreditExhausted) {
-      setPurchaseOpen(true);
-    }
-  }, [autostartCreditExhausted]);
-
-  // Suppresses the manual "credit needed" CTA panel during the brief
-  // window where an explicit-intent autostart attempt is still resolving
-  // (before the fetch has started, or right after a 402 and before the
-  // Purchase Selector effect above has opened the modal) -- otherwise that
-  // panel could flash for a frame before the modal covers it. Existing
-  // i18n copy only, no new keys.
-  const showAutostartPreparing =
-    autostartPending && !loading && !inProgress && !error;
+  const busy = loading || inProgress;
+  const noSurvey = Boolean(data) && !data?.slim_v1.radar_current;
 
   useEffect(() => {
     if (!ready || booting || bundleLoading) return;
@@ -153,27 +135,64 @@ function EssenceDeepContent() {
           </p>
         </div>
 
-        <StitchDeepEssenceView
-          reportId={reportId}
-          data={data}
-          loading={loading}
-          inProgress={inProgress}
-          error={error}
-          onRetry={() => retry()}
-          onRegenerateFresh={() => regenerateFresh()}
-        />
-
-        {showAutostartPreparing ? (
-          <div className="stitch-hero-panel rounded-extra-large px-6 py-8 text-center space-y-2">
-            <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm font-semibold text-primary">
-              {messages.common.preparing}
-            </p>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
-              {messages.blueprint.generatingPersonalSubtitle}
-            </p>
+        {status === "loading" || status === "idle" ? (
+          <div className="stitch-hero-panel rounded-extra-large px-6 py-10 text-center">
+            <p className="text-sm text-on-surface-variant">{g.viewLoading}</p>
           </div>
-        ) : creditExhausted ? (
+        ) : null}
+
+        {status === "legacy_unknown" ? (
+          <div className="rounded-2xl border border-accent-rose/25 bg-accent-rose-soft/40 px-4 py-3 text-sm">
+            <p className="font-medium text-primary">{g.legacyTitle}</p>
+            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">{g.legacyBody}</p>
+            <button
+              type="button"
+              className="stitch-cta-secondary mt-3 w-full disabled:opacity-60"
+              onClick={() => void generate()}
+              disabled={busy}
+            >
+              {busy ? messages.blueprint.regenerating : g.legacyGenerateCta}
+            </button>
+          </div>
+        ) : null}
+
+        {status === "not_generated" && !busy ? (
+          <div className="stitch-hero-panel rounded-extra-large px-6 py-8 text-center space-y-3">
+            <p className="text-base font-bold text-primary">{g.notGeneratedTitle}</p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">{g.notGeneratedBody}</p>
+            {otherLocales.length > 0 ? (
+              <p className="text-xs text-on-surface-variant/80 leading-relaxed">{g.otherLocaleNote}</p>
+            ) : null}
+            <button
+              type="button"
+              className="stitch-cta-primary w-full disabled:opacity-60"
+              onClick={() => void generate()}
+              disabled={busy || creditExhausted}
+            >
+              {g.generateCta}
+            </button>
+          </div>
+        ) : null}
+
+        {noSurvey ? (
+          <p className="rounded-2xl border border-outline-variant/40 bg-surface/60 px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
+            {g.noSurveyNote}
+          </p>
+        ) : null}
+
+        {status !== "loading" && status !== "idle" && (busy || data || error) ? (
+          <StitchDeepEssenceView
+            reportId={reportId}
+            data={data}
+            loading={loading}
+            inProgress={inProgress}
+            error={error}
+            onRetry={() => void refresh()}
+            onRegenerateFresh={status === "ready" ? () => setConfirmRegenerate(true) : undefined}
+          />
+        ) : null}
+
+        {creditExhausted ? (
           <div className="stitch-hero-panel rounded-extra-large px-6 py-8 text-center space-y-3">
             <p className="text-sm text-on-surface-variant leading-relaxed">
               {messages.errors.insufficientCredit}
@@ -185,6 +204,29 @@ function EssenceDeepContent() {
             >
               {messages.blueprint.creditNeededCta}
             </button>
+          </div>
+        ) : null}
+
+        {confirmRegenerate ? (
+          <div className="stitch-hero-panel rounded-extra-large px-6 py-6 text-center space-y-3" role="dialog" aria-modal="false">
+            <p className="text-base font-bold text-primary">{g.regenerateConfirmTitle}</p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">{g.regenerateConfirmBody}</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                className="stitch-cta-primary w-full disabled:opacity-60"
+                disabled={busy}
+                onClick={() => {
+                  setConfirmRegenerate(false);
+                  void regenerate();
+                }}
+              >
+                {g.regenerateConfirmCta}
+              </button>
+              <button type="button" className="stitch-cta-secondary w-full" onClick={() => setConfirmRegenerate(false)}>
+                {g.cancel}
+              </button>
+            </div>
           </div>
         ) : null}
 
@@ -206,14 +248,16 @@ function EssenceDeepContent() {
           >
             {messages.blueprint.backToDashboard}
           </button>
-          <button
-            type="button"
-            className="stitch-cta-secondary w-full disabled:opacity-60"
-            onClick={() => regenerateFresh()}
-            disabled={loading || inProgress || creditExhausted}
-          >
-            {loading || inProgress ? messages.blueprint.regenerating : messages.blueprint.regenerate}
-          </button>
+          {status === "ready" ? (
+            <button
+              type="button"
+              className="stitch-cta-secondary w-full disabled:opacity-60"
+              onClick={() => setConfirmRegenerate(true)}
+              disabled={busy || confirmRegenerate}
+            >
+              {busy ? messages.blueprint.regenerating : messages.blueprint.regenerate}
+            </button>
+          ) : null}
           {error ? (
             <button
               type="button"

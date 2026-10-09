@@ -40,14 +40,15 @@ export function DeepEssenceRadarChart({
   currentLabel,
   potentialLabel,
 }: {
-  current: PrimaryAxesScores;
+  /** null = no survey: only the natural-tendency series is drawn. */
+  current: PrimaryAxesScores | null;
   potential: PrimaryAxesScores;
   locale: Locale;
   currentLabel: string;
   potentialLabel: string;
 }) {
   const n = AXIS_ORDER.length;
-  const currentValues = AXIS_ORDER.map((k) => current[k]);
+  const currentValues = current ? AXIS_ORDER.map((k) => current[k]) : null;
   const potentialValues = AXIS_ORDER.map((k) => potential[k]);
   const isKo = locale === "ko-KR";
 
@@ -98,13 +99,15 @@ export function DeepEssenceRadarChart({
           stroke="var(--color-accent-rose)"
           strokeWidth={1.25}
         />
-        <polygon
-          points={polygonPoints(currentValues, n)}
-          fill="none"
-          stroke="var(--color-primary)"
-          strokeWidth={1.75}
-        />
-        {currentValues.map((v, i) => {
+        {currentValues ? (
+          <polygon
+            points={polygonPoints(currentValues, n)}
+            fill="none"
+            stroke="var(--color-primary)"
+            strokeWidth={1.75}
+          />
+        ) : null}
+        {(currentValues ?? []).map((v, i) => {
           const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
           const r = (Math.max(0, Math.min(100, v)) / 100) * RADIUS;
           const x = CENTER + Math.cos(angle) * r;
@@ -140,10 +143,12 @@ export function DeepEssenceRadarChart({
         })}
       </svg>
       <div className="mt-4 flex items-center gap-5 text-[11px] tracking-[0.08em] text-on-surface-variant">
-        <span className="inline-flex items-center gap-2">
-          <span className="inline-block h-[2px] w-4 bg-primary" />
-          {currentLabel}
-        </span>
+        {currentValues ? (
+          <span className="inline-flex items-center gap-2">
+            <span className="inline-block h-[2px] w-4 bg-primary" />
+            {currentLabel}
+          </span>
+        ) : null}
         <span className="inline-flex items-center gap-2">
           <span className="border-accent-rose inline-block h-2 w-4 border bg-[rgba(196,154,156,0.22)]" />
           {potentialLabel}

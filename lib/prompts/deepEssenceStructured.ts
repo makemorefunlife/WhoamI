@@ -218,7 +218,8 @@ function buildDeepEssenceStructuredPartAUserPromptRaw(input: {
   surveyAnalysis: string;
   essenceAnalysisSummary: string;
   birthEnergyContext: string;
-  currentAxisScores: Record<string, number>;
+  /** null = the person did not take the survey: no current-behavior scores exist. */
+  currentAxisScores: Record<string, number> | null;
   locale?: Locale | string;
   /** Batch 3 — optional. Omit/null to reproduce the exact pre-Batch-3 prompt. */
   part01Evidence?: Part01EvidenceForPartAPrompt | null;
@@ -413,9 +414,17 @@ ${input.essenceAnalysisSummary}
 ■ Birth-energy context (consciousness / emotion / surface tone — everyday language only)
 ${input.birthEnergyContext}
 
-■ Survey-scored "current" axis scores (0-100). radar_potential must be >= these values (it represents innate potential, so it should read equal or higher).
+${
+  input.currentAxisScores
+    ? `■ Survey-scored "current" axis scores (0-100). radar_potential must be >= these values (it represents innate potential, so it should read equal or higher).
 ${JSON.stringify(input.currentAxisScores)}
-${evidenceBlock}
+`
+    : `■ No survey: the person did not take the survey, so there are NO current-behavior scores and NO survey answers.
+- Do not describe, guess or score their current behavior as if it came from a survey; never mention survey results, survey scores or a current-vs-innate gap.
+- Skip survey-based interpretation. Write only from the Essence analysis and birth-energy context, and phrase it as natural tendency, not as how they act today.
+- radar_potential reflects innate potential from the Essence analysis and birth-energy context only.
+`
+}${evidenceBlock}
 [Output rules]
 - Respond with the exact same key structure as the schema below. Do not add extra keys.
 - strengths, watchouts, and energy.bars must have exactly 3 items each. energy.fuels/drains need 3-5 items, optimal needs 2-4.

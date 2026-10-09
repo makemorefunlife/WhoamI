@@ -85,13 +85,12 @@ describe("Verification 3 — local browser cache invalidation", () => {
     assert.match(cacheSrc, /\$\{PREFIX\}v11_\$\{locale\}_\$\{reportId\}/);
   });
 
-  it("useSlimV1Integrated still returns early on a cache hit (confirms WHY the client bump was necessary, not just the server one)", () => {
+  it("useSlimV1Integrated reads the saved report from the server, never from a stale client cache (2026-10-09)", () => {
     const hookSrc = fs.readFileSync("lib/v1/slim/useSlimV1Integrated.ts", "utf8");
-    assert.match(
-      hookSrc,
-      /const cached = readSlimIntegratedCache\(reportId, locale\);\s*\n\s*if \(cached\) \{/,
-      "a cache hit must still short-circuit before any network call — this is why bumping the server version alone would not have been enough",
-    );
+    // Viewing is a server GET of this language's saved row, so an old
+    // localStorage entry can no longer hide a newer server-side report.
+    assert.doesNotMatch(hookSrc, /readSlimIntegratedCache/);
+    assert.match(hookSrc, /\/api\/v2\/deep\/essence\?reportId=/);
   });
 });
 

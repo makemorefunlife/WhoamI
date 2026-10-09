@@ -220,7 +220,8 @@ export type CoerceDeepEssenceDiagnostics = {
 /** Normalize Part A object in place (returns new object). */
 export function coerceDeepEssencePartA(
   raw: unknown,
-  floor: PrimaryAxesScores,
+  /** null = no survey: no floor. */
+  floor: PrimaryAxesScores | null,
   locale: string = "ko-KR",
 ): { value: Record<string, unknown>; notes: string[] } {
   const notes: string[] = [];
@@ -254,8 +255,8 @@ export function coerceDeepEssencePartA(
   const radar_potential = {} as Record<string, number>;
   for (const key of PRIMARY_AXIS_KEYS) {
     radar_potential[key] = Math.max(
-      floor[key] ?? 0,
-      asScore(radarIn[key], floor[key] ?? 50),
+      floor?.[key] ?? 0,
+      asScore(radarIn[key], floor?.[key] ?? 50),
     );
   }
 

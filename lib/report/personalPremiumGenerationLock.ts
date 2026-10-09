@@ -114,3 +114,24 @@ export async function stillOwnsPersonalPremiumGenerationLock(
 
   return !res.error && !!res.data;
 }
+
+/**
+ * Read-only: is a (non-stale) generation currently running for this
+ * (reportId, locale)? Used by the GET view so a page opened while another
+ * tab is generating shows "in progress" instead of the generate button.
+ */
+export async function isPersonalPremiumGenerationInProgress(
+  supabase: SupabaseClient,
+  reportId: string,
+  locale: Locale,
+): Promise<boolean> {
+  const staleCutoff = new Date(Date.now() - STALE_LOCK_MS).toISOString();
+  const res = await supabase
+    .from("personal_premium_generation_locks")
+    .select("id")
+    .eq("report_id", reportId)
+    .eq("locale", locale)
+    .gte("started_at", staleCutoff)
+    .maybeSingle();
+  return !res.error && !!res.data;
+}

@@ -60,7 +60,8 @@ export type DeepEssenceStructuredLlmInput = {
   surveyAnalysis: string;
   essenceAnalysisSummary: string;
   astrologyInterpretation: string;
-  currentAxisScores: PrimaryAxesScores;
+  /** null = no survey: no current-behavior floor, nothing survey-based in the prompt. */
+  currentAxisScores: PrimaryAxesScores | null;
   locale?: Locale | string;
   part01Evidence?: Part01IdentityEvidencePacket | Part01PromptEvidence | null;
 };
@@ -72,19 +73,22 @@ export type DeepEssenceStructuredLlmResult = {
 
 function clampAxisScores(
   potentials: Record<string, unknown> | undefined,
-  currents: PrimaryAxesScores,
+  currents: PrimaryAxesScores | null,
 ): PrimaryAxesScores {
-  const result = { ...currents };
+  // No survey -> no floor (0); a missing value falls back to the scale midpoint.
+  const result = Object.fromEntries(
+    PRIMARY_AXIS_KEYS.map((k) => [k, currents?.[k] ?? 50]),
+  ) as PrimaryAxesScores;
   if (!potentials || typeof potentials !== "object") return result;
 
   for (const axis of PRIMARY_AXIS_KEYS) {
     const rawVal = potentials[axis];
-    const currentVal = currents[axis] ?? 50;
+    const currentVal = currents ? (currents[axis] ?? 50) : 0;
     if (typeof rawVal === "number" && !isNaN(rawVal)) {
       const rounded = Math.round(rawVal);
       result[axis] = Math.max(currentVal, Math.min(100, rounded));
     } else {
-      result[axis] = currentVal;
+      result[axis] = currents ? currentVal : 50;
     }
   }
   return result;

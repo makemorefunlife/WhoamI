@@ -20,9 +20,7 @@ import { calculateEssenceSelfLite } from "@/lib/v2/saju/essenceLite";
 
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 
-import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
 
-import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 
 import {
 
@@ -37,8 +35,6 @@ import { logServerError } from "@/lib/security/safeLog";
 import type {
 
   CurrentSelfProfile,
-
-  PrimaryAxesScores,
 
   SurveyAnswersInput,
 
@@ -68,22 +64,6 @@ export type SlimIntegratedRunInput = {
   reportId?: string;
 
 };
-
-
-
-const DEFAULT_AXIS_SCORE = 50;
-
-
-
-function fallbackAxisScores(): PrimaryAxesScores {
-
-  return Object.fromEntries(
-
-    PRIMARY_AXIS_KEYS.map((k) => [k, DEFAULT_AXIS_SCORE]),
-
-  ) as PrimaryAxesScores;
-
-}
 
 
 
@@ -131,11 +111,17 @@ export async function runSlimIntegratedReport(
 
 
 
+  // No survey (ko-KR allows birth-only analysis): nothing survey-based may
+  // reach the model. The Part01 evidence packet compares survey ("current")
+  // axes with innate axes, so without a survey it is not built at all --
+  // a neutral 50 must never be passed off as a real survey score.
+  const hasSurvey = Boolean(v2Profile);
+
   // Batch 2 — additive only: builds Part01IdentityEvidencePacket for future
-  // Identity Lens consumption. Not read by any prompt/UI yet; a failure here
-  // must never break the existing report pipeline below.
+  // Identity Lens consumption. A failure here must never break the existing
+  // report pipeline below.
   let part01IdentityEvidence: Part01IdentityEvidencePacket | null = null;
-  try {
+  if (hasSurvey) try {
     const essenceSelf = calculateEssenceSelfLite({
       birthDate: input.birthDate,
       birthTime: input.birthTime,
@@ -147,8 +133,8 @@ export async function runSlimIntegratedReport(
       birthTime: input.birthTime ?? null,
       birthTimeUnknown: input.birthTimeUnknown === true,
       bundle,
-      currentPrimary: v2Profile?.primary_axes ?? fallbackAxisScores(),
-      currentSecondary: v2Profile?.secondary_axes ?? buildNeutralV2Profile().secondary_axes,
+      currentPrimary: v2Profile!.primary_axes,
+      currentSecondary: v2Profile!.secondary_axes,
       innatePrimary: essenceSelf.primary_axes,
     });
   } catch (e) {
@@ -187,7 +173,7 @@ export async function runSlimIntegratedReport(
 
 
 
-  const radarCurrent = v2Profile?.primary_axes ?? fallbackAxisScores();
+  const radarCurrent = v2Profile?.primary_axes ?? null;
 
 
 

@@ -2107,6 +2107,21 @@ export const messagesEnUS = {
     checkingSurveyBirth: "Checking survey and birth info…",
     regenerating: "Generating… (1–2 min)",
     regenerate: "Regenerate",
+    deepGenerate: {
+      viewLoading: "Checking your saved deep analysis…",
+      notGeneratedTitle: "No deep analysis in this language yet",
+      notGeneratedBody: "Tap [Generate] to create the report in this language. This uses 1 credit. After that, opening it again in the same language is free.",
+      otherLocaleNote: "You have a report in another language. Switch the site language to view it at no extra cost.",
+      generateCta: "Generate (uses 1 credit)",
+      legacyTitle: "Your earlier report",
+      legacyBody: "This report was made before languages were recorded, so it is kept and shown exactly as it was. You can also create a new one in the current language. That uses 1 credit, and the earlier report stays.",
+      legacyGenerateCta: "Create one in this language (uses 1 credit)",
+      regenerateConfirmTitle: "Generate again?",
+      regenerateConfirmBody: "This uses 1 credit. Your current report is kept, not deleted.",
+      regenerateConfirmCta: "Use 1 credit and regenerate",
+      cancel: "Cancel",
+      noSurveyNote: "You did not take the survey, so survey-based parts (current patterns and the gap with your natural tendencies) are left out.",
+    },
     backToDashboard: "Back to dashboard",
     editBirthInfo: "Edit birth info (Account)",
     creditNeededCta: "Purchase",
@@ -4015,6 +4030,21 @@ export type MessageCatalog = {
     checkingSurveyBirth: string;
     regenerating: string;
     regenerate: string;
+    deepGenerate: {
+      viewLoading: string;
+      notGeneratedTitle: string;
+      notGeneratedBody: string;
+      otherLocaleNote: string;
+      generateCta: string;
+      legacyTitle: string;
+      legacyBody: string;
+      legacyGenerateCta: string;
+      regenerateConfirmTitle: string;
+      regenerateConfirmBody: string;
+      regenerateConfirmCta: string;
+      cancel: string;
+      noSurveyNote: string;
+    };
     backToDashboard: string;
     editBirthInfo: string;
     creditNeededCta: string;

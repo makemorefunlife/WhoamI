@@ -35,9 +35,10 @@ section("A. Personal deep-analysis route: cache-first, credit only on a real gen
   assert.ok(src.includes("consumeCredit(supabase, generationRequestId)"));
   assert.ok(src.includes("releaseCredit(supabase, generationRequestId)"));
 
-  // The credit gate must be textually AFTER the stored-cache return, so a
-  // cache hit returns before reservePersonalCredit is ever reached.
-  const cacheReturnIdx = src.indexOf("return NextResponse.json({ ok: true, locale, slim_v1: reuse.slim_v1 })");
+  // The credit gate must be textually AFTER the saved-report return, so a
+  // saved report for this language returns before reservePersonalCredit is
+  // ever reached (2026-10-09: per-language rows, generated: false = no charge).
+  const cacheReturnIdx = src.indexOf('return NextResponse.json({ ok: true, locale, state: "ready", generated: false, slim_v1: first.slim_v1 })');
   const reserveIdx = src.indexOf("reservePersonalCredit(supabase");
   assert.ok(cacheReturnIdx > -1 && reserveIdx > -1 && cacheReturnIdx < reserveIdx);
 

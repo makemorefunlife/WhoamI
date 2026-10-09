@@ -164,11 +164,10 @@ section("C. Personal: useSlimV1Integrated exposes creditExhausted on a 402, matc
   ok("useSlimV1Integrated declares creditExhausted state");
 
   assert.ok(
-    // The Personal Deep autostart fix added an isAutostartAttempt branch
-    // (setting autostartCreditExhausted) between setError(null) and return
-    // -- this only requires creditExhausted to still be set and error still
-    // cleared, in the same order, not a byte-exact 3-statement block.
-    /if\s*\(res\.status === 402\)\s*\{\s*setCreditExhausted\(true\);\s*setError\(null\);[\s\S]*?return;\s*\}/.test(
+    // 2026-10-09: generation is a separate explicit POST (postGenerate); a
+    // 402 only flags creditExhausted -- the generic error was already cleared
+    // when the attempt started.
+    /if\s*\(res\.status === 402\)\s*\{\s*setCreditExhausted\(true\);\s*return;\s*\}/.test(
       src,
     ),
     "a 402 response must set creditExhausted and must NOT also set the generic error state (so the page shows the purchase prompt, not a generic error)",
@@ -182,12 +181,8 @@ section("C. Personal: useSlimV1Integrated exposes creditExhausted on a 402, matc
   ok("creditExhausted resets on a fresh fetch attempt");
 
   assert.ok(
-    // The Personal Deep autostart fix (mirroring useRelationshipDetail.ts)
-    // added autostartPending/autostartCreditExhausted between
-    // creditExhausted and the retry/regenerateFresh tail -- this only
-    // requires creditExhausted to still be part of the returned object in
-    // the same relative position, not a byte-exact shape.
-    /return\s*\{\s*data,\s*loading,\s*inProgress,\s*error,\s*creditExhausted,[\s\S]*?retry:\s*fetchReport,\s*regenerateFresh,\s*\}/.test(
+    // 2026-10-09: view (refresh) and generate/regenerate are separate.
+    /return\s*\{[\s\S]*?creditExhausted,[\s\S]*?generate,\s*regenerate,\s*\}/.test(
       src,
     ),
     "creditExhausted must actually be returned from the hook for callers to use",
@@ -224,20 +219,23 @@ section("D. Personal: essence/deep page renders the purchase-recovery UI and dis
   );
   ok("PurchaseSelectorModal is given successRedirectPath back to this same essence/deep page");
 
+  // 2026-10-09 rule: only the explicit generate button generates/charges.
+  // After a purchase the page re-reads its state (GET) and the user taps
+  // generate themselves -- a purchase never auto-starts a generation.
   assert.ok(
     /onSuccess=\{handlePurchaseSuccess\}/.test(src) &&
-      /function handlePurchaseSuccess\(\)\s*\{\s*setPurchaseOpen\(false\);\s*void retry\(\);\s*\}/.test(
+      /function handlePurchaseSuccess\(\)\s*\{\s*setPurchaseOpen\(false\);\s*void refresh\(\);\s*\}/.test(
         src,
       ),
-    "a successful purchase must close the modal and retry the exact same generation call, matching useRelationshipDetail.ts's handlePurchaseSuccess",
+    "a successful purchase must close the modal and re-read the page state without generating",
   );
-  ok("a successful purchase closes the modal and calls retry() -- no extra user action needed");
+  ok("a successful purchase closes the modal and refreshes (no auto-generation)");
 
   assert.ok(
-    /disabled=\{loading \|\| inProgress \|\| creditExhausted\}/.test(src),
-    "the regenerate button must be disabled while credit is exhausted (it would just 402 again)",
+    /disabled=\{busy \|\| creditExhausted\}/.test(src),
+    "the generate button must be disabled while credit is exhausted (it would just 402 again)",
   );
-  ok("regenerate button is disabled while creditExhausted");
+  ok("generate button is disabled while creditExhausted");
 
   assert.ok(
     src.includes("{messages.blueprint.creditNeededCta}"),

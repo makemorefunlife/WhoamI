@@ -49,10 +49,10 @@ ${concern ? CONCERN_KO[concern] ?? concern : "미응답"}`;
 export function buildSurveyAnalysisFallback(locale?: Locale | string): string {
   if (normalizeLocale(locale) === "en-US") {
     return `## Current Patterns
-No survey responses are available, so this report relies on the birth-derived Natural Tendencies analysis.`;
+Survey not taken: there are no survey answers or survey scores. Skip every survey-based interpretation (current behavior, current-vs-innate gaps) and write only from the birth-derived Natural Tendencies analysis and birth-energy context.`;
   }
   return `## 현재의 나
-설문 응답이 없어 Essence 분석·출생 맥락 위주로 통합합니다.`;
+설문 미입력: 설문 응답과 설문 점수가 없습니다. 설문 기반 해석(현재 행동, 현재와 타고난 성향의 차이)은 생략하고, Essence 분석·출생 맥락만으로 작성합니다.`;
 }
 
 /** Slim V1 전용 — v2 10문항만. 18문항 Y/N·레거시 미사용 */

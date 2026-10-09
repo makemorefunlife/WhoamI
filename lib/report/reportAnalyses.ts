@@ -9,6 +9,8 @@ export const REPORT_ANALYSIS_TYPES = [
   "detailed_survey",
   "astrology",
   "deep_essence_structured",
+  "deep_essence_structured_ko",
+  "deep_essence_structured_en",
 ] as const;
 
 export type ReportAnalysisType = (typeof REPORT_ANALYSIS_TYPES)[number];
@@ -279,19 +281,78 @@ export async function writePersistedAstrologyAnalysis(
   return writeReportAnalysis(supabase, reportId, "astrology", text, metadata);
 }
 
-/** Slim V1 "심화 통합 분석" (deep essence, Part 01~05 + 부록) — 전체 SlimV1ReportResult를 JSON 문자열로 저장 */
-export async function readPersistedDeepEssenceAnalysis(
-  supabase: SupabaseClient,
-  reportId: string,
-): Promise<string | null> {
-  return readReportAnalysis(supabase, reportId, "deep_essence_structured");
+// ── Personal deep report per language (supabase/migrations/20261009120000) ──
+// The legacy single row ('deep_essence_structured') is read-only from now on:
+// it is never overwritten or deleted (IA v2 D-1).
+
+export type PersonalDeepLocale = "ko-KR" | "en-US";
+
+export function personalDeepAnalysisType(locale: PersonalDeepLocale): ReportAnalysisType {
+  return locale === "ko-KR" ? "deep_essence_structured_ko" : "deep_essence_structured_en";
 }
 
-export async function writePersistedDeepEssenceAnalysis(
+export type PersonalDeepRows = {
+  localeRows: Partial<Record<PersonalDeepLocale, string | null>>;
+  legacyRow: string | null;
+};
+
+/** Reads both language rows and the legacy row in one query. null = read failed. */
+export async function readPersonalDeepRows(
   supabase: SupabaseClient,
   reportId: string,
-  text: string,
-  metadata?: Record<string, unknown> | null,
+): Promise<PersonalDeepRows | null> {
+  const { data, error } = await supabase
+    .from("report_analyses")
+    .select("analysis_type, content, updated_at")
+    .eq("report_id", reportId)
+    .in("analysis_type", [
+      "deep_essence_structured",
+      "deep_essence_structured_ko",
+      "deep_essence_structured_en",
+    ])
+    .order("updated_at", { ascending: false });
+  if (error) {
+    logServerError("reportAnalyses.readPersonalDeepRows", error, "read_failed");
+    return null;
+  }
+  const rows: PersonalDeepRows = { localeRows: {}, legacyRow: null };
+  for (const row of (data ?? []) as { analysis_type: string; content: string }[]) {
+    if (row.analysis_type === "deep_essence_structured_ko" && rows.localeRows["ko-KR"] === undefined) {
+      rows.localeRows["ko-KR"] = row.content;
+    } else if (row.analysis_type === "deep_essence_structured_en" && rows.localeRows["en-US"] === undefined) {
+      rows.localeRows["en-US"] = row.content;
+    } else if (row.analysis_type === "deep_essence_structured" && rows.legacyRow === null) {
+      rows.legacyRow = row.content;
+    }
+  }
+  return rows;
+}
+
+/**
+ * Saves this language's report. An existing row is archived to
+ * report_analysis_history in the same transaction first (save_personal_deep_analysis).
+ * Resolves true only when the row was really written.
+ */
+export async function savePersonalDeepAnalysis(
+  supabase: SupabaseClient,
+  params: {
+    reportId: string;
+    locale: PersonalDeepLocale;
+    content: string;
+    metadata: Record<string, unknown>;
+    reason: "first_generation" | "user_regenerate";
+  },
 ): Promise<boolean> {
-  return writeReportAnalysis(supabase, reportId, "deep_essence_structured", text, metadata);
+  const { data, error } = await supabase.rpc("save_personal_deep_analysis", {
+    p_report_id: params.reportId,
+    p_analysis_type: personalDeepAnalysisType(params.locale),
+    p_content: params.content,
+    p_metadata: params.metadata,
+    p_reason: params.reason,
+  });
+  if (error) {
+    logServerError("reportAnalyses.savePersonalDeepAnalysis", error, "save_failed");
+    return false;
+  }
+  return data === true;
 }
