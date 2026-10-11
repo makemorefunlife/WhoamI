@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
@@ -161,8 +162,7 @@ export default function DecisionJournalContent() {
 
   const requireAuth = useCallback(() => {
     openSignIn?.({
-      forceRedirectUrl:
-        typeof window !== "undefined" ? window.location.pathname : "/decision",
+      forceRedirectUrl: continueHref(currentReturnPath(), "/decision"),
     });
   }, [openSignIn]);
 

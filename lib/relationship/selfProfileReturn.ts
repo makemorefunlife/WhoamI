@@ -1,3 +1,5 @@
+import { sanitizeReturnPath } from "@/lib/auth/returnPath";
+
 /**
  * "Come back to adding a friend after filling in my own details."
  * Kept in sessionStorage (this tab only, 1 hour), never in a URL. Only paths
@@ -7,7 +9,9 @@ const KEY = "aha_after_self_profile";
 const TTL_MS = 60 * 60 * 1000;
 
 function safe(path: string): string | null {
-  return /^\/relationships(\?[\w=&%.-]*)?$/.test(path) ? path : null;
+  // Shared internal-path check first, then this store's own allowlist.
+  const clean = sanitizeReturnPath(path);
+  return clean && /^\/relationships(\?[\w=&%.-]*)?$/.test(clean) ? clean : null;
 }
 
 export function setSelfProfileReturn(path: string): void {

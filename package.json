@@ -27,6 +27,7 @@
     "test:stage0-fixes": "npx tsx tests/unit/stage0-fixes.test.ts",
     "test:personal-locale-view": "npx tsx tests/unit/personal-locale-view.test.ts",
     "test:personal-locale-sql": "bash tests/scripts/run-personal-locale-sql.sh",
+    "test:auth-return-path": "npx tsx tests/unit/auth-return-path.test.ts",
     "test:relationship-ownership": "npx tsx tests/unit/relationship-premium-ownership.test.ts",
     "test:relationship-ownership-sql": "bash tests/scripts/run-relationship-ownership-sql.sh",
     "test:credit-lifecycle-sql": "bash tests/scripts/run-credit-lifecycle-sql.sh",

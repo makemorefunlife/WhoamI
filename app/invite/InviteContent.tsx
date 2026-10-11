@@ -67,7 +67,10 @@ export default function InviteContent() {
     if (token) {
       localStorage.setItem("inviteToken", token);
     }
-    router.push(localize(ROUTES.signIn));
+    // Come back into the invite (home completes it with the stored token),
+    // not to a bare home page.
+    const back = localize(token ? `/?token=${encodeURIComponent(token)}` : ROUTES.home);
+    router.push(`${localize(ROUTES.signIn)}?redirect_url=${encodeURIComponent(back)}`);
   };
 
   return (

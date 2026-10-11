@@ -1,5 +1,6 @@
 "use client";
 
+import { sanitizeReturnPath } from "@/lib/auth/returnPath";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -37,7 +38,7 @@ const AUTO_RETRIES = 4;
 const RETRY_DELAY_MS = 3000;
 
 function safeReturnPath(raw: string | null): string | null {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+  return sanitizeReturnPath(raw);
 }
 
 function SuccessContent() {

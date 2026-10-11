@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { UserButton, SignInButton } from "@clerk/nextjs";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
@@ -152,7 +153,7 @@ export default function Header() {
               로그인
             </button>
           ) : (
-            <SignInButton mode="modal" forceRedirectUrl={href(ROUTES.home)}>
+            <SignInButton mode="modal" forceRedirectUrl={continueHref(currentReturnPath(), href(ROUTES.home))}>
               <button
                 type="button"
                 className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white/90 ring-2 ring-white/15 transition hover:bg-white/[0.08]"

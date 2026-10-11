@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref } from "@/lib/auth/returnPath";
 import { SignIn } from "@clerk/nextjs";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -23,8 +24,10 @@ export default function HomeAuthSignInPanel({
   return (
     <SignIn
       routing="hash"
-      signUpUrl={href(ROUTES.signUp)}
-      fallbackRedirectUrl={href(fallbackRedirectPath)}
+      // Sign-up from this panel and OAuth both come back to the same place
+      // (server-checked), not to a bare home page.
+      signUpUrl={`${href(ROUTES.signUp)}?redirect_url=${encodeURIComponent(href(fallbackRedirectPath))}`}
+      fallbackRedirectUrl={continueHref(href(fallbackRedirectPath))}
       appearance={{
         variables: {
           colorPrimary: "#1a3328",

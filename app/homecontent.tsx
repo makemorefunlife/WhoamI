@@ -112,6 +112,9 @@ export default function HomeContent() {
     };
   }, [authModalOpen]);
 
+  // "Start my analysis" while signed out opens sign-in; once signed in, the
+  // same start continues (no second click). OAuth comes back via ?start=self.
+  const pendingStartRef = useRef(false);
   useEffect(() => {
     if (isSignedIn && authModalOpen) {
       queueMicrotask(() => setAuthModalOpen(false));
@@ -590,9 +593,11 @@ export default function HomeContent() {
 
   const createReportAndSurvey = useCallback(async () => {
     if (!userId) {
+      pendingStartRef.current = true;
       setAuthModalOpen(true);
       return;
     }
+    pendingStartRef.current = false;
     // Google/OAuth signup: seed publicMetadata.displayName from the
     // provider's own name, silently, only if nothing is set yet — no
     // extra prompt. Email/password signup has no name to seed from, so
@@ -822,6 +827,12 @@ export default function HomeContent() {
     void createReportAndSurvey();
   }, [searchParams, isLoaded, resume.loading, router, localize, createReportAndSurvey]);
 
+  useEffect(() => {
+    if (!isSignedIn || !userId || !pendingStartRef.current) return;
+    pendingStartRef.current = false;
+    void createReportAndSurvey();
+  }, [isSignedIn, userId, createReportAndSurvey]);
+
   const startFreeSurvey = useCallback(async () => {
     if (creatingReport) return;
     setStartChoiceOpen(false);
@@ -1049,7 +1060,7 @@ export default function HomeContent() {
                   <span className="block text-xl leading-none">×</span>
                 </button>
               </div>
-              <HomeAuthSignInPanel />
+              <HomeAuthSignInPanel fallbackRedirectPath="/?start=self" />
               {!isSignedIn ? (
                 <div className="mt-4 border-t border-outline-variant/30 pt-4 text-center">
                   <p className="text-xs text-on-surface-variant/70">

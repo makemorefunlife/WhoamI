@@ -2,6 +2,7 @@
 
 import { ensureBirthSession, hasMinimalBirth } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
+import { nextInfoStepPath } from "@/lib/profile/infoSteps";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 
 /**
@@ -28,11 +29,6 @@ export function decideBlueprintMissingStep(p: {
   surveyRequired: boolean;
 }): string | null {
   if (!p.reportId) return "/";
-  const q = `?reportId=${encodeURIComponent(p.reportId)}`;
-  if (!p.hasSurvey && p.surveyRequired) return `/survey-v2${q}`;
-  if (!p.hasBirth) {
-    // The survey-complete page needs a survey; the birth page does not.
-    return p.hasSurvey ? `/survey-v2/complete${q}` : `/onboarding/birth${q}`;
-  }
-  return null;
+  // Shared rule (lib/profile/infoSteps.ts): only what is missing is asked.
+  return nextInfoStepPath(p);
 }

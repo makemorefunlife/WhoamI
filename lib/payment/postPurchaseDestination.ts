@@ -1,3 +1,4 @@
+import { sanitizeReturnPath } from "@/lib/auth/returnPath";
 import { ROUTES, relationshipHubRoute, withReportId } from "@/constants/routes";
 import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 import type { Locale } from "@/lib/i18n/locale";
@@ -51,8 +52,9 @@ type Params = {
  */
 export function resolvePostPurchase(params: Params): { path: string; selfProfileReturn: string | null } {
   const explicit = params.explicitReturnPath;
-  if (explicit && explicit.startsWith("/") && !explicit.startsWith("//") && explicit !== ROUTES.accountBilling) {
-    return { path: explicit, selfProfileReturn: null };
+  const safeExplicit = sanitizeReturnPath(explicit);
+  if (safeExplicit && safeExplicit !== ROUTES.accountBilling) {
+    return { path: safeExplicit, selfProfileReturn: null };
   }
   const group = accountLinkGroup(params.planId);
   if (group === "pass") return { path: `${ROUTES.home}?start=choice`, selfProfileReturn: null };
