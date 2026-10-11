@@ -20,7 +20,10 @@ export async function POST() {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
     const orderId = await guestSessionOrderId(supabase);
-    if (!orderId) return NextResponse.json({ status: "unverified" }, { status: 401 });
+    if (!orderId) {
+      console.warn("[guest/personal/generate] Unauthorized: missing or invalid guest session cookie");
+      return NextResponse.json({ status: "unverified" }, { status: 401 });
+    }
 
     const outcome = await generateGuestPersonal(supabase, orderId, {
       generate: (input) =>
@@ -34,6 +37,14 @@ export async function POST() {
           locale: input.locale,
         }),
     });
+
+    if (outcome.kind !== "ok" && outcome.kind !== "already_used") {
+      console.error("[guest/personal/generate] Generation outcome error:", {
+        orderId: orderId.slice(0, 10) + "...",
+        outcome,
+      });
+    }
+
     switch (outcome.kind) {
       case "ok":
         return NextResponse.json({ status: "generated", slim_v1: outcome.slim_v1 });
@@ -42,12 +53,13 @@ export async function POST() {
       case "in_progress":
         return NextResponse.json({ status: "in_progress" }, { status: 409 });
       case "rejected":
-        return NextResponse.json({ status: outcome.code }, { status: 409 });
+        return NextResponse.json({ status: outcome.code, code: outcome.code }, { status: 409 });
       default:
         return NextResponse.json({ status: "failed", code: outcome.code }, { status: outcome.status });
     }
   } catch (e) {
+    console.error("[guest/personal/generate] Unexpected server exception:", e);
     logServerError("guest/personal/generate", e, "internal_error");
-    return NextResponse.json({ status: "failed" }, { status: 500 });
+    return NextResponse.json({ status: "failed", code: "internal_error" }, { status: 500 });
   }
 }

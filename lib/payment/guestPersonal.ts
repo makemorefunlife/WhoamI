@@ -251,10 +251,14 @@ export async function generateGuestPersonal(
         p_request_id: requestId,
       });
       if (error) {
+        console.error("[generateGuestPersonal] reserve_guest_personal_use rpc error:", error);
         logServerError("guestPersonal", error, "reserve_failed");
         return { ok: false as const, reason: "error" as const };
       }
       reservedResult = rpcText(data);
+      if (reservedResult !== "reserved") {
+        console.warn("[generateGuestPersonal] reserve_guest_personal_use rejected with code:", reservedResult);
+      }
       return reservedResult === "reserved"
         ? { ok: true as const }
         : { ok: false as const, reason: "insufficient_balance" as const };
@@ -277,10 +281,15 @@ export async function generateGuestPersonal(
         p_report_locale: state.locale,
       });
       if (error) {
+        console.error("[generateGuestPersonal] complete_guest_personal_use rpc error:", error);
         logServerError("guestPersonal", error, "complete_failed");
         return false;
       }
-      return rpcText(data) === "true";
+      const success = rpcText(data) === "true";
+      if (!success) {
+        console.error("[generateGuestPersonal] complete_guest_personal_use returned false (lock lost or invalid order)");
+      }
+      return success;
     },
     consumeCredit: async () => {
       /* the order was marked used together with the saved report */
@@ -288,7 +297,10 @@ export async function generateGuestPersonal(
     releaseCredit: async () => {
       await supabase.rpc("release_guest_personal_use", { p_order_id: orderId, p_request_id: requestId });
     },
-    log: (tag, error, code) => logServerError(`guest:${tag}`, error, code),
+    log: (tag, error, code) => {
+      console.error(`[generateGuestPersonal:${tag}] error (${code}):`, error);
+      logServerError(`guest:${tag}`, error, code);
+    },
   });
 
   if (outcome.kind === "ok") return { kind: "ok", slim_v1: outcome.slim_v1 };

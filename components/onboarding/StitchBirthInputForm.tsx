@@ -19,6 +19,7 @@ import {
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { convertLunarToSolarDate } from "@/lib/v2/onboarding/lunarCalendar";
 import type { CalendarType } from "@/components/onboarding/StitchBirthDateTimeFields";
+import BirthPlaceSelector from "@/components/onboarding/BirthPlaceSelector";
 
 export type StitchBirthFormState = {
   birthDate: string;
@@ -184,7 +185,7 @@ export default function StitchBirthInputForm({
     <div className="w-full max-w-[420px] space-y-6">
       <div className="text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">
-          Birth details
+          {messages.birthForm.eyebrow}
         </p>
         <h2 className="stitch-headline mt-2 text-balance text-xl leading-snug">
           {messages.birthForm.heading}
@@ -202,7 +203,7 @@ export default function StitchBirthInputForm({
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Date of birth
+              {messages.birthForm.dateLabel}
             </p>
             {showCalendarToggle ? (
               <div
@@ -238,7 +239,7 @@ export default function StitchBirthInputForm({
           <div className="grid grid-cols-3 gap-2.5">
             <label className="space-y-1.5">
               <span className="block text-center text-[10px] text-on-surface-variant">
-                Year
+                {messages.birthForm.yearLabel}
               </span>
               <input
                 type="text"
@@ -254,7 +255,7 @@ export default function StitchBirthInputForm({
             </label>
             <label className="space-y-1.5">
               <span className="block text-center text-[10px] text-on-surface-variant">
-                Month
+                {messages.birthForm.monthLabel}
               </span>
               <input
                 type="text"
@@ -270,7 +271,7 @@ export default function StitchBirthInputForm({
             </label>
             <label className="space-y-1.5">
               <span className="block text-center text-[10px] text-on-surface-variant">
-                Day
+                {messages.birthForm.dayLabel}
               </span>
               <input
                 type="text"
@@ -296,17 +297,17 @@ export default function StitchBirthInputForm({
 
         <section className="space-y-3 border-t border-outline-variant/35 pt-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            Time of birth
+            {messages.birthForm.timeLabel}
           </p>
           <div
             className="grid grid-cols-2 gap-2"
             role="group"
-            aria-label="AM or PM"
+            aria-label={messages.account.birthFormAmPmAria}
           >
             {(
               [
-                { v: "am" as const, label: "AM" },
-                { v: "pm" as const, label: "PM" },
+                { v: "am" as const, label: messages.birthForm.amLabel },
+                { v: "pm" as const, label: messages.birthForm.pmLabel },
               ] as const
             ).map(({ v, label }) => (
               <button
@@ -333,7 +334,7 @@ export default function StitchBirthInputForm({
               onChange={(e) => handleHour(e.target.value)}
               placeholder="7"
               disabled={busy || birthTimeUnknown}
-              aria-label="Hour"
+              aria-label={messages.account.birthFormHourAria}
               className={`${inputClass} max-w-[5.5rem] disabled:opacity-40`}
             />
             <span className="text-xl font-light text-on-surface-variant">:</span>
@@ -345,7 +346,7 @@ export default function StitchBirthInputForm({
               onChange={(e) => handleMinute(e.target.value)}
               placeholder="30"
               disabled={busy || birthTimeUnknown}
-              aria-label="Minute"
+              aria-label={messages.account.birthFormMinuteAria}
               className={`${inputClass} max-w-[5.5rem] disabled:opacity-40`}
             />
           </div>
@@ -374,19 +375,16 @@ export default function StitchBirthInputForm({
 
         <section className="space-y-3 border-t border-outline-variant/35 pt-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            Place of birth
+            {messages.birthForm.placeLabel}
           </p>
-          <input
-            type="text"
+          <BirthPlaceSelector
             value={birthPlace}
-            onChange={(e) => {
-              setBirthPlace(e.target.value);
+            onChange={(val) => {
+              setBirthPlace(val);
               if (birthPlaceUnknown) setBirthPlaceUnknown(false);
             }}
-            placeholder={messages.birthForm.placePlaceholder}
             disabled={busy || birthPlaceUnknown}
-            autoComplete="address-level2"
-            className={`${inputClass} text-base disabled:opacity-40`}
+            theme="stitch"
           />
           {birthPlaceUnknown ? (
             <p className="rounded-xl border border-secondary/25 bg-secondary/8 px-3 py-2.5 text-xs leading-relaxed text-on-surface-variant">

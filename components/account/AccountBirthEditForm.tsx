@@ -11,6 +11,7 @@ import {
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
+import BirthPlaceSelector from "@/components/onboarding/BirthPlaceSelector";
 
 export type AccountBirthEditPayload = {
   birthDate?: string;
@@ -267,23 +268,20 @@ export default function AccountBirthEditForm({
         />
       </div>
 
-      <label className="block space-y-1.5">
+      <div className="block space-y-1.5">
         <span className="block text-center text-xs font-medium text-on-surface-variant">
           {messages.account.birthPlaceLabel} <span className="text-secondary">*</span>
         </span>
-        <input
-          type="text"
+        <BirthPlaceSelector
           value={birthPlace}
-          onChange={(e) => setBirthPlace(e.target.value)}
-          placeholder={messages.birthForm.placePlaceholder}
+          onChange={(val) => setBirthPlace(val)}
           disabled={busy}
-          autoComplete="address-level2"
-          className={`${inputClass} text-base`}
+          theme="stitch"
         />
         <p className="text-center text-[11px] text-on-surface-variant/80">
           {messages.birthForm.placeNeededHint}
         </p>
-      </label>
+      </div>
 
       <div className="space-y-2 border-t border-outline-variant/25 pt-4">
         <button

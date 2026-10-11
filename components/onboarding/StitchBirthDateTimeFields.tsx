@@ -144,7 +144,7 @@ export default function StitchBirthDateTimeFields({
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <p className={sectionTitle}>생년월일 (YYYY-MM-DD)</p>
+          <p className={sectionTitle}>{messages.birthForm.dateLabel} (YYYY-MM-DD)</p>
           {showCalendarToggle ? (
             <div
               className="flex gap-1 rounded-full bg-surface-container-low/80 p-0.5"
@@ -178,7 +178,7 @@ export default function StitchBirthDateTimeFields({
         </div>
         <div className="grid grid-cols-3 gap-2">
           <label className="space-y-1">
-            <span className={labelClass}>연도</span>
+            <span className={labelClass}>{messages.birthForm.yearLabel}</span>
             <input
               type="text"
               inputMode="numeric"
@@ -188,11 +188,11 @@ export default function StitchBirthDateTimeFields({
               placeholder="1990"
               disabled={busy}
               className={fieldClass}
-              aria-label="연도 4자리"
+              aria-label={messages.account.birthFormYear}
             />
           </label>
           <label className="space-y-1">
-            <span className={labelClass}>월</span>
+            <span className={labelClass}>{messages.birthForm.monthLabel}</span>
             <input
               type="text"
               inputMode="numeric"
@@ -202,11 +202,11 @@ export default function StitchBirthDateTimeFields({
               placeholder="01"
               disabled={busy}
               className={fieldClass}
-              aria-label="월"
+              aria-label={messages.account.birthFormMonth}
             />
           </label>
           <label className="space-y-1">
-            <span className={labelClass}>일</span>
+            <span className={labelClass}>{messages.birthForm.dayLabel}</span>
             <input
               type="text"
               inputMode="numeric"
@@ -216,7 +216,7 @@ export default function StitchBirthDateTimeFields({
               placeholder="15"
               disabled={busy}
               className={fieldClass}
-              aria-label="일"
+              aria-label={messages.account.birthFormDay}
             />
           </label>
         </div>
@@ -226,18 +226,18 @@ export default function StitchBirthDateTimeFields({
           >
             {dateComplete
               ? `${birthDate} ✓`
-              : "연 4자리 · 월 · 일을 입력해 주세요"}
+              : messages.birthForm.dateIncomplete}
           </p>
         ) : null}
       </div>
 
       <div className="space-y-2 border-t border-outline-variant/25 pt-4">
-        <p className={sectionTitle}>출생 시간</p>
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label="오전 또는 오후">
+        <p className={sectionTitle}>{messages.birthForm.timeLabel}</p>
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label={messages.account.birthFormAmPmAria}>
           {(
             [
-              { v: "am" as const, label: "오전" },
-              { v: "pm" as const, label: "오후" },
+              { v: "am" as const, label: messages.birthForm.amLabel },
+              { v: "pm" as const, label: messages.birthForm.pmLabel },
             ] as const
           ).map(({ v, label }) => (
             <button
@@ -273,7 +273,7 @@ export default function StitchBirthDateTimeFields({
             }}
             placeholder="7"
             disabled={busy || birthTimeUnknown}
-            aria-label="시"
+            aria-label={messages.account.birthFormHourAria}
             className={`${fieldClass} max-w-[5rem]`}
           />
           <span className="text-lg text-on-surface-variant">:</span>
@@ -290,21 +290,21 @@ export default function StitchBirthDateTimeFields({
             }}
             placeholder="30"
             disabled={busy || birthTimeUnknown}
-            aria-label="분"
+            aria-label={messages.account.birthFormMinuteAria}
             className={`${fieldClass} max-w-[5rem]`}
           />
         </div>
         {birthTimeUnknown ? (
           <p className="text-center text-xs text-secondary">
-            12시 기준으로 계산해요.
+            {messages.birthForm.timeUnknownNotice}
           </p>
         ) : timeComplete ? (
           <p className="text-center text-xs text-secondary">
-            {period === "am" ? "오전" : "오후"} {hour}:{minute}
+            {period === "am" ? messages.birthForm.amLabel : messages.birthForm.pmLabel} {hour}:{minute}
           </p>
         ) : (
           <p className="text-center text-xs text-on-surface-variant">
-            1–12시 · 00–59분
+            {messages.birthForm.timeRangeHint}
           </p>
         )}
         <label
@@ -322,7 +322,7 @@ export default function StitchBirthDateTimeFields({
             }}
             disabled={busy}
           />
-          입력 건너뛰기 · 출생 시간 모름
+          {messages.onboarding.skipTimeButtonLabel}
         </label>
       </div>
     </div>

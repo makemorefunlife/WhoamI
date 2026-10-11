@@ -21,6 +21,7 @@ import {
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import BirthPlaceSelector from "@/components/onboarding/BirthPlaceSelector";
 
 type Step = "date" | "time";
 
@@ -361,18 +362,15 @@ export default function BirthInputForm({
                 </p>
               )}
 
-              <label className="block space-y-1.5">
+              <div className="block space-y-1.5">
                 <span className="block text-center text-[10px] text-white/50">
                   {messages.onboarding.placeLabel} <span className="text-[#67B7FF]">*</span>
                 </span>
-                <input
-                  type="text"
+                <BirthPlaceSelector
                   value={birthPlace}
-                  onChange={(e) => setBirthPlace(e.target.value)}
-                  placeholder={messages.birthForm.placePlaceholder}
+                  onChange={(val) => setBirthPlace(val)}
                   disabled={busy}
-                  autoComplete="address-level2"
-                  className={`${inputClass} text-base`}
+                  theme="space"
                 />
                 <p className="text-center text-[10px] text-white/40">
                   {messages.birthForm.placeNeededHint}
@@ -382,7 +380,7 @@ export default function BirthInputForm({
                     {messages.onboarding.placeRequiredError}
                   </p>
                 ) : null}
-              </label>
+              </div>
 
               <div className="space-y-2 border-t border-white/10 pt-4">
                 <button

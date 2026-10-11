@@ -174,11 +174,16 @@ export default async function RootLayout({
     ReactDOM.prefetchDNS(clerkFapiOrigin);
   }
 
+  const manifestHref = locale === "ko-KR" ? "/api/manifest?lang=ko" : "/api/manifest?lang=en";
+
   return (
     <html
       lang={htmlLang}
       className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} ${manrope.variable} ${lora.variable} ${notoSansKr.variable} ${notoSerifKr.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="manifest" href={manifestHref} />
+      </head>
       <body className="min-h-full flex flex-col">
         {/* Google Tag Manager */}
         <Script id="gtm-script" strategy="afterInteractive">

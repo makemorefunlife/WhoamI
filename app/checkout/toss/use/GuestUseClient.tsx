@@ -274,11 +274,30 @@ function UseContent() {
     setBusy(true);
     setNotice("");
     setState((prev) => (prev ? { ...prev, status: "generating" } : prev));
-    const res = await fetch("/api/guest/personal/generate", { method: "POST" }).catch(() => null);
-    const body = (await res?.json().catch(() => ({}))) as { status?: string } | undefined;
-    setBusy(false);
-    if (body?.status === "in_progress") setNotice(t.generateInProgress);
-    else if (body?.status !== "generated") setNotice(t.generateFailed);
+    try {
+      const res = await fetch("/api/guest/personal/generate", { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as { status?: string; code?: string; message?: string } | undefined;
+      setBusy(false);
+      if (!res.ok || body?.status !== "generated") {
+        console.error("[GuestUseClient:generate] failed:", {
+          httpStatus: res.status,
+          statusText: res.statusText,
+          body,
+        });
+      }
+      if (body?.status === "in_progress") {
+        setNotice(t.generateInProgress);
+      } else if (body?.status === "generated") {
+        setNotice("");
+      } else {
+        const detailMsg = body?.code ? ` (${body.code})` : "";
+        setNotice(`${t.generateFailed}${detailMsg}`);
+      }
+    } catch (err) {
+      setBusy(false);
+      console.error("[GuestUseClient:generate] network or unexpected error:", err);
+      setNotice(t.generateFailed);
+    }
     await load();
   };
 

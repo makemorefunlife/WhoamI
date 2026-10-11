@@ -317,7 +317,8 @@ export default function StitchResultsDashboard({
         onGuestClick={isGuest ? requireAuthForFeature : undefined}
       />
 
-      <section className="rounded-extra-large border border-dashed border-outline-variant/50 bg-surface-container-low/40 px-6 py-8 text-center">
+      {/* 토스페이먼츠 심사 대비 준비 중(곧 만나요) 배너 임시 숨김 */}
+      {/* <section className="rounded-extra-large border border-dashed border-outline-variant/50 bg-surface-container-low/40 px-6 py-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
           {messages.report.comingSoon}
         </p>
@@ -327,7 +328,7 @@ export default function StitchResultsDashboard({
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant whitespace-pre-line">
           {messages.report.moreAnalysisBody}
         </p>
-      </section>
+      </section> */}
     </div>
   );
 }

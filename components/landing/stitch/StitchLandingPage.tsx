@@ -635,9 +635,11 @@ export default function StitchLandingPage({
                 {messages.footer.business.phoneLabel}:{" "}
                 {messages.footer.business.phone}
               </p>
-              <p className="text-on-primary/40">
-                {messages.footer.business.phoneNote}
-              </p>
+              {messages.footer.business.phoneNote ? (
+                <p className="text-on-primary/40">
+                  {messages.footer.business.phoneNote}
+                </p>
+              ) : null}
               <p>
                 {messages.footer.business.emailLabel}:{" "}
                 <a

@@ -140,6 +140,11 @@ function SuccessContent() {
             title={t.guestDoneTitle}
             body={view.deviceReady ? t.guestUse.successBodyDevice : view.emailSent ? t.guestUse.successBodySent : t.guestUse.successBodyPending}
           >
+            {view.maskedEmail ? (
+              <p className="mb-5 text-center text-xs text-[#4A5C52]/70 break-keep">
+                {t.guestPurchaseEmailMasked(view.maskedEmail)}
+              </p>
+            ) : null}
             <button
               type="button"
               className={primaryButton}

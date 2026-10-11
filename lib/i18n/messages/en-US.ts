@@ -1376,8 +1376,8 @@ export const messagesEnUS = {
       addressLabel: "Address",
       address: "5F, Ga-8, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, 06053, Republic of Korea",
       phoneLabel: "Phone",
-      phone: "+1 626-381-8420",
-      phoneNote: "We don't offer phone support. Please contact us by email.",
+      phone: "070-4571-9748",
+      phoneNote: "",
       emailLabel: "Email",
       email: "contact@ahaitsme.com",
       bizVerifyLabel: "Verify Business Registration",
@@ -1438,7 +1438,7 @@ export const messagesEnUS = {
     officerLabel: "Privacy Officer",
     officerName: "Sunghyun Hong",
     phoneLabel: "Phone",
-    phone: "+1 626-381-8420",
+    phone: "070-4571-9748",
     privacyPolicyLinkLabel: "Read our Privacy Policy",
     metaTitle: "Do Not Sell or Share My Personal Information | Aha It's me!",
     metaDescription:
@@ -1515,7 +1515,7 @@ export const messagesEnUS = {
     memberGrantedTitle: "Your pass is on your account",
     memberGrantedBody: "Add the details we need and get started.",
     startAnalysisCta: "Get started",
-    guestDoneTitle: "Your purchase is complete",
+    guestDoneTitle: "Purchase complete!",
     guestDoneBodyEmailSent: "We emailed you how to use your pass. Sign up or log in with your purchase email to link it.",
     guestDoneBodyEmailPending: "Your purchase is complete. Use the button below to sign up or log in with your purchase email and link your pass.",
     guestLinkCta: "Sign up and link my pass",
@@ -1531,7 +1531,7 @@ export const messagesEnUS = {
     claimNewLinkRequested: "Request received. If this is a paid order, we'll send a new link to the purchase email. If it doesn't arrive within a few minutes, check your spam folder.",
     claimTestNotAllowedBody: "On the public site, test payments become a pass only for approved test accounts. No real charge was made.",
     guestPurchaseEmailMasked: (email: string) =>
-      `Purchase email: ${email}`,
+      `Confirmation email: ${email}`,
     claimSignedOutBody: (email: string) =>
       `Sign up or sign in with ${email} and verify it, and your pass will be linked to your account.`,
     accountLink: {
@@ -1575,10 +1575,10 @@ export const messagesEnUS = {
     },
     guestUse: {
       modalDescription: "After payment, we'll email you how to use it. Confirm with your purchase email (link or code) to use it without an account, and save the result to an account if you like.",
-      successBodySent: "Confirm with the link or code in your purchase email and you can start right away.",
-      successBodyPending: "Get a code at your purchase email and confirm it to start right away.",
-      successBodyDevice: "You can start now. On another device, continue from the link in your purchase email.",
-      useCtaFromSuccess: "Get started",
+      successBodySent: "Check your analysis now.",
+      successBodyPending: "Check your analysis now.",
+      successBodyDevice: "Check your analysis now.",
+      useCtaFromSuccess: "Start now",
       verifyTitle: "Confirm your purchase email",
       verifyBody: "Confirm with the link or code from your purchase email to start. We won't ask again on this device for 7 days.",
       startOnDevice: "Start on this device",
@@ -1697,6 +1697,13 @@ export const messagesEnUS = {
     heading: "Birth date, time & place",
     subtitle:
       "Used for Saju and astrology interpretation. You can skip what you don't know.",
+    eyebrow: "Birth details",
+    dateLabel: "Date of birth",
+    timeLabel: "Time of birth",
+    placeLabel: "Place of birth",
+    yearLabel: "Year",
+    monthLabel: "Month",
+    dayLabel: "Day",
     dateConfirmed: (date: string) => `${date} — confirmed`,
     dateIncomplete: "Please enter year, month, and day.",
     timeUnknownNotice: "Birth time unknown — calculated using noon as default.",
@@ -1712,6 +1719,9 @@ export const messagesEnUS = {
     enterPlaceManually: "Enter place manually",
     skipPlace: "Skip place",
     placePlaceholder: "e.g., Los Angeles, CA or New York, NY",
+    placeSelectPrompt: "Select region / city",
+    placeSearchPrompt: "Search city (e.g. New York, London, Tokyo)…",
+    placeSearchNoResults: "No matching standard city found",
   },
   relationshipDrilldown: {
     romantic: {
@@ -3651,6 +3661,13 @@ export type MessageCatalog = {
   birthForm: {
     heading: string;
     subtitle: string;
+    eyebrow: string;
+    dateLabel: string;
+    timeLabel: string;
+    placeLabel: string;
+    yearLabel: string;
+    monthLabel: string;
+    dayLabel: string;
     dateConfirmed: (date: string) => string;
     dateIncomplete: string;
     timeUnknownNotice: string;
@@ -3664,6 +3681,9 @@ export type MessageCatalog = {
     enterPlaceManually: string;
     skipPlace: string;
     placePlaceholder: string;
+    placeSelectPrompt: string;
+    placeSearchPrompt: string;
+    placeSearchNoResults: string;
   };
   relationshipDrilldown: {
     romantic: {

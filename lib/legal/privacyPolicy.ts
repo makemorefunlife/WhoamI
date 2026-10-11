@@ -169,7 +169,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         paragraphs: [
           "Name: Sunghyun Hong",
           "Email: contact@ahaitsme.com",
-          "Phone: +1 626-381-8420",
+          "Phone: 070-4571-9748",
         ],
       },
       {
@@ -326,7 +326,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         paragraphs: [
           "성명: 홍성현 (Sunghyun Hong)",
           "이메일: contact@ahaitsme.com",
-          "전화: +1 626-381-8420",
+          "전화: 070-4571-9748",
         ],
       },
       {

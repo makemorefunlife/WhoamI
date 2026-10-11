@@ -479,7 +479,8 @@ export default function DecisionJournalContent() {
           </div>
         </section>
 
-        <DecideWithAiComingSoon />
+        {/* 토스페이먼츠 심사 대비 준비 중 배너 임시 숨김 */}
+        {/* <DecideWithAiComingSoon /> */}
       </div>
 
       <DecisionReviewSheet

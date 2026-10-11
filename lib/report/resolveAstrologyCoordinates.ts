@@ -110,6 +110,29 @@ function lookupPlaceCoordinates(
   const normalized = normalizeBirthPlaceKey(birthPlace);
   if (!normalized) return null;
 
+  // 1. Exact match on raw trimmed key or normalized key
+  const trimmed = birthPlace.trim().toLowerCase();
+  for (const entry of PLACE_COORDINATES) {
+    if (entry.label.toLowerCase() === trimmed) {
+      return { entry, matchedKey: entry.label };
+    }
+    for (const key of entry.keys) {
+      if (key.toLowerCase() === trimmed) {
+        return { entry, matchedKey: key };
+      }
+    }
+  }
+
+  for (const entry of PLACE_COORDINATES) {
+    for (const key of entry.keys) {
+      const nk = normalizeBirthPlaceKey(key);
+      if (nk && nk === normalized) {
+        return { entry, matchedKey: key };
+      }
+    }
+  }
+
+  // 2. Partial substring match (fallback)
   let best: { entry: PlaceEntry; matchedKey: string; score: number } | null =
     null;
 
@@ -117,7 +140,7 @@ function lookupPlaceCoordinates(
     for (const key of entry.keys) {
       const nk = normalizeBirthPlaceKey(key);
       if (!nk) continue;
-      if (normalized === nk || normalized.includes(nk) || nk.includes(normalized)) {
+      if (normalized.includes(nk) || nk.includes(normalized)) {
         const score = nk.length;
         if (!best || score > best.score) {
           best = { entry, matchedKey: key, score };
@@ -235,3 +258,56 @@ export function birthCoordinatesPatchFromPlace(
     birth_timezone: resolved.timezone,
   };
 }
+
+export type SupportedPlaceOption = {
+  value: string;
+  labelKo: string;
+  labelEn: string;
+  latitude: number;
+  longitude: number;
+  timezone: number;
+};
+
+/**
+ * 17 Korean administrative regions (특별시·광역시·특별자치시·도·특별자치도)
+ */
+export const KOREAN_REGIONS: readonly SupportedPlaceOption[] = [
+  { value: "서울", labelKo: "서울", labelEn: "Seoul", latitude: 37.5665, longitude: 126.978, timezone: 9 },
+  { value: "경기", labelKo: "경기", labelEn: "Gyeonggi", latitude: 37.4138, longitude: 127.5183, timezone: 9 },
+  { value: "인천", labelKo: "인천", labelEn: "Incheon", latitude: 37.4563, longitude: 126.7052, timezone: 9 },
+  { value: "부산", labelKo: "부산", labelEn: "Busan", latitude: 35.1796, longitude: 129.0756, timezone: 9 },
+  { value: "대구", labelKo: "대구", labelEn: "Daegu", latitude: 35.8714, longitude: 128.6014, timezone: 9 },
+  { value: "광주", labelKo: "광주", labelEn: "Gwangju", latitude: 35.1595, longitude: 126.8526, timezone: 9 },
+  { value: "대전", labelKo: "대전", labelEn: "Daejeon", latitude: 36.3504, longitude: 127.3845, timezone: 9 },
+  { value: "울산", labelKo: "울산", labelEn: "Ulsan", latitude: 35.5384, longitude: 129.3114, timezone: 9 },
+  { value: "세종", labelKo: "세종", labelEn: "Sejong", latitude: 36.4801, longitude: 127.289, timezone: 9 },
+  { value: "강원", labelKo: "강원", labelEn: "Gangwon", latitude: 37.8228, longitude: 128.1555, timezone: 9 },
+  { value: "충북", labelKo: "충북", labelEn: "Chungbuk", latitude: 36.8, longitude: 127.7, timezone: 9 },
+  { value: "충남", labelKo: "충남", labelEn: "Chungnam", latitude: 36.5184, longitude: 126.8, timezone: 9 },
+  { value: "전북", labelKo: "전북", labelEn: "Jeonbuk", latitude: 35.7175, longitude: 127.153, timezone: 9 },
+  { value: "전남", labelKo: "전남", labelEn: "Jeonnam", latitude: 34.8679, longitude: 126.991, timezone: 9 },
+  { value: "경북", labelKo: "경북", labelEn: "Gyeongbuk", latitude: 36.4919, longitude: 128.8889, timezone: 9 },
+  { value: "경남", labelKo: "경남", labelEn: "Gyeongnam", latitude: 35.4606, longitude: 128.2132, timezone: 9 },
+  { value: "제주", labelKo: "제주", labelEn: "Jeju", latitude: 33.4996, longitude: 126.5312, timezone: 9 },
+] as const;
+
+/**
+ * Standard Global Cities supported for astrological mapping in EN locale
+ */
+export const GLOBAL_CITIES: readonly SupportedPlaceOption[] = [
+  { value: "New York, NY", labelKo: "뉴욕", labelEn: "New York, NY, USA", latitude: 40.7128, longitude: -74.006, timezone: -5 },
+  { value: "Los Angeles, CA", labelKo: "로스앤젤레스", labelEn: "Los Angeles, CA, USA", latitude: 34.0522, longitude: -118.2437, timezone: -8 },
+  { value: "San Francisco, CA", labelKo: "샌프란시스코", labelEn: "San Francisco, CA, USA", latitude: 37.7749, longitude: -122.4194, timezone: -8 },
+  { value: "London, UK", labelKo: "런던", labelEn: "London, UK", latitude: 51.5074, longitude: -0.1278, timezone: 0 },
+  { value: "Paris, France", labelKo: "파리", labelEn: "Paris, France", latitude: 48.8566, longitude: 2.3522, timezone: 1 },
+  { value: "Tokyo, Japan", labelKo: "도쿄", labelEn: "Tokyo, Japan", latitude: 35.6762, longitude: 139.6503, timezone: 9 },
+  { value: "Osaka, Japan", labelKo: "오사카", labelEn: "Osaka, Japan", latitude: 34.6937, longitude: 135.5023, timezone: 9 },
+  { value: "Seoul, South Korea", labelKo: "서울", labelEn: "Seoul, South Korea", latitude: 37.5665, longitude: 126.978, timezone: 9 },
+  { value: "Busan, South Korea", labelKo: "부산", labelEn: "Busan, South Korea", latitude: 35.1796, longitude: 129.0756, timezone: 9 },
+  { value: "Singapore", labelKo: "싱가포르", labelEn: "Singapore", latitude: 1.3521, longitude: 103.8198, timezone: 8 },
+  { value: "Hong Kong", labelKo: "홍콩", labelEn: "Hong Kong", latitude: 22.3193, longitude: 114.1694, timezone: 8 },
+  { value: "Taipei, Taiwan", labelKo: "타이베이", labelEn: "Taipei, Taiwan", latitude: 25.033, longitude: 121.5654, timezone: 8 },
+  { value: "Beijing, China", labelKo: "베이징", labelEn: "Beijing, China", latitude: 39.9042, longitude: 116.4074, timezone: 8 },
+  { value: "Shanghai, China", labelKo: "상하이", labelEn: "Shanghai, China", latitude: 31.2304, longitude: 121.4737, timezone: 8 },
+] as const;
+

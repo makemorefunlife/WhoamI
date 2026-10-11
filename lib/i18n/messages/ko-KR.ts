@@ -1306,8 +1306,8 @@ export const messagesKoKR: MessageCatalog = {
       // 2026-10-07 대표 요청으로 사업자등록 주소 표기(도로명 + 호수 + 참고항목)로 교체.
       address: "서울특별시 강남구 언주로134길 18, 5층 가8호(논현동, 신승빌딩)",
       phoneLabel: "전화번호",
-      phone: "+1 626-381-8420",
-      phoneNote: "전화 상담은 제공하지 않습니다. 문의는 이메일을 이용해주세요.",
+      phone: "070-4571-9748",
+      phoneNote: "",
       emailLabel: "이메일",
       email: "contact@ahaitsme.com",
       bizVerifyLabel: "사업자정보 확인",
@@ -1367,7 +1367,7 @@ export const messagesKoKR: MessageCatalog = {
     officerLabel: "개인정보 보호책임자",
     officerName: "홍성현 (Sunghyun Hong)",
     phoneLabel: "전화",
-    phone: "+1 626-381-8420",
+    phone: "070-4571-9748",
     privacyPolicyLinkLabel: "개인정보처리방침 보기",
     metaTitle: "개인정보 판매 또는 공유 거부 | Aha It's me!",
     metaDescription:
@@ -1443,7 +1443,7 @@ export const messagesKoKR: MessageCatalog = {
     memberGrantedTitle: "이용권이 계정에 추가됐어요",
     memberGrantedBody: "필요한 정보를 입력하고 시작해 보세요.",
     startAnalysisCta: "시작하기",
-    guestDoneTitle: "구매가 완료됐어요",
+    guestDoneTitle: "구매가 완료됐어요!",
     guestDoneBodyEmailSent: "구매 이메일로 이용 안내를 보냈어요. 구매 이메일로 가입하거나 로그인하면 이용권이 연결돼요.",
     guestDoneBodyEmailPending: "구매가 완료됐어요. 아래 버튼을 눌러 구매 이메일로 가입하거나 로그인하면 이용권이 연결돼요.",
     guestLinkCta: "가입하고 이용권 연결하기",
@@ -1459,7 +1459,7 @@ export const messagesKoKR: MessageCatalog = {
     claimNewLinkRequested: "요청을 접수했어요. 결제가 확인된 주문이라면 구매 이메일로 새 링크를 보내드려요. 몇 분 안에 오지 않으면 스팸함을 확인해 주세요.",
     claimTestNotAllowedBody:"공개 사이트의 테스트 결제는 허용된 테스트 계정에서만 이용권으로 연결돼요. 실제 청구는 없었어요.",
     guestPurchaseEmailMasked: (email: string) =>
-      `구매 이메일: ${email}`,
+      `안내 메일: ${email}`,
     claimSignedOutBody: (email: string) =>
       `${email}(으)로 가입하거나 로그인한 뒤 이메일 인증을 완료하면 이용권이 계정에 연결돼요.`,
     accountLink: {
@@ -1503,10 +1503,10 @@ export const messagesKoKR: MessageCatalog = {
     },
     guestUse: {
       modalDescription: "결제 후 구매 이메일로 이용 안내를 보내드려요. 구매 이메일 인증(메일 링크 또는 인증코드)만으로 회원가입 없이 이용할 수 있고, 원하면 결과를 계정에 저장할 수 있어요.",
-      successBodySent: "구매 이메일로 받은 링크나 인증코드로 확인하면 바로 시작할 수 있어요.",
-      successBodyPending: "구매 이메일로 인증코드를 받아 확인하면 바로 시작할 수 있어요.",
-      successBodyDevice: "지금 바로 시작할 수 있어요. 다른 기기에서는 구매 메일의 링크로 이어서 이용하세요.",
-      useCtaFromSuccess: "시작하기",
+      successBodySent: "지금 바로 확인해 보세요.",
+      successBodyPending: "지금 바로 확인해 보세요.",
+      successBodyDevice: "지금 바로 확인해 보세요.",
+      useCtaFromSuccess: "바로 시작하기",
       verifyTitle: "구매 이메일을 확인해 주세요",
       verifyBody: "구매 메일의 링크나 인증코드로 확인하면 시작할 수 있어요. 이 기기에서는 7일 동안 다시 묻지 않아요.",
       startOnDevice: "이 기기에서 시작하기",
@@ -1630,6 +1630,13 @@ export const messagesKoKR: MessageCatalog = {
   birthForm: {
     heading: "생년월일시 · 태어난 장소",
     subtitle: "사주와 점성 해석에 사용돼요. 모르는 항목은 건너뛸 수 있어요.",
+    eyebrow: "출생 정보",
+    dateLabel: "생년월일",
+    timeLabel: "태어난 시간",
+    placeLabel: "태어난 곳",
+    yearLabel: "연도",
+    monthLabel: "월",
+    dayLabel: "일",
     dateConfirmed: (date: string) => `${date} — 확인됐어요`,
     dateIncomplete: "연·월·일을 모두 입력해 주세요",
     timeUnknownNotice: "출생 시간 모름 — 12시 기준으로 계산해요.",
@@ -1643,7 +1650,10 @@ export const messagesKoKR: MessageCatalog = {
     placeNeededHint: "점성 차트에 필요해요. 사주(본질)은 지역과 무관해요.",
     enterPlaceManually: "장소 직접 입력하기",
     skipPlace: "장소 입력 안 함",
-    placePlaceholder: "예: 서울, 부산, 대구 등",
+    placePlaceholder: "지역을 선택해 주세요",
+    placeSelectPrompt: "시·도를 선택해 주세요",
+    placeSearchPrompt: "도시 검색 (예: 서울, 도쿄, 뉴욕 등)…",
+    placeSearchNoResults: "일치하는 도시가 없습니다",
   },
   relationshipDrilldown: {
     romantic: {

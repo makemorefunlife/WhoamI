@@ -11,6 +11,7 @@ import { getSurveyQuestions } from "@/lib/v2/survey/getSurveyQuestions";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
 import type { AmPm } from "@/lib/v2/onboarding/birthTime";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import BirthPlaceSelector from "@/components/onboarding/BirthPlaceSelector";
 
 function useFormStyles(theme: "space" | "stitch") {
   const isStitch = theme === "stitch";
@@ -92,7 +93,7 @@ function useManualRelationshipFormState({
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const birthBlockRef = useRef<HTMLDivElement>(null);
-  const placeRef = useRef<HTMLInputElement>(null);
+  const placeRef = useRef<HTMLDivElement>(null);
   const surveyRef = useRef<HTMLDivElement>(null);
   const { locale, messages } = useLocale();
   const surveyQuestions = useMemo(() => getSurveyQuestions(locale), [locale]);
@@ -289,18 +290,16 @@ export function ManualRelationshipFormFields({
         />
       </div>
 
-      <label className="block space-y-1">
+      <div ref={form.placeRef} className="block space-y-1">
         <span className={s.label}>{messages.onboarding.birthPlace}</span>
-        <input
-          ref={form.placeRef}
+        <BirthPlaceSelector
           value={form.birthPlace}
-          onChange={(e) => form.setBirthPlace(e.target.value)}
+          onChange={(val) => form.setBirthPlace(val)}
           disabled={busy || form.birthPlaceUnknown}
           className={s.input}
-          placeholder={messages.relationshipForm.birthPlacePlaceholder}
-          aria-invalid={form.attemptedSubmit && !form.birthPlaceUnknown && form.birthPlace.trim().length < 1}
+          theme={theme}
         />
-      </label>
+      </div>
 
       <label className={`flex items-center gap-2 ${s.check}`}>
         <input

@@ -99,7 +99,7 @@ export default function StitchAppFooter() {
           <p>
             {biz.phoneLabel}: {biz.phone}
           </p>
-          <p className="text-on-primary/45">{biz.phoneNote}</p>
+          {biz.phoneNote ? <p className="text-on-primary/45">{biz.phoneNote}</p> : null}
           <p>
             {biz.emailLabel}:{" "}
             <a href={`mailto:${biz.email}`} className="underline underline-offset-2 hover:text-on-primary">
