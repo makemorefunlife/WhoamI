@@ -13,6 +13,7 @@ import RegenerateConfirmDialog from "@/components/relationship/detail/Regenerate
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
 import PremiumSourceBar from "@/components/relationship/detail/PremiumSourceBar";
+import MadeWithInfoNote from "@/components/common/MadeWithInfoNote";
 import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { relationshipBasicFeedbackContext } from "@/lib/feedback/feedbackContext";
@@ -102,6 +103,7 @@ export default function RelationshipView({
     premiumSource,
     premiumSources,
     premiumReportId,
+    premiumGeneratedWith,
     selectPremiumSource,
     showRegenerateConfirm,
     cancelRegeneratePremium,
@@ -420,6 +422,15 @@ export default function RelationshipView({
               onSelect={selectPremiumSource}
               onCreateOwn={() => void runPremium(premiumKind, { createOwn: true })}
             />
+          ) : null}
+
+          {!viewingBasicSurface && premiumReady && premiumSource && !showGeneratingPanel ? (
+            <div className="mt-2">
+              <MadeWithInfoNote
+                generatedAt={premiumGeneratedWith.generatedAt}
+                inputsChanged={premiumGeneratedWith.inputsChanged}
+              />
+            </div>
           ) : null}
 
           {!viewingBasicSurface ? (

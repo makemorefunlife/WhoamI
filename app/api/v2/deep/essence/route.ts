@@ -6,6 +6,13 @@ import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { readPersonalDeepRows, savePersonalDeepAnalysis } from "@/lib/report/reportAnalyses";
 import { decidePersonalDeepPost, decidePersonalDeepView } from "@/lib/report/personalDeepEssenceView";
+import {
+  buildInputSnapshot,
+  describeSnapshot,
+  loadReportInputFacts,
+  type InputSnapshot,
+} from "@/lib/report/inputSnapshot";
+import { getCurrentSelfProfileForReport } from "@/lib/relationship/surveyPatterns";
 import { runPersonalDeepEssenceGeneration } from "@/lib/report/personalDeepEssenceGeneration";
 import type {
   CurrentSelfProfile,
@@ -87,7 +94,21 @@ export async function GET(req: Request) {
         return NextResponse.json({ ok: true, locale, state: "in_progress", otherLocales: view.otherLocales }, { headers });
       }
     }
-    return NextResponse.json({ ok: true, locale, ...view }, { headers });
+    // "Made with the info at that time" -- and whether it changed since.
+    let generatedWith: { generatedAt: string | null; inputsChanged: boolean | null } = {
+      generatedAt: null,
+      inputsChanged: null,
+    };
+    if (view.state === "ready" || view.state === "legacy_unknown") {
+      const facts = view.snapshot ? await loadReportInputFacts(supabase, reportId) : null;
+      generatedWith = describeSnapshot(
+        view.snapshot as InputSnapshot | null,
+        facts ? [facts] : null,
+      );
+    }
+    const { snapshot: _omit, ...publicView } = view as typeof view & { snapshot?: unknown };
+    void _omit;
+    return NextResponse.json({ ok: true, locale, ...publicView, generatedWith }, { headers });
   } catch (e) {
     logServerError("v2/deep/essence:get", e, "internal_error");
     return NextResponse.json({ error: "request failed" }, { status: 500 });
@@ -185,6 +206,19 @@ export async function POST(req: Request) {
         }
       }
 
+      // Generate from the SAVED profile (not the browser copy) and remember
+      // which inputs were used (fingerprint only).
+      const facts = await loadReportInputFacts(supabase, reportId);
+      const dbProfile = await getCurrentSelfProfileForReport(supabase, reportId);
+      const inputs = {
+        birthDate: facts?.birth_date?.trim() || birthDate,
+        birthTime: facts?.birth_date ? (facts.birth_time ?? null) : (body.birthTime ?? null),
+        birthTimeUnknown: facts?.birth_date ? !facts.birth_time : body.birthTimeUnknown === true,
+        birthPlace: facts?.birth_date ? (facts.birth_place ?? null) : (body.birthPlace ?? null),
+        dbProfile,
+        snapshot: facts ? buildInputSnapshot([facts]) : null,
+      };
+
       const outcome = await runPersonalDeepEssenceGeneration({
         reserveCredit: userId
           ? async () => {
@@ -206,12 +240,14 @@ export async function POST(req: Request) {
           : null,
         generate: () =>
           runSlimIntegratedReport({
-            birthDate,
-            birthTime: body.birthTime ?? null,
-            birthTimeUnknown: body.birthTimeUnknown === true,
-            birthPlace: body.birthPlace ?? null,
-            surveyAnswers: body.surveyAnswers ?? null,
-            currentSelfProfile: body.currentSelfProfile ?? null,
+            // Saved info (DB) first; the request body only fills what the
+            // server does not have yet (e.g. dev without a saved survey).
+            birthDate: inputs.birthDate,
+            birthTime: inputs.birthTime,
+            birthTimeUnknown: inputs.birthTimeUnknown,
+            birthPlace: inputs.birthPlace,
+            surveyAnswers: inputs.dbProfile ? null : (body.surveyAnswers ?? null),
+            currentSelfProfile: inputs.dbProfile ?? body.currentSelfProfile ?? null,
             locale,
           }),
         stillOwnsLock: () =>
@@ -220,8 +256,12 @@ export async function POST(req: Request) {
           savePersonalDeepAnalysis(supabase, {
             reportId,
             locale,
-            content: JSON.stringify({ locale, slim_v1 }),
-            metadata: { locale, has_survey: Boolean(body.surveyAnswers || body.currentSelfProfile) },
+            content: JSON.stringify({ locale, slim_v1, input_snapshot: inputs.snapshot }),
+            metadata: {
+              locale,
+              has_survey: Boolean(inputs.dbProfile || body.surveyAnswers || body.currentSelfProfile),
+              input_snapshot: inputs.snapshot,
+            },
             reason: first.reason,
           }),
         consumeCredit: () => consumeCredit(supabase, generationRequestId),

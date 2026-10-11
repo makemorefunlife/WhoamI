@@ -4,6 +4,10 @@ export const messagesEnUS = {
     close: "Close",
     creating: "Creating…",
     preparing: "Preparing…",
+    madeWithInfoNote: (date: string) => `Made on ${date} with the info you had then.`,
+    madeWithInfoGeneric: "Made with the info you had at the time.",
+    infoChangedSince:
+      "Your info has changed since. This report is kept as it is. To see the new info, you can make a new one (uses 1 credit).",
   },
   nav: {
     home: "Home",
@@ -2338,6 +2342,9 @@ export type MessageCatalog = {
     close: string;
     creating: string;
     preparing: string;
+    madeWithInfoNote: (date: string) => string;
+    madeWithInfoGeneric: string;
+    infoChangedSince: string;
   };
   nav: {
     home: string;

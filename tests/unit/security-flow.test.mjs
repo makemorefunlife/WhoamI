@@ -378,7 +378,8 @@ async function run() {
     const insertIdx = postSrc.indexOf(".insert({");
     assert.ok(authIdx >= 0 && rateIdx > authIdx && ownIdx > rateIdx && insertIdx > ownIdx);
     assert.match(src, /enforceRateLimit\("survey_read"/);
-    assert.match(src, /enforceRateLimit\("survey_delete"/);
+    // 2026-10-11: DELETE is retired (410, nothing deleted; redo appends).
+    assert.match(src, /survey_delete_retired/);
     assert.ok(!/survey_persist/.test(src));
     ok("survey POST: auth → rate limit → ownership → insert");
     ok("survey GET/POST/DELETE use split rate-limit buckets");

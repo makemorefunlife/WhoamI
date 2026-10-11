@@ -1,6 +1,15 @@
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 
+/** Input snapshot saved with new reports (lib/report/inputSnapshot.ts); kept loose here so this stays client-safe. */
+export type StoredSnapshot = { v: 1; captured_at: string; fp: string; has_survey: boolean[] };
+
+function readSnapshot(raw: unknown): StoredSnapshot | null {
+  const s = raw as Partial<StoredSnapshot> | null | undefined;
+  if (!s || s.v !== 1 || typeof s.fp !== "string" || typeof s.captured_at !== "string") return null;
+  return { v: 1, fp: s.fp, captured_at: s.captured_at, has_survey: Array.isArray(s.has_survey) ? s.has_survey : [] };
+}
+
 /**
  * Personal deep report -- what the reader sees for ONE language, decided from
  * the saved rows only (no generation, no credit). Pure, so the rules are
@@ -30,12 +39,14 @@ export type ParsedDeepEssence =
       /** Recorded language, or null when the row never recorded one. */
       locale: "ko-KR" | "en-US" | null;
       structuredDropped: boolean;
+      /** Inputs the report was made from (new reports only). */
+      snapshot: StoredSnapshot | null;
     }
   | { ok: false; reason: "none" | "invalid_json" | "no_report" | "placeholder_fallback" };
 
 export function parseStoredDeepEssence(stored: string | null | undefined): ParsedDeepEssence {
   if (!stored) return { ok: false, reason: "none" };
-  let parsed: { locale?: unknown; slim_v1?: SlimV1ReportResult | null };
+  let parsed: { locale?: unknown; slim_v1?: SlimV1ReportResult | null; input_snapshot?: unknown };
   try {
     parsed = JSON.parse(stored);
   } catch {
@@ -47,11 +58,12 @@ export function parseStoredDeepEssence(stored: string | null | undefined): Parse
   }
   if (slim.llm_source === "fallback") return { ok: false, reason: "placeholder_fallback" };
   const locale = parsed.locale === "ko-KR" || parsed.locale === "en-US" ? parsed.locale : null;
+  const snapshot = readSnapshot(parsed.input_snapshot);
   const structured = slim.structured;
   if (structured == null || isDeepEssenceStructuredReport(structured)) {
-    return { ok: true, slim_v1: slim, locale, structuredDropped: false };
+    return { ok: true, slim_v1: slim, locale, structuredDropped: false, snapshot };
   }
-  return { ok: true, slim_v1: { ...slim, structured: null }, locale, structuredDropped: true };
+  return { ok: true, slim_v1: { ...slim, structured: null }, locale, structuredDropped: true, snapshot };
 }
 
 export type PersonalDeepView =
@@ -61,11 +73,13 @@ export type PersonalDeepView =
       /** "locale" = per-language row; "legacy" = old single row recorded in this language. */
       source: "locale" | "legacy";
       otherLocales: Array<"ko-KR" | "en-US">;
+      snapshot: StoredSnapshot | null;
     }
   | {
       state: "legacy_unknown";
       slim_v1: SlimV1ReportResult;
       otherLocales: Array<"ko-KR" | "en-US">;
+      snapshot: StoredSnapshot | null;
     }
   | {
       state: "not_generated";
@@ -87,12 +101,12 @@ export function decidePersonalDeepView(input: {
   const otherLocales: Array<"ko-KR" | "en-US"> = [];
   if (otherRow.ok || (legacy.ok && legacy.locale === other)) otherLocales.push(other);
 
-  if (own.ok) return { state: "ready", slim_v1: own.slim_v1, source: "locale", otherLocales };
+  if (own.ok) return { state: "ready", slim_v1: own.slim_v1, source: "locale", otherLocales, snapshot: own.snapshot };
   if (legacy.ok && legacy.locale === locale) {
-    return { state: "ready", slim_v1: legacy.slim_v1, source: "legacy", otherLocales };
+    return { state: "ready", slim_v1: legacy.slim_v1, source: "legacy", otherLocales, snapshot: legacy.snapshot };
   }
   if (legacy.ok && legacy.locale === null) {
-    return { state: "legacy_unknown", slim_v1: legacy.slim_v1, otherLocales };
+    return { state: "legacy_unknown", slim_v1: legacy.slim_v1, otherLocales, snapshot: legacy.snapshot };
   }
   return { state: "not_generated", otherLocales };
 }

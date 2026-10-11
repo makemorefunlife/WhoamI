@@ -155,6 +155,8 @@ export async function completeInviteOrConnectSignup(params: {
         birthPlaceUnknown: draft.birthPlaceUnknown,
         birthLatitude: draft.birthPlaceUnknown ? unknownFallback.latitude : undefined,
         birthLongitude: draft.birthPlaceUnknown ? unknownFallback.longitude : undefined,
+        // An existing profile's saved birth data is never overwritten here.
+        onlyIfEmpty: true,
       }),
     });
     const body = (await res.json().catch(() => ({}))) as { error?: string };

@@ -67,6 +67,7 @@ import {
   getRelationshipPremiumSaveFailedMessage,
 } from "@/lib/relationship/relationshipPremiumGuard";
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
+import { buildInputSnapshot, loadReportInputFacts } from "@/lib/report/inputSnapshot";
 import {
   decidePremiumPost,
   loadPremiumAccess,
@@ -310,6 +311,13 @@ export async function POST(req: Request) {
     }
     const saveReason: "first_generation" | "user_regenerate" =
       "generate" in decision ? decision.generate : "first_generation";
+    // Which inputs this generation uses (both people, fingerprint only).
+    const [factsA, factsB] = await Promise.all([
+      loadReportInputFacts(supabase, rr.report_id_a),
+      loadReportInputFacts(supabase, rr.report_id_b),
+    ]);
+    const inputSnapshot = factsA && factsB ? buildInputSnapshot([factsA, factsB]) : null;
+
     /** Saves the result as the VIEWER's own report (never the legacy row, never the partner's). */
     const saveMine = async (payload: unknown) => {
       const { error } = await saveOwnedRelationshipPremium(supabase, {
@@ -320,6 +328,7 @@ export async function POST(req: Request) {
         locale,
         payload,
         reason: saveReason,
+        inputSnapshot,
       });
       if (!error) {
         // Unchanged side effect of the old merge: remember the last kind.
@@ -668,6 +677,7 @@ export async function POST(req: Request) {
         romanticPayload,
         locale,
         reason: saveReason,
+        inputSnapshot,
       });
 
       if (!persist.ok) {

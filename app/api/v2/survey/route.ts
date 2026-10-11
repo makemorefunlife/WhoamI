@@ -7,7 +7,6 @@ import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/typ
 import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 import { invalidatePersonCoreBlueprint } from "@/lib/personCore";
-import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -72,7 +71,8 @@ export async function GET(req: Request) {
       .from("survey_responses")
       .select("answers")
       .eq("report_id", idCheck.value)
-      .order("id", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false }) // uuid ids are random: newest = created_at
       .limit(1)
       .maybeSingle();
 
@@ -279,7 +279,6 @@ export async function POST(req: Request) {
 
     await Promise.all([
       invalidatePersonCoreBlueprint(idCheck.value, supabase),
-      invalidateRelationshipPremiumsForReport(supabase, idCheck.value),
     ]);
 
     return NextResponse.json({ ok: true });
@@ -292,53 +291,10 @@ export async function POST(req: Request) {
   }
 }
 
-/** DELETE ?reportId= — 설문 다시하기 */
-export async function DELETE(req: Request) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-    }
-
-    const idCheck = requireUuid(
-      new URL(req.url).searchParams.get("reportId"),
-      "reportId",
-    );
-    if (!idCheck.ok) return idCheck.response;
-
-    const limited = await enforceRateLimit("survey_delete", userId);
-    if (!limited.ok) return rateLimitResponse(limited);
-
-    const supabase = createRouteSupabaseClient();
-    if (!supabase) return supabaseConfigErrorResponse();
-    const access = await assertOwnedReportAccess(
-      supabase,
-      idCheck.value,
-      userId,
-    );
-    if (access.error) return access.error;
-
-    const { error } = await supabase
-      .from("survey_responses")
-      .delete()
-      .eq("report_id", idCheck.value);
-
-    if (error) {
-      logServerError("v2/survey DELETE", error);
-      return NextResponse.json({ error: "delete failed" }, { status: 500 });
-    }
-
-    await Promise.all([
-      invalidatePersonCoreBlueprint(idCheck.value, supabase),
-      invalidateRelationshipPremiumsForReport(supabase, idCheck.value),
-    ]);
-
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    logServerError("v2/survey DELETE", e);
-    return NextResponse.json(
-      { error: clientSafeErrorMessage(e, "delete failed") },
-      { status: 500 },
-    );
-  }
+/**
+ * DELETE — retired (2026-10-11). "설문 다시하기" now appends a new answer set
+ * (the newest one is used; older ones are kept), so nothing is deleted.
+ */
+export async function DELETE() {
+  return NextResponse.json({ error: "gone", code: "survey_delete_retired" }, { status: 410 });
 }

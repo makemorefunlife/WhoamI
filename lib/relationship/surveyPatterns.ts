@@ -17,7 +17,8 @@ export async function getSurveyAnswersForReport(
     .from("survey_responses")
     .select("answers")
     .eq("report_id", reportId)
-    .order("id", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1);
 
   if (error) {
@@ -69,6 +70,10 @@ function isValidCurrentSelfProfile(
 export function currentSelfProfileFromSurveyAnswers(
   answers: Record<string, unknown>,
 ): CurrentSelfProfile | null {
+  // A skipped survey (manual partner "설문 건너뛰기") stores a neutral 50
+  // placeholder profile. It is NOT survey data and must never be read as
+  // one (2026-10-11): no survey -> null.
+  if (answers.survey_skipped === true) return null;
   const embedded = answers.v2_profile;
   if (embedded && typeof embedded === "object" && !Array.isArray(embedded)) {
     const profile = normalizeCurrentSelfProfile(embedded as CurrentSelfProfile);

@@ -33,6 +33,7 @@ type ViewResponse = {
   state?: "ready" | "legacy_unknown" | "not_generated" | "in_progress";
   slim_v1?: SlimV1ReportResult;
   otherLocales?: string[];
+  generatedWith?: { generatedAt: string | null; inputsChanged: boolean | null };
   error?: string;
   in_progress?: boolean;
 };
@@ -48,6 +49,10 @@ export function useSlimV1Integrated(
   const [status, setStatus] = useState<PersonalDeepStatus>("idle");
   const [data, setData] = useState<EssenceDeepPreviewResponse | null>(null);
   const [otherLocales, setOtherLocales] = useState<string[]>([]);
+  const [generatedWith, setGeneratedWith] = useState<{ generatedAt: string | null; inputsChanged: boolean | null }>({
+    generatedAt: null,
+    inputsChanged: null,
+  });
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 402 from the generate POST: no usable credit for this language.
@@ -65,6 +70,7 @@ export function useSlimV1Integrated(
 
   const applyView = useCallback((json: ViewResponse) => {
     setOtherLocales(json.otherLocales ?? []);
+    setGeneratedWith(json.generatedWith ?? { generatedAt: null, inputsChanged: null });
     if ((json.state === "ready" || json.state === "legacy_unknown") && json.slim_v1?.report) {
       setData({ ok: true, slim_v1: json.slim_v1 });
       setStatus(json.state);
@@ -150,6 +156,7 @@ export function useSlimV1Integrated(
         }
         setData({ ok: true, slim_v1: json.slim_v1 });
         setStatus("ready");
+        void refresh({ quiet: true });
       } catch (e) {
         setError(e instanceof Error ? e.message : messages.errors.analysisFailed);
       } finally {
@@ -172,6 +179,8 @@ export function useSlimV1Integrated(
     status,
     data,
     otherLocales,
+    /** When the shown report was made and whether my info changed since. */
+    generatedWith,
     /** True while this tab's own generate POST is running. */
     loading: generating,
     inProgress: status === "in_progress",

@@ -137,6 +137,7 @@ export type UseRelationshipDetailReturn = {
   premiumSources: string[];
   /** Id of the shown copy (mine/shared); null for legacy. */
   premiumReportId: string | null;
+  premiumGeneratedWith: { generatedAt: string | null; inputsChanged: boolean | null };
   selectPremiumSource: (source: string) => void;
   regeneratePremium: () => void;
   showRegenerateConfirm: boolean;
@@ -186,6 +187,10 @@ export function useRelationshipDetail({
   const [premiumSource, setPremiumSource] = useState<string | null>(null);
   const [premiumSources, setPremiumSources] = useState<string[]>([]);
   const [premiumReportId, setPremiumReportId] = useState<string | null>(null);
+  const [premiumGeneratedWith, setPremiumGeneratedWith] = useState<{
+    generatedAt: string | null;
+    inputsChanged: boolean | null;
+  }>({ generatedAt: null, inputsChanged: null });
   const { locale, messages, href } = useLocale();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
@@ -427,6 +432,11 @@ export function useRelationshipDetail({
           setPremiumSources(Array.isArray(sources) ? sources : []);
           setPremiumSource(typeof data.premium_source === "string" ? data.premium_source : null);
           setPremiumReportId(typeof data.premium_report_id === "string" ? data.premium_report_id : null);
+          setPremiumGeneratedWith(
+            data.premium_generated_with && typeof data.premium_generated_with === "object"
+              ? data.premium_generated_with
+              : { generatedAt: null, inputsChanged: null },
+          );
         }
         setBasic((data.perspective_basic ?? null) as RelationshipPerspective);
         setPremium(
@@ -1114,6 +1124,7 @@ export function useRelationshipDetail({
     premiumSource,
     premiumSources,
     premiumReportId,
+    premiumGeneratedWith,
     selectPremiumSource,
   };
 }

@@ -38,7 +38,8 @@ export async function isV2SurveyCompleteForReport(
     .from("survey_responses")
     .select("answers")
     .eq("report_id", reportId)
-    .order("id", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1);
 
   if (error) {

@@ -19,6 +19,7 @@ import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { PwaReportActionCard } from "@/components/account/InstallAppButton";
+import MadeWithInfoNote from "@/components/common/MadeWithInfoNote";
 
 function EssenceDeepContent() {
   const router = useRouter();
@@ -59,6 +60,7 @@ function EssenceDeepContent() {
     status,
     data,
     otherLocales,
+    generatedWith,
     loading,
     inProgress,
     error,
@@ -172,6 +174,13 @@ function EssenceDeepContent() {
               {g.generateCta}
             </button>
           </div>
+        ) : null}
+
+        {data && (status === "ready" || status === "legacy_unknown") ? (
+          <MadeWithInfoNote
+            generatedAt={generatedWith.generatedAt}
+            inputsChanged={generatedWith.inputsChanged}
+          />
         ) : null}
 
         {noSurvey ? (

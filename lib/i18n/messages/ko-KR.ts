@@ -7,6 +7,10 @@ export const messagesKoKR: MessageCatalog = {
     close: "닫기",
     creating: "만드는 중…",
     preparing: "준비하는 중…",
+    madeWithInfoNote: (date: string) => `${date}에 그때의 정보로 만든 보고서예요.`,
+    madeWithInfoGeneric: "만들 당시의 정보로 만든 보고서예요.",
+    infoChangedSince:
+      "그 뒤로 정보가 바뀌었어요. 이 보고서는 그대로 보관돼요. 새 정보로 보려면 새로 만들 수 있어요(이용권 1회).",
   },
   nav: {
     home: "홈",
