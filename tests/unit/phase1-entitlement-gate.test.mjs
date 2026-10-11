@@ -60,7 +60,7 @@ function readSrc(relPath) {
 
 section("A. Relationship route no longer gates on the disconnected PREMIUM_PAYWALL checks");
 {
-  const routePath = "app/api/relationship/analyze/premium/route.ts";
+  const routePath = "lib/relationship/premiumGenerationHandler.ts";
   const src = readSrc(routePath);
 
   // The route keeps an explanatory comment naming both removed checks (why
@@ -115,13 +115,14 @@ section("A. Relationship route no longer gates on the disconnected PREMIUM_PAYWA
 
 section("B. analysis_type is set to premium as a side effect of a successful reservation, not a precondition for it");
 {
-  const routePath = "app/api/relationship/analyze/premium/route.ts";
+  const routePath = "lib/relationship/premiumGenerationHandler.ts";
   const src = readSrc(routePath);
 
-  const reserveIdx = src.indexOf("reserveRelationshipCredit(supabase,");
+  // 2026-10-11: the handler pays through the requester (member = reserveRelationshipCredit).
+  const reserveIdx = src.indexOf("requester.reserve(supabase,");
   const insufficientIdx = src.indexOf("errors.insufficientCredit");
   const markPremiumIdx = src.indexOf('analysis_type: "premium"');
-  const consumeIdx = src.indexOf("consumeRelationshipCredit(supabase, generationRequestId)");
+  const consumeIdx = src.indexOf("requester.consume(supabase, generationRequestId)");
 
   assert.ok(reserveIdx !== -1, "reserveRelationshipCredit call must be present");
   assert.ok(insufficientIdx !== -1, "402 insufficientCredit response must be present");

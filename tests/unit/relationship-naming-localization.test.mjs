@@ -63,7 +63,7 @@ const enMessages = getMessages("en-US");
 const koMessages = getMessages("ko-KR");
 
 const premiumRouteSrc = fs.readFileSync(
-  "app/api/relationship/analyze/premium/route.ts",
+  "lib/relationship/premiumGenerationHandler.ts",
   "utf8",
 );
 const payloadSrc = fs.readFileSync(

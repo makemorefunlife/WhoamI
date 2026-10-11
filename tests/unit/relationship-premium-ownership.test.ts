@@ -105,10 +105,10 @@ ok("wiring: every route uses the same server rule; no legacy writes from new gen
   assert.match(detail, /loadPremiumAccess\(/);
   assert.match(detail, /buildViewerByKind\(/);
   assert.doesNotMatch(detail, /\.update\(\{ result_premium_by_kind/);
-  const premium = readFileSync("app/api/relationship/analyze/premium/route.ts", "utf8");
+  const premium = readFileSync("lib/relationship/premiumGenerationHandler.ts", "utf8");
   assert.match(premium, /decidePremiumPost\(/);
   assert.doesNotMatch(premium, /mergeRelationshipPremiumByKind/);
-  assert.ok(premium.indexOf("decidePremiumPost(") < premium.indexOf("reserveRelationshipCredit(supabase"), "serve-before-charge");
+  assert.ok(premium.indexOf("decidePremiumPost(") < premium.indexOf("requester.reserve(supabase"), "serve-before-charge");
   for (const f of ["create", "revoke", "status"]) {
     const src = readFileSync(`app/api/relationship/share/${f}/route.ts`, "utf8");
     assert.match(src, /assertPremiumReportOwner\(/, `${f} must check the creator`);

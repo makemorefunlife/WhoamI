@@ -35,7 +35,7 @@ function section(title) {
 
 section("1. Verify server-side POST /api/relationship/analyze/premium cache-first check");
 {
-  const premiumRouteSrc = readSrc("app/api/relationship/analyze/premium/route.ts");
+  const premiumRouteSrc = readSrc("lib/relationship/premiumGenerationHandler.ts");
 
   // Verify cache check happens BEFORE credit reservation or OpenAI initialization
   const cacheIndex = premiumRouteSrc.indexOf("hasPremiumCacheForKindLocale");

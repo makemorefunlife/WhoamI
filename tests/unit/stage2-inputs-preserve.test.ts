@@ -106,7 +106,7 @@ async function main() {
     assert.match(route, /loadReportInputFacts\(supabase, reportId\)/);
     assert.match(route, /currentSelfProfile: inputs\.dbProfile/);
     assert.match(route, /input_snapshot: inputs\.snapshot/);
-    const premium = readFileSync("app/api/relationship/analyze/premium/route.ts", "utf8");
+    const premium = readFileSync("lib/relationship/premiumGenerationHandler.ts", "utf8");
     assert.match(premium, /inputSnapshot,/);
   });
 

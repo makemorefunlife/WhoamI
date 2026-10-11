@@ -168,7 +168,7 @@ async function main() {
   ok("15: Family report sections (compare rows, roles, mid-report name fields) use the current names");
 
   // --------------------------------------------- Romantic/Friend/Marriage/Work
-  const premium = src("app/api/relationship/analyze/premium/route.ts");
+  const premium = src("lib/relationship/premiumGenerationHandler.ts");
   const branch = (kind: string) => {
     const i = premium.indexOf(`    if (kind === "${kind}") {`);
     assert.ok(i > 0, kind);

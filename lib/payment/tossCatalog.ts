@@ -70,12 +70,30 @@ export function isTossPlan(planId: string): boolean {
 }
 
 /**
- * Plans a guest can USE without an account (single Personal only). Every
- * other guest-purchasable plan is used from an account after linking.
+ * Plans a guest can USE without an account: single Personal, and (KR, from
+ * 2026-10-11) single Relationship. Every other guest-purchasable plan is used
+ * from an account after linking.
+ *
+ * For a NEW purchase (catalog / checkout copy) use isGuestUsePlan. For an
+ * EXISTING order use isGuestUseOrder (lib/payment/guestUseOrder.ts): guest
+ * Relationship orders bought before the change keep the account-link flow
+ * they were sold with.
  */
-const GUEST_USE_PLANS = new Set(["kr_personal_premium", "us_personal_premium"]);
+const GUEST_PERSONAL_PLANS = new Set(["kr_personal_premium", "us_personal_premium"]);
+const GUEST_RELATIONSHIP_PLANS = new Set(["kr_relationship_premium"]);
+export function isGuestPersonalPlan(planId: string | null | undefined): boolean {
+  return Boolean(planId && GUEST_PERSONAL_PLANS.has(planId));
+}
+export function isGuestRelationshipPlan(planId: string | null | undefined): boolean {
+  return Boolean(planId && GUEST_RELATIONSHIP_PLANS.has(planId));
+}
 export function isGuestUsePlan(planId: string | null | undefined): boolean {
-  return Boolean(planId && GUEST_USE_PLANS.has(planId));
+  return isGuestPersonalPlan(planId) || isGuestRelationshipPlan(planId);
+}
+/** Existing order: Personal by plan; Relationship only when flagged at creation. */
+export function isGuestUseOrderRow(o: { plan_id: string | null | undefined; guest_use_enabled?: boolean | null }): boolean {
+  if (isGuestPersonalPlan(o.plan_id)) return true;
+  return isGuestRelationshipPlan(o.plan_id) && o.guest_use_enabled === true;
 }
 
 export function isGuestTossPlan(planId: string): boolean {

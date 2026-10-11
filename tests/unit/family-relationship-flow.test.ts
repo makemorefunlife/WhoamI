@@ -37,7 +37,7 @@ const section = src("components/relationship/detail/RelationshipPremiumSection.t
 const view = src("app/relationship/[id]/RelationshipView.tsx");
 const hook = src("app/relationship/[id]/useRelationshipDetail.ts");
 const panel = src("components/relationship/detail/FamilySetupPanel.tsx");
-const premiumRoute = src("app/api/relationship/analyze/premium/route.ts");
+const premiumRoute = src("lib/relationship/premiumGenerationHandler.ts");
 
 const saju = (d: string) => {
   const p = toV1SajuApiPayload(calculateSajuBundle({ birthDate: d, birthTime: "12:00" }));

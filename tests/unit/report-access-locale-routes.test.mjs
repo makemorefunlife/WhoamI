@@ -217,14 +217,15 @@ async function run() {
   }
 
   {
-    const src = readRoute("app/api/relationship/analyze/premium/route.ts");
+    // 2026-10-11: member access check lives in memberPremiumRequester; the
+    // handler passes the resolved locale to requester.assertViewer.
+    const src = readRoute("lib/relationship/premiumGenerationHandler.ts");
     assert.ok(
-      squash(src).includes(
-        "assertOwnedViewerParticipantAccess(supabase,userId,viewerReportId,rr.report_id_a,rr.report_id_b,locale,",
-      ),
+      squash(src).includes("requester.assertViewer(supabase,viewerReportId,rr.report_id_a,rr.report_id_b,locale,") &&
+        squash(src).includes("assertOwnedViewerParticipantAccess(supabase,userId,viewerReportId,a,b,locale)"),
       "analyze/premium/route.ts must pass the resolved locale into assertOwnedViewerParticipantAccess",
     );
-    ok("app/api/relationship/analyze/premium/route.ts threads locale into assertOwnedViewerParticipantAccess");
+    ok("lib/relationship/premiumGenerationHandler.ts threads locale into assertOwnedViewerParticipantAccess");
   }
 
   {

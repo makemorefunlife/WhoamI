@@ -13,7 +13,7 @@ import { clientIpKey, maskEmail } from "@/lib/payment/guestCheckout";
 import { decideTestGrant } from "@/lib/payment/tossTestMode";
 import { CLAIM_COOKIE, CLAIM_COOKIE_MAX_AGE_S, claimTokenFor } from "@/lib/payment/guestClaimToken";
 import { cookies } from "next/headers";
-import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isGuestUseOrder } from "@/lib/payment/guestUseOrder";
 import {
   BUYER_SESSION_WINDOW_S,
   GUEST_BUYER_COOKIE,
@@ -107,7 +107,8 @@ export async function POST(req: Request) {
       // after approval: open the 7-day guest session now (no re-verification
       // on this device). Anywhere else, the email link / code is still needed.
       let deviceSession: string | null = null;
-      if (isGuestUsePlan(outcome.planId) && approvedMs > 0 && Date.now() - approvedMs < BUYER_SESSION_WINDOW_S * 1000) {
+      const guestUse = await isGuestUseOrder(supabase, orderId, outcome.planId);
+      if (guestUse && approvedMs > 0 && Date.now() - approvedMs < BUYER_SESSION_WINDOW_S * 1000) {
         const buyerRaw = (await cookies()).get(GUEST_BUYER_COOKIE)?.value ?? null;
         if (isBuyerCookieFor(buyerRaw, orderId)) {
           deviceSession = await openGuestSession(supabase, orderId, "purchase");
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
       }
 
       const res = NextResponse.json(
-        { ...outcome, maskedEmail: email ? maskEmail(email) : null, deviceReady: deviceSession !== null },
+        { ...outcome, maskedEmail: email ? maskEmail(email) : null, deviceReady: deviceSession !== null, guestUse },
         { status: 200 },
       );
       if (deviceSession) {

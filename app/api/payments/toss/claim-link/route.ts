@@ -5,7 +5,7 @@ import { localizedPath } from "@/lib/i18n/locale";
 import { orderLocale } from "@/lib/email/guestPurchaseEmail";
 import { CLAIM_COOKIE, CLAIM_COOKIE_MAX_AGE_S, verifyClaimToken } from "@/lib/payment/guestClaimToken";
 import { GUEST_LINK_COOKIE, GUEST_LINK_COOKIE_MAX_AGE_S } from "@/lib/payment/guestAccess";
-import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isGuestUseOrder } from "@/lib/payment/guestUseOrder";
 
 export const runtime = "nodejs";
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     if (error) logServerError("payments/toss/claim-link", error, "read_failed");
     const row = data as { locale: string | null; plan_id: string | null; claim_token_nonce: string | null; claim_token_expires_at: string | null } | null;
     if (row) {
-      guestUse = isGuestUsePlan(row.plan_id);
+      guestUse = await isGuestUseOrder(supabase, orderId, row.plan_id);
       locale = orderLocale(row.locale);
       valid = verifyClaimToken({ orderId, nonce: row.claim_token_nonce, expiresAt: row.claim_token_expires_at, token });
     }

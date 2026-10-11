@@ -10,7 +10,7 @@ import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
-import { isCheckoutEnabled, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isCheckoutEnabled, isGuestPersonalPlan, isGuestRelationshipPlan, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
 import { accountLinkGroup } from "@/lib/payment/accountLinkCopy";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
@@ -384,7 +384,8 @@ export default function PurchaseSelectorContent({
   /** One short notice per product group: what it needs and why (shared with the account-link copy). */
   function prePurchaseNotice(planId: string): string {
     const pp = messages.payments.prePurchase;
-    if (isGuestUsePlan(planId)) return pp.noticePersonal;
+    if (isGuestPersonalPlan(planId)) return pp.noticePersonal;
+    if (isGuestRelationshipPlan(planId)) return pp.noticeRelationshipSingle;
     const g = accountLinkGroup(planId);
     if (g === "pass") return pp.noticePass;
     if (g === "membership") return pp.noticeMembership;

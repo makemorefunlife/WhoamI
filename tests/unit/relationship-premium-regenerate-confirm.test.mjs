@@ -79,7 +79,7 @@ section("A. A genuinely stale (old-version) cached block still counts as 'has a 
 
 section("B. POST /analyze/premium route no longer branches on staleness at all");
 {
-  const src = readSrc("app/api/relationship/analyze/premium/route.ts");
+  const src = readSrc("lib/relationship/premiumGenerationHandler.ts");
   assert.equal(
     /isStale/.test(src),
     false,

@@ -15,10 +15,13 @@ import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import GuestSurveyStep from "@/components/payment/GuestSurveyStep";
 import StitchDeepEssenceView from "@/components/results/StitchDeepEssenceView";
 import { setAuthPrefillEmail } from "@/lib/auth/prefillEmail";
+import { isGuestRelationshipPlan } from "@/lib/payment/tossCatalog";
+import GuestRelationshipUse from "./GuestRelationshipUse";
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 
 /**
- * Guest (no-account) use of a single Personal purchase.
+ * Guest (no-account) use of a single Personal purchase (single Relationship:
+ * same verification, then GuestRelationshipUse).
  *
  *  1. Purchase verification on every device: the emailed link ("start on
  *     this device" -- an explicit click) or a code sent to the purchase email.
@@ -31,6 +34,7 @@ import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 type State = {
   status: "unverified" | "needs_input" | "ready" | "generating" | "generated" | "saved" | "expired" | "linked" | "not_available" | "error";
   linkReady?: boolean;
+  planId?: string;
   maskedEmail?: string | null;
   email?: string | null;
   surveyRequired?: boolean;
@@ -294,6 +298,8 @@ function UseContent() {
     if (!orderId) return <LookupPanel />;
     return <VerifyPanel orderId={orderId} state={state} linkExpired={linkExpired} onVerified={() => void load()} />;
   }
+  // Single Relationship purchase: same verification above, its own steps.
+  if (isGuestRelationshipPlan(state.planId)) return <GuestRelationshipUse orderId={orderId} wantsSave={wantsSave} />;
   if (state.status === "saved") {
     return (
       <TossResultShell tone="success" title={t.savedTitle} body={t.savedBody}>

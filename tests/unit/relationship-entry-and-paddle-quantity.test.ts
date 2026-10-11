@@ -30,7 +30,7 @@ async function main() {
   const section = src("components/relationship/detail/RelationshipPremiumSection.tsx");
   const view = src("app/relationship/[id]/RelationshipView.tsx");
   const hook = src("app/relationship/[id]/useRelationshipDetail.ts");
-  const premiumRoute = src("app/api/relationship/analyze/premium/route.ts");
+  const premiumRoute = src("lib/relationship/premiumGenerationHandler.ts");
   const detailRoute = src("app/api/relationship/detail/route.ts");
 
   // ---- B1. saved report exists -> opens report, no credit used ----------
@@ -46,7 +46,7 @@ async function main() {
   assert.ok(
     // 2026-10-11: readable copy (own / shared / legacy) decided by
     // decidePremiumPost and returned before any credit reservation.
-    before(premiumRoute, "decidePremiumPost(kindAccess", "reserveRelationshipCredit(supabase"),
+    before(premiumRoute, "decidePremiumPost(kindAccess", "requester.reserve(supabase"),
     "cache hit must return before credit reservation",
   );
   ok("saved report -> shows report state; detail read and cache hit never touch credits");

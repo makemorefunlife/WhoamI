@@ -9,7 +9,7 @@ export const maxDuration = 60;
 
 /**
  * Background sender for queued purchase-guide emails (pending, due retries,
- * expired 'sending' leases) + guest Personal retention sweep. Serverless-safe: each run is bounded and every
+ * expired 'sending' leases) + guest Personal / invite / Relationship retention sweeps. Serverless-safe: each run is bounded and every
  * send is guarded by the DB lease + Resend Idempotency-Key.
  *
  * Auth: "Authorization: Bearer <CRON_SECRET>" -- what Vercel Cron sends when
@@ -42,7 +42,17 @@ async function run(req: Request) {
   const purgedInvites = Number(
     (Array.isArray(invitePurged) ? Object.values((invitePurged[0] ?? {}) as Record<string, unknown>)[0] : invitePurged) ?? 0,
   );
-  return NextResponse.json({ ...result, purgedRows, purgedInvites }, { headers: { "Cache-Control": "no-store" } });
+  // Guest single Relationship: purchase + 12 months, refunded / cancelled
+  // orders at once (20261011140000). Saved-to-account orders are untouched.
+  const { data: relPurged, error: relErr } = await supabase.rpc("purge_guest_relationship_data");
+  if (relErr) logServerError("cron/guest-emails", relErr, "relationship_purge_failed");
+  const purgedRelationships = Number(
+    (Array.isArray(relPurged) ? Object.values((relPurged[0] ?? {}) as Record<string, unknown>)[0] : relPurged) ?? 0,
+  );
+  return NextResponse.json(
+    { ...result, purgedRows, purgedInvites, purgedRelationships },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export const GET = run;

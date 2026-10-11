@@ -55,7 +55,7 @@ async function main() {
   assert.match(section, /entryState === "purchase" && onOpenPurchase \?/);
   const detail = readFileSync("app/relationship/[id]/useRelationshipDetail.ts", "utf8");
   assert.match(detail, /res\.status === 402[\s\S]{0,600}setPremiumCreditExhausted\(true\)/);
-  const premiumRoute = readFileSync("app/api/relationship/analyze/premium/route.ts", "utf8");
+  const premiumRoute = readFileSync("lib/relationship/premiumGenerationHandler.ts", "utf8");
   assert.match(premiumRoute, /if \(!creditReserve\.ok\)[\s\S]{0,400}status: 402/);
   ok("Relationship checkout opens only after a 402 from reserve_credit (credit present -> generates directly)");
 

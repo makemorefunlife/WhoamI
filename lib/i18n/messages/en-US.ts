@@ -1606,6 +1606,7 @@ export const messagesEnUS = {
     prePurchase: {
       noticePersonal: "Buy without an account, confirm your purchase email, and start your analysis. You only log in if you want to save the result to an account.",
       noticeRelationship: "Buy without an account. To connect and save your details with the other person's and invite friends, you'll log in when you use it.",
+      noticeRelationshipSingle: "Buy without an account, confirm your purchase email, then enter your details and theirs to create the analysis right away. Log in only to save it to an account or invite friends.",
       noticePass: "Buy without an account. To keep your pass and Decision Journal entries together, you'll log in when you use it.",
       noticeMembership: "Buy without an account. To manage your membership benefits, you'll log in when you use it.",
       loginRecommend: "Log in first and you can start right after paying.",
@@ -1681,8 +1682,48 @@ export const messagesEnUS = {
       retentionNote: (email: string) =>
         `Even without saving, this report and your details are kept with this purchase until ${email} (12 months after the analysis was generated).`,
     },
+    guestRelationship: {
+      meTitle: "First, your details",
+      meNameLabel: "Your name or nickname (optional)",
+      partnerTitle: "The other person's details",
+      partnerNameLabel: "Their name or nickname",
+      partnerBody: "We analyze the relationship from both birth details. If you don't know their birth time or place, mark it as unknown.",
+      kindLabel: "What is your relationship?",
+      kinds: { romantic: "Partner", cohabitation: "Living together / married", friendship: "Friend", work: "Coworker", family: "Family" },
+      familyParentLabel: "Who is the parent?",
+      familyMother: "Mother",
+      familyFather: "Father",
+      familyChildLabel: "Who is the child?",
+      familyChildMe: "Me",
+      familyChildPartner: "Them",
+      consentLabel: "(Required) I've read the note about entering someone else's details",
+      consentBody: "The other person's name (or nickname) and birth details are used only to create and show this relationship analysis. We never contact them or use the details for anything else, and they're deleted 12 months after purchase. Please don't enter details they wouldn't want shared.",
+      consentRequired: "Please confirm the note about the other person's details.",
+      nextCta: "Next",
+      saveCta: "Save and continue",
+      back: "← Back",
+      invalidInput: "Please check the details you entered.",
+      generateTitle: "Create your relationship analysis?",
+      generateBody: "Creating it uses this pass. Before you create it, you can get a full refund within 7 days of purchase.",
+      summaryMe: "You",
+      summaryPartner: "Them",
+      summaryKind: "Relationship",
+      surveyNone: "No survey",
+      surveyDone: "Survey included",
+      generateCta: "Create relationship analysis",
+      editInput: "Edit details",
+      generatingBody: "Creating your relationship analysis. This can take a minute or two, and it keeps going if you close this screen.",
+      generateFailed: "We couldn't create the analysis. Your pass was not used. Please try again.",
+      generateInProgress: "The analysis is being created in another window. Please check again shortly.",
+      saveBanner: "Sign up or log in to save this result to your account and view it anytime. Nothing is recreated and no extra pass is used.",
+      savedBody: "You can find it again on your Relation Map. Your existing profile was left as it was.",
+      openReport: "View relationship report",
+      inviteNote: "You can create friend invite links after signing up.",
+      retentionNote: (date: string) => `Even if you don't save it, this report and your details are kept with this purchase until ${date} (12 months from purchase).`,
+    },
     guestEmail: {
       useNext: "Confirm your purchase with the button below or a code sent to this email, then enter your birth details and create your analysis. We won't ask again on that device for 7 days.",
+      useNextRelationship: "Confirm your purchase with the button below or a code sent to this email, then enter your details and the other person's and create the relationship analysis. We won't ask again on that device for 7 days.",
       subject: "[Aha! It's me] Your analysis pass purchase",
       testSubjectPrefix: "[TEST purchase · no real charge]",
       testBanner: "This is a test purchase. No real charge was made.",
@@ -1707,6 +1748,7 @@ export const messagesEnUS = {
       useCta: "Use my pass",
       useSteps: ["Tap Use my pass below, or enter the code sent to your purchase email, to confirm your purchase. Confirmation is needed on any device and lasts 7 days.", "Enter your birth date and birth place (plus the short survey we need).", "See your personal analysis.", "Sign in or sign up to save your details and report to an account and reopen them anytime. Nothing has to be re-entered or regenerated."],
       useStorage: "Use the pass once within 12 months of purchase. Your details and report are kept with this purchase for 12 months from the day you create the analysis; if you never create it, they're deleted when the pass expires.",
+      useStorageRelationship: "Use the pass once within 12 months of purchase. Your details and the report are also kept with this purchase for 12 months from purchase, then deleted. Sign up with the purchase email before then to save them to an account.",
       useLinkExpiry: "The link in this email works for 30 days. After that, you can keep using a verification code.",
       accountIntro: "This product requires an account. Sign up or log in with your purchase email, verify it, and link the pass to your account to use it.",
       accountCta: "Sign up and link my pass",
@@ -3615,6 +3657,7 @@ export type MessageCatalog = {
     prePurchase: {
       noticePersonal: string;
       noticeRelationship: string;
+      noticeRelationshipSingle: string;
       noticePass: string;
       noticeMembership: string;
       loginRecommend: string;
@@ -3688,8 +3731,48 @@ export type MessageCatalog = {
       linkReadyBody: (email: string) => string;
       retentionNote: (email: string) => string;
     };
+    guestRelationship: {
+      meTitle: string;
+      meNameLabel: string;
+      partnerTitle: string;
+      partnerNameLabel: string;
+      partnerBody: string;
+      kindLabel: string;
+      kinds: Record<"romantic" | "cohabitation" | "friendship" | "work" | "family", string>;
+      familyParentLabel: string;
+      familyMother: string;
+      familyFather: string;
+      familyChildLabel: string;
+      familyChildMe: string;
+      familyChildPartner: string;
+      consentLabel: string;
+      consentBody: string;
+      consentRequired: string;
+      nextCta: string;
+      saveCta: string;
+      back: string;
+      invalidInput: string;
+      generateTitle: string;
+      generateBody: string;
+      summaryMe: string;
+      summaryPartner: string;
+      summaryKind: string;
+      surveyNone: string;
+      surveyDone: string;
+      generateCta: string;
+      editInput: string;
+      generatingBody: string;
+      generateFailed: string;
+      generateInProgress: string;
+      saveBanner: string;
+      savedBody: string;
+      openReport: string;
+      inviteNote: string;
+      retentionNote: (date: string) => string;
+    };
     guestEmail: {
       useNext: string;
+      useNextRelationship: string;
       subject: string;
       testSubjectPrefix: string;
       testBanner: string;
@@ -3714,6 +3797,7 @@ export type MessageCatalog = {
       useCta: string;
       useSteps: string[];
       useStorage: string;
+      useStorageRelationship: string;
       useLinkExpiry: string;
       accountIntro: string;
       accountCta: string;

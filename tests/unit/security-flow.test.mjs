@@ -435,7 +435,7 @@ async function run() {
   {
     const fs = await import("node:fs");
     const premiumSrc = fs.readFileSync(
-      "app/api/relationship/analyze/premium/route.ts",
+      "lib/relationship/premiumGenerationHandler.ts",
       "utf8",
     );
     // 2026-10-11: results are saved as the requester's own report
