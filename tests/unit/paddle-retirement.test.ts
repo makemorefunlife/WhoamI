@@ -248,7 +248,7 @@ async function main() {
 
   for (const reportPath of [
     "app/api/v2/deep/essence/route.ts",
-    "app/api/relationship/analyze/premium/route.ts",
+    "lib/relationship/premiumGenerationHandler.ts",
     "app/relationship/[id]/RelationshipView.tsx",
     "app/relationship/[id]/useRelationshipDetail.ts",
     "lib/v1/slim/useSlimV1Integrated.ts",

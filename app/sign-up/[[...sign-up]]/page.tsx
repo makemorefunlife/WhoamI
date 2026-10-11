@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref } from "@/lib/auth/returnPath";
 import { useState } from "react";
 import SignUpConsentFields from "@/components/legal/SignUpConsentFields";
 import SignUpUsNotice from "@/components/legal/SignUpUsNotice";
@@ -15,9 +16,12 @@ export default function SignUpPage() {
   // checkout the user was in): same-origin relative ?redirect_url= only.
   // Purchase email prefill comes from sessionStorage, never the URL.
   const [afterSignUp] = useState(() =>
-    typeof window === "undefined"
-      ? ROUTES.home
-      : (safeRelativeRedirect(new URLSearchParams(window.location.search).get("redirect_url")) ?? ROUTES.home),
+    continueHref(
+      typeof window === "undefined"
+        ? null
+        : safeRelativeRedirect(new URLSearchParams(window.location.search).get("redirect_url")),
+      ROUTES.home,
+    ),
   );
   const [prefill] = useState(() => (typeof window === "undefined" ? null : readAuthPrefillEmail()));
 

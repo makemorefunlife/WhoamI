@@ -1,7 +1,7 @@
 "use client";
 
+import { RETURN_QUERY_KEY, continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import { RedirectToSignIn, useAuth, useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -26,7 +26,6 @@ export default function LegalConsentPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const { locale, href, messages } = useLocale();
-  const router = useRouter();
   const copy = messages.legalConsent;
 
   const [ageChecked, setAgeChecked] = useState(false);
@@ -40,15 +39,22 @@ export default function LegalConsentPage() {
     !!user &&
     isLegalConsentComplete(user.unsafeMetadata as Record<string, unknown>);
 
+  // Back to where the user was (purchase, invite, add friend, survey...),
+  // through the server check -- not always home.
+  const goBack = () => {
+    const next =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get(RETURN_QUERY_KEY);
+    window.location.replace(continueHref(next, href(ROUTES.home)));
+  };
+
   useEffect(() => {
-    if (locale !== "ko-KR") {
-      router.replace(href(ROUTES.home));
-      return;
+    if (locale !== "ko-KR" || alreadyDone) {
+      goBack();
     }
-    if (alreadyDone) {
-      router.replace(href(ROUTES.home));
-    }
-  }, [alreadyDone, router, href, locale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alreadyDone, locale]);
 
   if (!isLoaded || !userLoaded) {
     return (
@@ -59,7 +65,11 @@ export default function LegalConsentPage() {
   }
 
   if (!isSignedIn || !user) {
-    return <RedirectToSignIn redirectUrl={href(ROUTES.legalConsent)} />;
+    return (
+      <RedirectToSignIn
+        redirectUrl={typeof window === "undefined" ? href(ROUTES.legalConsent) : currentReturnPath()}
+      />
+    );
   }
 
   if (locale !== "ko-KR" || alreadyDone) {
@@ -88,7 +98,7 @@ export default function LegalConsentPage() {
         },
       });
       clearSignupConsentDraft();
-      router.replace(href(ROUTES.home));
+      goBack();
     } catch {
       setError(copy.saveError);
       setSaving(false);

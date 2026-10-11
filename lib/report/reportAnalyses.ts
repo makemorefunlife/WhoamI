@@ -97,11 +97,45 @@ export async function writeReportAnalysis(
   return true;
 }
 
+/**
+ * Removes a cached analysis so it can be rebuilt -- but never loses it: the
+ * row is first copied to report_analysis_history (append-only). If that copy
+ * fails (e.g. the history table is not there yet), nothing is deleted.
+ * (2026-10-11: "정보가 바뀌어도 이전 보고서는 보존")
+ */
 export async function deleteReportAnalysis(
   supabase: SupabaseClient,
   reportId: string,
   analysisType: ReportAnalysisType,
+  reason = "replaced_after_input_change",
 ): Promise<void> {
+  const { data: rows, error: readErr } = await supabase
+    .from("report_analyses")
+    .select("report_id, analysis_type, content, metadata, created_at, updated_at")
+    .eq("report_id", reportId)
+    .eq("analysis_type", analysisType);
+  if (readErr) {
+    logServerError("reportAnalyses.archive_read", readErr, "db_select_failed");
+    return;
+  }
+  if (!rows || rows.length === 0) return;
+
+  const { error: archiveErr } = await supabase.from("report_analysis_history").insert(
+    rows.map((r) => ({
+      report_id: r.report_id,
+      analysis_type: r.analysis_type,
+      content: r.content,
+      metadata: r.metadata,
+      original_created_at: r.created_at,
+      original_updated_at: r.updated_at,
+      archived_reason: reason,
+    })),
+  );
+  if (archiveErr) {
+    logServerError("reportAnalyses.archive_insert", archiveErr, "archive_failed_kept");
+    return; // keep the original rather than lose it
+  }
+
   const { error } = await supabase
     .from("report_analyses")
     .delete()

@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref } from "@/lib/auth/returnPath";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useEffect, useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
@@ -116,7 +117,7 @@ export default function StitchResultsDashboard({
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}`
         : "/blueprint-preview";
-    openSignIn?.({ forceRedirectUrl: redirect });
+    openSignIn?.({ forceRedirectUrl: continueHref(redirect) });
   };
 
   const toggleTab = (tab: LiteTab) => {

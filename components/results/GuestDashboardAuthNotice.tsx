@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import { SignInButton } from "@clerk/nextjs";
 import { AlertCircle } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -39,7 +40,7 @@ export default function GuestDashboardAuthNotice() {
             </span>
             .
           </p>
-          <SignInButton mode="modal" forceRedirectUrl={localize("/blueprint-preview")}>
+          <SignInButton mode="modal" forceRedirectUrl={continueHref(currentReturnPath(), localize("/blueprint-preview"))}>
             <button type="button" className="stitch-cta-primary mt-1 w-full sm:w-auto">
               {messages.report.guestNoticeSignInCta}
             </button>

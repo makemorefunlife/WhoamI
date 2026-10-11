@@ -20,7 +20,7 @@ import {
   writePendingSurveyDraft,
 } from "@/lib/v2/survey/pendingDraft";
 import {
-  clearSurveyOnServer,
+  hydrateSurveySession,
   persistSurveyToServer,
 } from "@/lib/v2/survey/surveyClient";
 import { createOwnedReportIdempotent } from "@/lib/v2/survey/createOwnedReportIdempotent";
@@ -95,9 +95,10 @@ export default function SurveyV2Page() {
       }
 
       if (wantRedo && reportId && isSignedIn) {
+        // Redo = a NEW answer set is appended when finished; the previous one
+        // stays on the server (and stays in use until the new one is saved).
         clearSurveyV2Session(reportId);
         clearPendingSurveyDraft();
-        await clearSurveyOnServer(reportId);
         if (!cancelled) {
           setAnswers(EMPTY_ANSWERS);
           setCurrentIndex(0);
@@ -107,6 +108,11 @@ export default function SurveyV2Page() {
       }
 
       if (reportId) {
+        // Answers already saved on the server (other device / cleared
+        // storage) are restored instead of being asked again.
+        if (isSignedIn && !readSurveyV2Session(reportId)) {
+          await hydrateSurveySession(reportId).catch(() => false);
+        }
         const prior = readSurveyV2Session(reportId);
         if (prior && isSurveyV2AnswersComplete(prior.answers)) {
           router.replace(

@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import { useCallback, useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -33,7 +34,7 @@ export default function StitchFixedHeader({
       return;
     }
     openSignIn?.({
-      forceRedirectUrl: pathname || "/",
+      forceRedirectUrl: continueHref(currentReturnPath()),
     });
   }, [onOpenAuth, openSignIn, pathname]);
 

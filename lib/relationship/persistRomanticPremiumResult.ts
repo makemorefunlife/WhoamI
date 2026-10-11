@@ -22,6 +22,7 @@ export async function persistRomanticPremiumResult(
     romanticPayload: RomanticSajuDeepPayload;
     locale?: string;
     reason?: "first_generation" | "user_regenerate";
+    inputSnapshot?: unknown;
   },
 ): Promise<PersistRomanticPremiumResult> {
   const locale =
@@ -42,6 +43,7 @@ export async function persistRomanticPremiumResult(
     locale,
     payload: params.romanticPayload,
     reason: params.reason ?? "first_generation",
+    inputSnapshot: params.inputSnapshot,
   });
 
   if (upErr) {

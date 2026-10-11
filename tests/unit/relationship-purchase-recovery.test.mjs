@@ -146,7 +146,7 @@ section("C. Redirect recovery -- exact relationship report + kind preserved, and
 
 section("D. All five Relationship kinds share one entitlement gate -- no per-kind bypass");
 {
-  const routeSrc = readSrc("app/api/relationship/analyze/premium/route.ts");
+  const routeSrc = readSrc("lib/relationship/premiumGenerationHandler.ts");
 
   const reserveCount = (routeSrc.match(/reserveRelationshipCredit\(/g) ?? []).length;
   const releaseCount = (routeSrc.match(/releaseRelationshipCredit\(/g) ?? []).length;

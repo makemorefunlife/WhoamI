@@ -102,7 +102,7 @@ test("6. Relationship Server Correctness — relationshipPremiumGenerationLock h
 
 test("7. Relationship Server Route — analyze/premium route locking & pre-save check", () => {
   const routeSrc = fs.readFileSync(
-    path.join(process.cwd(), "app/api/relationship/analyze/premium/route.ts"),
+    path.join(process.cwd(), "lib/relationship/premiumGenerationHandler.ts"),
     "utf-8"
   );
 

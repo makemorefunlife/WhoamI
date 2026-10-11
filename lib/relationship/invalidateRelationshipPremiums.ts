@@ -1,41 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logServerError } from "@/lib/security/safeLog";
 
 /**
- * 출생 정보 변경 시 — 해당 reportId가 참여한 관계 심화 캐시 무효화.
- * (옛 사주·provenance로 생성된 premium JSON 재사용 방지)
+ * DEPRECATED (2026-10-11) -- intentionally does nothing.
+ *
+ * It used to empty relationship_reports.result_premium_by_kind for every
+ * relationship of a person whose birth/survey changed. That deleted paid
+ * reports (also the other person's view) and contradicts the rule
+ * "정보가 바뀌어도 이전 보고서는 보존". Reports are now kept as made and the
+ * screen says they reflect the info at generation time (input snapshot,
+ * lib/report/inputSnapshot.ts). A new report is made only by an explicit
+ * generate / regenerate.
  */
 export async function invalidateRelationshipPremiumsForReport(
-  supabase: SupabaseClient,
-  reportId: string,
+  _supabase: SupabaseClient,
+  _reportId: string,
 ): Promise<number> {
-  const rid = reportId.trim();
-  if (!rid) return 0;
-
-  const { data, error } = await supabase
-    .from("relationship_reports")
-    .select("id")
-    .or(`report_id_a.eq.${rid},report_id_b.eq.${rid}`);
-
-  if (error) {
-    logServerError("invalidateRelPremiums", error, "db_select_failed");
-    return 0;
-  }
-
-  const ids = (data ?? []).map((r) => r.id).filter(Boolean);
-  if (ids.length === 0) return 0;
-
-  const { error: upErr } = await supabase
-    .from("relationship_reports")
-    .update({
-      result_premium_by_kind: {},
-    })
-    .in("id", ids);
-
-  if (upErr) {
-    logServerError("invalidateRelPremiums", upErr, "db_update_failed");
-    return 0;
-  }
-
-  return ids.length;
+  return 0;
 }

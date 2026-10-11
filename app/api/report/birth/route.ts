@@ -15,7 +15,6 @@ import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerR
 import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { invalidatePersonCoreBlueprint } from "@/lib/personCore";
-import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
 import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
@@ -40,6 +39,11 @@ type BirthBody = {
   birthPlaceUnknown?: boolean;
   birthLatitude?: number;
   birthLongitude?: number;
+  /**
+   * Only fill in missing birth data; never change saved data (invite /
+   * connect sign-up flows that may land on an existing profile).
+   */
+  onlyIfEmpty?: boolean;
 };
 
 /** reports 출생 조회 — 게스트 리포트도 reportId로 조회 가능 */
@@ -161,6 +165,11 @@ export async function POST(req: Request) {
       typeof existingReport.birth_date === "string"
         ? existingReport.birth_date.trim()
         : null;
+
+    if (body.onlyIfEmpty === true && currentBirthDate) {
+      // Saved info is kept as it is; the caller continues with it.
+      return NextResponse.json({ ok: true, skipped: "already_has_birth" });
+    }
     const requestedBirthDate =
       typeof body.birthDate === "string" && body.birthDate.trim()
         ? body.birthDate.trim()
@@ -277,11 +286,12 @@ export async function POST(req: Request) {
     if (birthDateChanging || birthMateriallyChanged) {
       await deleteReportAnalysis(supabase, reportId, "integrated");
     }
+    // Saved reports (Personal deep, relationship deep, legacy relationship
+    // rows) are NOT touched: they stay as made and show they reflect the info
+    // at generation time. Derived caches are rebuilt (astrology/integrated are
+    // archived first, deleteReportAnalysis).
     if (birthMateriallyChanged) {
-      await Promise.all([
-        invalidateRelationshipPremiumsForReport(supabase, reportId),
-        invalidatePersonCoreBlueprint(reportId, supabase),
-      ]);
+      await invalidatePersonCoreBlueprint(reportId, supabase);
     }
 
     return NextResponse.json({
@@ -291,7 +301,7 @@ export async function POST(req: Request) {
         birthDateChanging || correctionAlreadyUsed,
       birth_date_correction_column_available:
         typeof correctionUsedAt === "string" || correctionAlreadyUsed,
-      relationship_premium_invalidated: birthMateriallyChanged,
+      relationship_premium_invalidated: false,
       person_core_invalidated: birthMateriallyChanged,
       own_birth_date_collision_warning: ownBirthDateCollision,
     });

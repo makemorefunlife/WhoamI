@@ -1,3 +1,5 @@
+import { nextInfoStepPath } from "@/lib/profile/infoSteps";
+
 /**
  * What adding a friend / running a relationship analysis actually needs from
  * the viewer -- and, just as important, what it does NOT need.
@@ -44,11 +46,12 @@ export function decideFriendAddReadiness(f: ViewerFacts): FriendAddReadiness {
 
 /** Where to send the viewer to fill in what is missing (locale-free paths). */
 export function selfProfileStepPath(r: FriendAddReadiness, surveyRequired: boolean): string | null {
-  if (r.status === "needs_survey") return `/survey-v2?reportId=${encodeURIComponent(r.reportId)}`;
+  // Shared rule (lib/profile/infoSteps.ts).
+  if (r.status === "needs_survey") {
+    return nextInfoStepPath({ reportId: r.reportId, hasBirth: false, hasSurvey: false, surveyRequired: true });
+  }
   if (r.status === "needs_birth") {
-    return surveyRequired && r.surveyDone
-      ? `/survey-v2/complete?reportId=${encodeURIComponent(r.reportId)}`
-      : `/onboarding/birth?reportId=${encodeURIComponent(r.reportId)}`;
+    return nextInfoStepPath({ reportId: r.reportId, hasBirth: false, hasSurvey: r.surveyDone, surveyRequired });
   }
   return null;
 }

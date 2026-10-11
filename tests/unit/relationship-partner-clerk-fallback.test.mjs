@@ -3,7 +3,7 @@
  * coverage (follow-up to relationship-naming-localization.test.mjs).
  *
  * Observed bug: even after the previous naming fix (which taught
- * app/api/relationship/analyze/premium/route.ts to resolve the non-viewer
+ * lib/relationship/premiumGenerationHandler.ts to resolve the non-viewer
  * side via a batched resolveClerkDisplayNamesByUserId lookup instead of
  * leaving it undefined), newly generated/viewed premium reports still
  * showed the generic "Partner" fallback for the OTHER participant in
@@ -84,7 +84,7 @@ const koMessages = getMessages("ko-KR");
 
 const clerkResolveSrc = readNormalized("lib/relationship/resolveClerkDisplayNames.ts");
 const detailRouteSrc = readNormalized("app/api/relationship/detail/route.ts");
-const premiumRouteSrc = readNormalized("app/api/relationship/analyze/premium/route.ts");
+const premiumRouteSrc = readNormalized("lib/relationship/premiumGenerationHandler.ts");
 
 // ---------------------------------------------------------------------------
 section("A — the shared Clerk lookup now falls back to fullName/firstName, not just publicMetadata.displayName");

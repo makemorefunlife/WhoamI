@@ -23,7 +23,7 @@ export default async function PricingPage({
   // "/pricing?for=relationship" (e.g. from the relationship hub): show the
   // relationship passes first. Same products, same guest checkout.
   const sp = await searchParams;
-  const context = sp.for === "relationship" ? "relationship" : "personal";
+  const context = sp.for === "relationship" ? "relationship" : sp.for === "journal" ? "journal" : "personal";
   const locale = await getRequestLocale();
   const messages = getMessages(locale);
   const copy = messages.pricing;

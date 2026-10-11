@@ -27,6 +27,10 @@
     "test:stage0-fixes": "npx tsx tests/unit/stage0-fixes.test.ts",
     "test:personal-locale-view": "npx tsx tests/unit/personal-locale-view.test.ts",
     "test:personal-locale-sql": "bash tests/scripts/run-personal-locale-sql.sh",
+    "test:stage2-inputs-preserve": "npx tsx tests/unit/stage2-inputs-preserve.test.ts",
+    "test:guest-invite": "npx tsx tests/unit/guest-invite-flow.test.ts",
+    "test:guest-invite-sql": "bash tests/scripts/run-guest-invite-sql.sh",
+    "test:auth-return-path": "npx tsx tests/unit/auth-return-path.test.ts",
     "test:relationship-ownership": "npx tsx tests/unit/relationship-premium-ownership.test.ts",
     "test:relationship-ownership-sql": "bash tests/scripts/run-relationship-ownership-sql.sh",
     "test:credit-lifecycle-sql": "bash tests/scripts/run-credit-lifecycle-sql.sh",
@@ -39,7 +43,11 @@
     "test:verify-attraction": "npx tsx tests/scripts/verify-attraction-vertical-slice.ts",
     "test:verify-three-chapters": "npx tsx tests/scripts/verify-three-chapters-vertical-slice.ts",
     "test:verify-ce": "npx tsx tests/scripts/verify-romantic-v4-rendered-ce.ts",
-    "typecheck:relationship": "node tests/scripts/check-relationship-typecheck-baseline.mjs"
+    "typecheck:relationship": "node tests/scripts/check-relationship-typecheck-baseline.mjs",
+    "test:guest-relationship": "tsx tests/unit/guest-relationship-flow.test.ts",
+    "test:guest-relationship-sql": "bash tests/scripts/run-guest-relationship-sql.sh",
+    "test:stage5-entitlements": "tsx tests/unit/stage5-entitlements-journal.test.ts",
+    "test:decision-journal-sql": "bash tests/scripts/run-decision-journal-sql.sh"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.0",

@@ -67,7 +67,10 @@ export default function InviteContent() {
     if (token) {
       localStorage.setItem("inviteToken", token);
     }
-    router.push(localize(ROUTES.signIn));
+    // Come back into the invite (home completes it with the stored token),
+    // not to a bare home page.
+    const back = localize(token ? `/?token=${encodeURIComponent(token)}` : ROUTES.home);
+    router.push(`${localize(ROUTES.signIn)}?redirect_url=${encodeURIComponent(back)}`);
   };
 
   return (
@@ -81,11 +84,6 @@ export default function InviteContent() {
           <p className="text-balance leading-relaxed text-on-surface">
             {message}
           </p>
-          {token ? (
-            <p className="mt-3 break-all text-xs text-on-surface-variant/60">
-              token: {token}
-            </p>
-          ) : null}
         </div>
 
         {unavailable ? null : (

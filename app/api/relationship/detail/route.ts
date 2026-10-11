@@ -49,6 +49,7 @@ import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFr
 import { isStaleWorkReportBlock, isStaleFriendReportBlock } from "@/lib/relationship/reportStalenessGuard";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
+import { describeSnapshot, loadReportInputFacts, parseInputSnapshot } from "@/lib/report/inputSnapshot";
 import {
   accessibleSources,
   buildViewerByKind,
@@ -429,6 +430,34 @@ export async function GET(req: Request) {
                   : Boolean(romanticDeepReport)
                 : false;
 
+    // "Made with the info at that time" for the shown copy (best-effort:
+    // never blocks the report if the snapshot column is not there yet).
+    let premiumGeneratedWith: { generatedAt: string | null; inputsChanged: boolean | null } = {
+      generatedAt: null,
+      inputsChanged: null,
+    };
+    const shownRowId =
+      activeSource === "mine" ? activeAccess.mine?.id : activeSource === "shared" ? activeAccess.shared?.id : null;
+    if (shownRowId) {
+      const { data: snapRow, error: snapErr } = await supabase
+        .from("relationship_premium_reports")
+        .select("input_snapshot, updated_at")
+        .eq("id", shownRowId)
+        .maybeSingle();
+      if (!snapErr && snapRow) {
+        const snap = parseInputSnapshot((snapRow as { input_snapshot?: unknown }).input_snapshot);
+        if (snap) {
+          const [fa, fb] = await Promise.all([
+            loadReportInputFacts(supabase, rr.report_id_a),
+            loadReportInputFacts(supabase, rr.report_id_b),
+          ]);
+          premiumGeneratedWith = describeSnapshot(snap, fa && fb ? [fa, fb] : null);
+        } else {
+          premiumGeneratedWith = { generatedAt: (snapRow as { updated_at?: string }).updated_at ?? null, inputsChanged: null };
+        }
+      }
+    }
+
     const responseBody: Record<string, unknown> = {
       relationship_report_id: rr.id,
       report_id_a: rr.report_id_a,
@@ -474,6 +503,8 @@ export async function GET(req: Request) {
       premium_access: Object.fromEntries(
         RELATIONSHIP_KINDS.map((k) => [k, accessibleSources(access[k])]),
       ),
+      /** When the shown copy was made and whether inputs changed since (no raw data). */
+      premium_generated_with: premiumGeneratedWith,
       /** Which copy of the active kind this response carries. */
       premium_source: activeSource,
       /** Id of that copy (mine/shared only; legacy has none). Used by the share section. */

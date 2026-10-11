@@ -10,7 +10,7 @@ import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
-import { isGuestUsePlan, resolveTossPaymentMethod, resolveTossPlan } from "@/lib/payment/tossCatalog";
+import { isGuestPersonalPlan, isGuestRelationshipPlan, resolveTossPaymentMethod, resolveTossPlan } from "@/lib/payment/tossCatalog";
 import { tossSecretConfigured } from "@/lib/payment/tossServer";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { clientIpKey, normalizeGuestEmail } from "@/lib/payment/guestCheckout";
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     const orderId = `aha_${randomUUID().replace(/-/g, "")}`;
     const orderName = plan.orderName[locale];
 
-    const { error } = await supabase.from("toss_payment_orders").insert({
+    const orderRow = {
       order_id: orderId,
       clerk_user_id: userId ?? null,
       guest_email: guestEmail,
@@ -121,7 +121,19 @@ export async function POST(req: Request) {
       amount: plan.amount,
       currency: plan.currency,
       order_name: orderName,
-    });
+    };
+    // Guest single Relationship (2026-10-11): marked at creation so only
+    // NEW orders are used without an account. If the DEV/production column
+    // is not there yet, the order is created as before (account flow).
+    const guestRelationshipUse = Boolean(guestEmail) && isGuestRelationshipPlan(plan.planId);
+    let { error } = await supabase
+      .from("toss_payment_orders")
+      .insert(guestRelationshipUse ? { ...orderRow, guest_use_enabled: true } : orderRow);
+    let guestUseEnabled = guestRelationshipUse && !error;
+    if (error && guestRelationshipUse && /guest_use_enabled/.test(String((error as { message?: string }).message ?? ""))) {
+      ({ error } = await supabase.from("toss_payment_orders").insert(orderRow));
+      guestUseEnabled = false;
+    }
     if (error) {
       logServerError("payments/toss/orders", error, "insert_failed");
       return NextResponse.json({ error: messages.errors.generic }, { status: 500 });
@@ -143,7 +155,7 @@ export async function POST(req: Request) {
     // Guest single Personal: remember that THIS browser created the order, so
     // the buyer can start right after paying without re-verifying (see
     // lib/payment/guestAccess.ts). The cookie alone grants nothing.
-    if (guestEmail && isGuestUsePlan(plan.planId)) {
+    if (guestEmail && (isGuestPersonalPlan(plan.planId) || guestUseEnabled)) {
       const buyer = buyerCookieValue(orderId);
       if (buyer) res.cookies.set(GUEST_BUYER_COOKIE, buyer, buyerCookieOptions());
     }

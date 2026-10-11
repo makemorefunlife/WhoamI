@@ -286,6 +286,8 @@ export async function saveOwnedRelationshipPremium(
     locale: Locale | string;
     payload: unknown;
     reason: "first_generation" | "user_regenerate" | "auto_upgrade";
+    /** Fingerprint of the inputs used (lib/report/inputSnapshot.ts). */
+    inputSnapshot?: unknown;
   },
 ): Promise<{ id: string | null; error: unknown }> {
   const { data, error } = await supabase.rpc("save_relationship_premium_report", {
@@ -298,5 +300,14 @@ export async function saveOwnedRelationshipPremium(
     p_reason: params.reason,
   });
   if (error) logServerError("premiumAccess.save", error, "db_save_failed");
-  return { id: (data as string | null) ?? null, error };
+  const id = (data as string | null) ?? null;
+  if (!error && id && params.inputSnapshot) {
+    // Best-effort (column added by 20261011120000); never fails the save.
+    const { error: snapErr } = await supabase
+      .from("relationship_premium_reports")
+      .update({ input_snapshot: params.inputSnapshot })
+      .eq("id", id);
+    if (snapErr) logServerError("premiumAccess.snapshot", snapErr, "snapshot_not_saved");
+  }
+  return { id, error };
 }

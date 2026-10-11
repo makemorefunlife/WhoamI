@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref } from "@/lib/auth/returnPath";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
@@ -307,7 +308,7 @@ export default function RelationHubDashboard() {
 
   const gateSignIn = useCallback(() => {
     setGateOpen(false);
-    openSignIn?.({ forceRedirectUrl: localize(friendAddReturnPath(hubReportId || null)) });
+    openSignIn?.({ forceRedirectUrl: continueHref(localize(friendAddReturnPath(hubReportId || null))) });
   }, [openSignIn, localize, hubReportId]);
 
   const gateBuyRelationship = useCallback(() => {
@@ -333,8 +334,13 @@ export default function RelationHubDashboard() {
     if (!reportIdReady || recovering || !hubReportId) return;
     const urlId = urlMyReportHint.trim();
     if (urlId === hubReportId) return;
-    router.replace(relationshipHubRoute(hubReportId), { scroll: false });
-  }, [reportIdReady, recovering, hubReportId, urlMyReportHint, router]);
+    // Keep the locale (/kr) and the original purpose (?section=add, focus...).
+    const q = new URLSearchParams(window.location.search);
+    q.set("myReportId", hubReportId);
+    router.replace(localize(`${relationshipHubRoute(hubReportId).split("?")[0]}?${q.toString()}`), {
+      scroll: false,
+    });
+  }, [reportIdReady, recovering, hubReportId, urlMyReportHint, router, localize]);
 
   useEffect(() => {
     if (!hubSection || loading || readiness.status === "loading") return;

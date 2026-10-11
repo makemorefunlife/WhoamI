@@ -184,7 +184,8 @@ section("D. /api/account/entitlements: auth-gated read-only summary");
 {
   const src = readSrc("app/api/account/entitlements/route.ts");
 
-  assert.ok(src.includes("export async function GET()"), "route must export a GET handler");
+  // 2026-10-11: GET(req) reads ?locale= to describe what is usable on this screen.
+  assert.ok(/export async function GET\((req: Request)?\)/.test(src), "route must export a GET handler");
   ok("route exports GET");
 
   assert.ok(
@@ -242,7 +243,8 @@ section("F. Decision Journal: 20-entry cap blocks saving unless unlimited overri
   ok("DECISION_JOURNAL_FREE_CAP is 20");
 
   assert.ok(
-    /const capReached = !journalUnlimited && totalEntryCount >= DECISION_JOURNAL_FREE_CAP;/.test(src),
+    // 2026-10-11: totals come from the account (server) via useDecisionJournal; the server's own cap answer also shows it.
+    /const capReached = capNotice \|\| \(!journal\.unlimited && journal\.total >= DECISION_JOURNAL_FREE_CAP\);/.test(src),
     "capReached must require both: no active unlimited override, and the total at/above the cap",
   );
   ok("capReached correctly combines journalUnlimited and totalEntryCount");
@@ -254,8 +256,10 @@ section("F. Decision Journal: 20-entry cap blocks saving unless unlimited overri
   ok("canSave is gated by !capReached in addition to the existing field checks");
 
   assert.ok(
-    src.includes('fetch("/api/account/entitlements")') && src.includes("journalUnlimited"),
-    "the component must fetch the entitlements summary to derive the unlimited override",
+    readSrc("lib/decision/useDecisionJournal.ts").includes('fetch("/api/account/entitlements")') &&
+      readSrc("app/api/decision/journal/route.ts").includes("getDecisionJournalAccess(supabase, userId)") &&
+      src.includes("journal.unlimited"),
+    "the unlimited override must come from the server (journal API, or the entitlements summary on the device fallback)",
   );
   ok("journalUnlimited is derived from /api/account/entitlements");
 
@@ -267,7 +271,7 @@ section("F. Decision Journal: 20-entry cap blocks saving unless unlimited overri
   ok("capped state renders the journalCapReachedNotice and journalCapUpgradeCta copy");
 
   assert.ok(
-    /entries remain visible\/editable|readDecisionJournal\(id\)/.test(src),
+    /readDecisionJournal\(id\)/.test(readSrc("lib/decision/useDecisionJournal.ts")) && /const \{ entries, ready: journalReady \} = journal;/.test(src),
     "existing entries must remain readable regardless of cap state (no filtering of readDecisionJournal's result based on capReached)",
   );
   ok("reading existing entries is unaffected by the cap (only new saves are blocked)");
@@ -302,7 +306,7 @@ section("G. Purchase Selector: context-aware badges, Best-value Pass badge, over
   ok("overlapping-entitlement notice is wired for both personal and relationship contexts");
 
   assert.ok(
-    src.includes('if (context === "account" || !isSignedIn) {') && src.includes("setEntitlements(null)"),
+    src.includes('if (context === "account" || context === "journal" || !isSignedIn) {') && src.includes("setEntitlements(null)"),
     "the overlap check must be skipped for account context (no single matching analysis type there) and for signed-out visitors",
   );
   ok("overlap check is skipped for account context and signed-out visitors (never a hard block, just skipped when not applicable)");
@@ -401,8 +405,8 @@ section("J. Account billing page: My Access section reads and renders the entitl
   const src = readSrc("app/account/billing/page.tsx");
 
   assert.ok(
-    src.includes('fetch("/api/account/entitlements")'),
-    "billing page must fetch /api/account/entitlements",
+    /fetch\(`\/api\/account\/entitlements\?\$\{new URLSearchParams\(\{ locale \}\)\}`\)/.test(src),
+    "billing page must fetch /api/account/entitlements (with the screen language)",
   );
   ok("billing page fetches /api/account/entitlements");
 
@@ -414,7 +418,7 @@ section("J. Account billing page: My Access section reads and renders the entitl
   ok("isExpiringSoon uses a 7-day threshold");
 
   assert.ok(
-    src.includes("copy.myAccessExpiringSoon") && src.includes("isExpiringSoon(credit.soonestExpiresAt)"),
+    src.includes("copy.myAccessExpiringSoon") && src.includes("isExpiringSoon(expires)"),
     "the My Access section must show the Expiring-soon label only when isExpiringSoon is true for that credit",
   );
   ok("My Access shows Expiring-soon based on isExpiringSoon");
@@ -438,7 +442,7 @@ section("J. Account billing page: My Access section reads and renders the entitl
   const successEndIdx = src.indexOf("\n  }\n\n  return (", successIdx);
   const successBlock = src.slice(successIdx, successEndIdx);
   assert.ok(
-    successBlock.includes('fetch("/api/account/membership")') && successBlock.includes('fetch("/api/account/entitlements")'),
+    successBlock.includes('fetch("/api/account/membership")') && successBlock.includes("fetch(`/api/account/entitlements"),
     "handlePurchaseSuccess must refresh both membership and entitlements after a purchase",
   );
   ok("handlePurchaseSuccess refreshes both membership and entitlements");

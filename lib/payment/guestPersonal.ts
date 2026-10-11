@@ -7,7 +7,7 @@ import { runPersonalDeepEssenceGeneration } from "@/lib/report/personalDeepEssen
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
-import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isGuestPersonalPlan } from "@/lib/payment/tossCatalog";
 import { maskEmail } from "@/lib/payment/guestCheckout";
 import { logServerError } from "@/lib/security/safeLog";
 import { rpcText } from "@/lib/payment/guestAccess";
@@ -102,7 +102,7 @@ export async function loadGuestPersonalState(
   const passExpiresAt = order.approved_at ? addMonths(order.approved_at, 12) : null;
 
   let status: GuestPersonalState["status"];
-  if (!isGuestUsePlan(order.plan_id) || !order.guest_email) status = "not_available";
+  if (!isGuestPersonalPlan(order.plan_id) || !order.guest_email) status = "not_available";
   else if (profile?.migrated_report_id) status = "saved";
   else if (order.clerk_user_id) status = "linked";
   else if (order.status !== "paid") status = "not_available";

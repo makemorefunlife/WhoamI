@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import { SignIn } from "@clerk/nextjs";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -11,9 +12,10 @@ export default function SurveyAuthSignInPanel() {
   return (
     <SignIn
       routing="hash"
-      signUpUrl={href(ROUTES.signUp)}
-      fallbackRedirectUrl={href(ROUTES.surveyV2)}
-      forceRedirectUrl={href(ROUTES.surveyV2)}
+      signUpUrl={`${href(ROUTES.signUp)}?redirect_url=${encodeURIComponent(currentReturnPath())}`}
+      // Back to this exact survey (keeps ?reportId), server-checked.
+      fallbackRedirectUrl={continueHref(currentReturnPath(), href(ROUTES.surveyV2))}
+      forceRedirectUrl={continueHref(currentReturnPath(), href(ROUTES.surveyV2))}
       appearance={{
         variables: {
           colorPrimary: "#4a90e2",

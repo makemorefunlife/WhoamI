@@ -1,5 +1,6 @@
 "use client";
 
+import { sanitizeReturnPath } from "@/lib/auth/returnPath";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -9,11 +10,11 @@ import TossResultShell from "../TossResultShell";
 import { goAfterPurchase } from "@/lib/payment/goAfterPurchase";
 import { accountLinkCopy, linkedCopy } from "@/lib/payment/accountLinkCopy";
 import AccountLinkPanel, { useClaimInfo } from "../AccountLinkPanel";
-import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isGuestPersonalPlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
-  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean }
+  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean; guestUse?: boolean }
   | { status: "test_no_grant"; reason: string }
   | { status: "payment_failed"; code: string }
   | { status: "pending_retry"; reason: string }
@@ -25,7 +26,7 @@ type ConfirmBody =
 type ViewState =
   | { kind: "confirming" }
   | { kind: "granted"; planId: string }
-  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string }
+  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string; guestUse: boolean }
   | { kind: "test_no_grant" }
   | { kind: "pending" }
   | { kind: "failed" }
@@ -37,7 +38,7 @@ const AUTO_RETRIES = 4;
 const RETRY_DELAY_MS = 3000;
 
 function safeReturnPath(raw: string | null): string | null {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+  return sanitizeReturnPath(raw);
 }
 
 function SuccessContent() {
@@ -79,6 +80,8 @@ function SuccessContent() {
           emailSent: body.emailStatus === "sent",
           deviceReady: body.deviceReady === true,
           planId: body.planId,
+          // Server decides per order (older guest Relationship orders keep the account flow).
+          guestUse: typeof body.guestUse === "boolean" ? body.guestUse : isGuestPersonalPlan(body.planId),
         });
       }
       if (status === "test_no_grant") return setView({ kind: "test_no_grant" });
@@ -132,8 +135,8 @@ function SuccessContent() {
     }
     case "awaiting_claim":
       // Shown only after the server confirmed the Toss approval.
-      if (isGuestUsePlan(view.planId)) {
-        // Single Personal: no account. This browser paid -> usually starts now.
+      if (view.guestUse) {
+        // Single Personal / single Relationship: no account. This browser paid -> usually starts now.
         return (
           <TossResultShell
             tone="success"

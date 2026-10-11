@@ -2,7 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getMessages } from "@/lib/i18n/messages";
 import { localizedPath, type Locale } from "@/lib/i18n/locale";
 import { claimTokenFor } from "@/lib/payment/guestClaimToken";
-import { isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isGuestPersonalPlan, isGuestRelationshipPlan } from "@/lib/payment/tossCatalog";
+import { isGuestUseOrder } from "@/lib/payment/guestUseOrder";
 import { maskEmail } from "@/lib/payment/guestCheckout";
 import { accountLinkCopy, formatPurchaseDate } from "@/lib/payment/accountLinkCopy";
 import { sendResendEmail, type MailSender } from "@/lib/email/resend";
@@ -79,6 +80,8 @@ export function buildGuestPurchaseEmail(params: {
   receiptUrl: string | null;
   /** Masked purchase email, shown in the account-linking steps. */
   maskedEmail?: string | null;
+  /** Used without an account (decided per order; default: by plan for Personal). */
+  guestUse?: boolean;
 }): GuestEmailContent {
   const m = getMessages(params.locale);
   const t = m.payments.guestEmail;
@@ -89,7 +92,8 @@ export function buildGuestPurchaseEmail(params: {
   const amount = formatOrderAmount(params.amount, params.currency, params.locale);
   const date = formatDate(params.approvedAt, params.locale);
   const notes = t.plans[params.planId];
-  const guestUse = isGuestUsePlan(params.planId);
+  const guestUse = params.guestUse ?? isGuestPersonalPlan(params.planId);
+  const relationshipUse = guestUse && isGuestRelationshipPlan(params.planId);
 
   const subject = params.isTest ? `${t.testSubjectPrefix} ${t.subject}` : t.subject;
   const rows: [string, string][] = [
@@ -106,8 +110,10 @@ export function buildGuestPurchaseEmail(params: {
   const cta = guestUse ? t.useCta : (link?.primaryCta ?? t.accountCta);
   // One line right above the button: what to do. No numbered steps -- the
   // button and the page do the rest.
-  const beforeCta: string = guestUse ? t.useNext : (link?.emailLine ?? t.accountStep2);
-  const afterCta: string[] = guestUse ? [t.useStorage, t.useLinkExpiry] : [t.linkExpiry, ...(link?.footers ?? [])];
+  const beforeCta: string = guestUse ? (relationshipUse ? t.useNextRelationship : t.useNext) : (link?.emailLine ?? t.accountStep2);
+  const afterCta: string[] = guestUse
+    ? [relationshipUse ? t.useStorageRelationship : t.useStorage, t.useLinkExpiry]
+    : [t.linkExpiry, ...(link?.footers ?? [])];
   const refundLine = notes?.refund ?? t.validityFallback;
 
   const text = [
@@ -252,6 +258,7 @@ export async function sendGuestPurchaseEmail(
     refundUrl,
     receiptUrl: order.receipt_url,
     maskedEmail: maskEmail(order.guest_email),
+    guestUse: await isGuestUseOrder(supabase, order.order_id, order.plan_id),
   });
 
   const result = await deps.send({

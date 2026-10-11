@@ -1,5 +1,6 @@
 "use client";
 
+import { RETURN_QUERY_KEY, currentReturnPath } from "@/lib/auth/returnPath";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -57,8 +58,10 @@ export default function LegalConsentGuard() {
     // 동기화할 내용이 없으면: KR만 동의 페이지로
     if (!draft && !needsKrLegal && !marketingUnset) return;
 
+    // Consent page returns to THIS page afterwards (server-checked), not home.
+    const consentHref = `${href(ROUTES.legalConsent)}?${RETURN_QUERY_KEY}=${encodeURIComponent(currentReturnPath())}`;
     if (needsKrLegal && !(draft?.age && draft?.terms && draft?.privacy)) {
-      router.replace(href(ROUTES.legalConsent));
+      router.replace(consentHref);
       return;
     }
 
@@ -87,7 +90,7 @@ export default function LegalConsentGuard() {
       .catch(() => {
         saving.current = false;
         if (needsKrLegal) {
-          router.replace(href(ROUTES.legalConsent));
+          router.replace(consentHref);
         }
       });
   }, [

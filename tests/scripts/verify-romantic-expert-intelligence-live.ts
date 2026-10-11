@@ -28,7 +28,7 @@ if (!process.env.OPENAI_API_KEY) {
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
- * Phase 5B §Part 1 — mirrors the REAL production shape: app/api/relationship/analyze/premium/route.ts
+ * Phase 5B §Part 1 — mirrors the REAL production shape: lib/relationship/premiumGenerationHandler.ts
  * loads a real CurrentSelfProfile per person via getCurrentSelfProfileForReport
  * (lib/relationship/surveyPatterns.ts, backed by the survey_responses table) and
  * passes it as surveyInput.profileA/profileB into buildRomanticV4ProductionInput

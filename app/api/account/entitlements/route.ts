@@ -9,6 +9,8 @@ import { getCreditLotSummary } from "@/lib/credits/creditEngine";
 import { isCreditEnforcementEnabled } from "@/lib/credits/creditEnforcementPolicy";
 import { getDecisionJournalAccess } from "@/lib/entitlements/decisionJournalAccess";
 import { listOwnPersonalGifts } from "@/lib/credits/personalGifts";
+import { loadCreditBreakdown } from "@/lib/entitlements/creditBreakdown";
+import type { Locale } from "@/lib/i18n/locale";
 
 export const runtime = "nodejs";
 
@@ -29,7 +31,7 @@ export const runtime = "nodejs";
  *   - PurchaseSelectorContent's lightweight "you already have access"
  *     informational notice (never blocks a purchase, see product rules)
  */
-export async function GET() {
+export async function GET(req: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -39,22 +41,30 @@ export async function GET() {
   if (!supabase) return supabaseConfigErrorResponse();
 
   try {
-    const [personal, relationship, journal, personalGifts] = await Promise.all([
+    // Which screen language to describe ("usable here"); never changes what can be spent.
+    const rawLocale = new URL(req.url).searchParams.get("locale");
+    const locale: Locale = rawLocale === "en-US" || rawLocale === "ko-KR" ? rawLocale : "ko-KR";
+    const [personal, relationship, journal, personalGifts, personalBreakdown, relationshipBreakdown] = await Promise.all([
       getCreditLotSummary(supabase, userId, "personal"),
       getCreditLotSummary(supabase, userId, "relationship"),
       getDecisionJournalAccess(supabase, userId),
       listOwnPersonalGifts(supabase, userId),
+      loadCreditBreakdown(supabase, userId, "personal", locale),
+      loadCreditBreakdown(supabase, userId, "relationship", locale),
     ]);
 
     return NextResponse.json({
       personal: {
         remaining: personal.totalRemaining,
         soonestExpiresAt: personal.soonestExpiresAt,
+        breakdown: personalBreakdown,
       },
       relationship: {
         remaining: relationship.totalRemaining,
         soonestExpiresAt: relationship.soonestExpiresAt,
+        breakdown: relationshipBreakdown,
       },
+      locale,
       journal: journal.hasAccess
         ? { unlimited: true, unlimitedUntil: journal.expiresAt, unlimitedSource: journal.source }
         : { unlimited: false, unlimitedUntil: null, unlimitedSource: null },

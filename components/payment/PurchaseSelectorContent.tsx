@@ -10,13 +10,16 @@ import type { KrPlanId } from "@/lib/payment/krPricing";
 import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
-import { isCheckoutEnabled, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isCheckoutEnabled, isGuestPersonalPlan, isGuestRelationshipPlan, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
 import { accountLinkGroup } from "@/lib/payment/accountLinkCopy";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
 import { ROUTES } from "@/constants/routes";
 
-export type PurchaseContext = "personal" | "relationship" | "account";
+export type PurchaseContext = "personal" | "relationship" | "account" | "journal";
+
+/** Products that actually unlock unlimited Decision Journal (lib/entitlements/decisionJournalAccess.ts). */
+const JOURNAL_PLAN_IDS: readonly RegionalPlanId[] = ["kr_insight_pass_30d", "us_insight_pass_30d", "us_annual_membership"];
 
 type RegionalPlanId = UsPlanId | KrPlanId;
 
@@ -64,6 +67,9 @@ function primaryPlanFor(
   region: "us" | "kr",
   additionalEligible: boolean,
 ): RegionalPlanId {
+  if (context === "journal") {
+    return region === "kr" ? "kr_insight_pass_30d" : "us_insight_pass_30d";
+  }
   if (context === "account") {
     if (region === "kr") return "kr_relationship_premium";
     return additionalEligible ? "us_additional_relationship" : "us_annual_membership";
@@ -199,7 +205,7 @@ export default function PurchaseSelectorContent({
     // stronger entitlement must never hard-block a purchase). Not fetched
     // for "account" -- that context has no single matching analysis type to
     // warn about.
-    if (context === "account" || !isSignedIn) {
+    if (context === "account" || context === "journal" || !isSignedIn) {
       setEntitlements(null);
       return;
     }
@@ -229,7 +235,10 @@ export default function PurchaseSelectorContent({
     [context, region, additionalEligible],
   );
 
-  const alternativePlanIds = catalog.filter((id) => id !== primaryPlanId);
+  // Journal cap: only the products that really unlock the Journal.
+  const alternativePlanIds = catalog.filter(
+    (id) => id !== primaryPlanId && (context !== "journal" || JOURNAL_PLAN_IDS.includes(id)),
+  );
   // Only ever a separate card when it isn't already the primary (account
   // context can make it the primary itself -- see primaryPlanFor).
   const showAdditionalRelationshipCard =
@@ -366,7 +375,9 @@ export default function PurchaseSelectorContent({
       ? messages.pricing.selectorTitleRelationship
       : context === "account"
         ? messages.pricing.selectorTitleAccount
-        : messages.pricing.selectorTitlePersonal;
+        : context === "journal"
+          ? messages.pricing.selectorTitleJournal
+          : messages.pricing.selectorTitlePersonal;
 
   function closeGuestCheckout() {
     if (busy) return;
@@ -384,7 +395,8 @@ export default function PurchaseSelectorContent({
   /** One short notice per product group: what it needs and why (shared with the account-link copy). */
   function prePurchaseNotice(planId: string): string {
     const pp = messages.payments.prePurchase;
-    if (isGuestUsePlan(planId)) return pp.noticePersonal;
+    if (isGuestPersonalPlan(planId)) return pp.noticePersonal;
+    if (isGuestRelationshipPlan(planId)) return pp.noticeRelationshipSingle;
     const g = accountLinkGroup(planId);
     if (g === "pass") return pp.noticePass;
     if (g === "membership") return pp.noticeMembership;

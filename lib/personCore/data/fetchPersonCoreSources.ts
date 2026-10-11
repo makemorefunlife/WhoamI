@@ -64,7 +64,8 @@ export async function fetchLatestSurveyForPersonCore(
     .from("survey_responses")
     .select("id, answers")
     .eq("report_id", reportId)
-    .order("id", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1);
 
   if (error) {
@@ -88,7 +89,8 @@ export async function fetchLatestSurveyResponseId(
     .from("survey_responses")
     .select("id")
     .eq("report_id", reportId)
-    .order("id", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1)
     .maybeSingle();
 

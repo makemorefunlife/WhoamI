@@ -2,7 +2,7 @@
  * Final Narrative Architecture — LIVE test against the real OpenAI API,
  * exercising the actual production-equivalent path (buildRomanticV4PrototypePayload
  * -> applyRomanticV4FinalNarrativeArchitecture, exactly the sequence
- * app/api/relationship/analyze/premium/route.ts runs when
+ * lib/relationship/premiumGenerationHandler.ts runs when
  * ROMANTIC_V4_NARRATIVE_LLM is on). NOT part of the automated `node --test`
  * suite. Run manually:
  *

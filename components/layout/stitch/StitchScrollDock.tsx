@@ -1,5 +1,6 @@
 "use client";
 
+import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePathname } from "next/navigation";
@@ -238,7 +239,7 @@ export default function StitchScrollDock({
                 return;
               }
               openSignIn?.({
-                forceRedirectUrl: pathname || "/",
+                forceRedirectUrl: continueHref(currentReturnPath()),
               });
             }}
           >

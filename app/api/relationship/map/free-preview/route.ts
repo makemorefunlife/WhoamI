@@ -76,9 +76,12 @@ export async function GET(req: Request) {
     let personViewer;
     let personOther;
     try {
+      // getOrBuildPersonCorePair returns them in ARGUMENT order (viewer first),
+      // not relationship a/b order -- the previous a/b pick swapped the two
+      // people whenever the viewer was report_id_b.
       const pair = await getOrBuildPersonCorePair(viewerReportId, otherReportId);
-      personViewer = viewerReportId === rr.report_id_a ? pair.personA : pair.personB;
-      personOther = viewerReportId === rr.report_id_a ? pair.personB : pair.personA;
+      personViewer = pair.personA;
+      personOther = pair.personB;
     } catch (e) {
       // Most common cause: one side hasn't entered birth data yet -- not an
       // error, just "not ready yet" for this free preview.
