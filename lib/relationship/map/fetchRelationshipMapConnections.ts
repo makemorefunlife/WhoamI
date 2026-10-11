@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchRelationshipReportRowsForHub } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
+import { fetchAccessiblePremiumKinds } from "@/lib/relationship/premiumAccess";
 import { partnerNameFromLogSnapshot } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveOtherNameOrEmpty } from "@/lib/relationship/relationshipPersonNames";
 import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
@@ -149,6 +150,12 @@ export async function fetchRelationshipMapConnections(
   // before; new-flow connections require an accepted row for THIS viewer.
   const visibleRows = rows.filter((r) => isVisibleInMapBatch(r.id, membershipByRR, newFlowRRIds));
 
+  const accessibleByRr = await fetchAccessiblePremiumKinds(
+    supabase,
+    viewerReportId,
+    visibleRows.map((r) => r.id as string),
+  );
+
   type Candidate = RelationshipMapConnection & { isManual: boolean };
   const candidates: Candidate[] = visibleRows.map((r) => {
     const partnerId = r.report_id_a === viewerReportId ? r.report_id_b : r.report_id_a;
@@ -169,6 +176,8 @@ export async function fetchRelationshipMapConnections(
       at,
       r.result_premium_by_kind,
       r.relationship_kind,
+      undefined,
+      accessibleByRr.get(r.id as string),
     );
     const completed = basicDone && (at !== "premium" || premiumDone);
 

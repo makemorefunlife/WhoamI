@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
-import { assertShareOwnerAccess } from "@/lib/relationship/reportShare/assertShareOwnerAccess";
+import { assertPremiumReportOwner } from "@/lib/relationship/reportShare/assertPremiumReportOwner";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
-/** "공유 중지" / "Stop sharing" — spec section 36: immediately invalidates the link; the report itself stays private to the owner forever. */
+/**
+ * "공유 중지" / "Stop sharing" — spec section 36. Creator only. From now on the
+ * other participant can no longer open this report (link, hub, direct URL,
+ * API). It does not take back what they already read.
+ */
 export async function POST(req: Request) {
   const locale = resolveRequestLocale({
     bodyLanguage: null,
@@ -20,6 +24,7 @@ export async function POST(req: Request) {
     const relationshipReportId = String(body?.relationshipReportId ?? "").trim();
     const ownerReportId = String(body?.ownerReportId ?? "").trim();
     const kind = String(body?.kind ?? "").trim();
+    const premiumReportId = String(body?.premiumReportId ?? "").trim() || null;
     if (!relationshipReportId || !ownerReportId || !kind) {
       return NextResponse.json({ error: messages.errors.invalidRequest }, { status: 400 });
     }
@@ -28,20 +33,20 @@ export async function POST(req: Request) {
     if (!supabase) return supabaseConfigErrorResponse();
 
     const { userId } = await auth();
-    const access = await assertShareOwnerAccess(
-      supabase,
+    const access = await assertPremiumReportOwner(supabase, {
       userId,
       relationshipReportId,
       ownerReportId,
-      locale,
-    );
+      kind,
+      locale: body?.locale ?? locale,
+      premiumReportId,
+    });
     if (access.error) return access.error;
 
     const { error } = await supabase
       .from("relationship_report_shares")
       .update({ status: "revoked", revoked_at: new Date().toISOString() })
-      .eq("relationship_report_id", relationshipReportId)
-      .eq("kind", kind)
+      .eq("premium_report_id", access.report.id)
       .eq("status", "active");
 
     if (error) {

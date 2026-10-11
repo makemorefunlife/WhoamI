@@ -129,8 +129,15 @@ export type UseRelationshipDetailReturn = {
   setFamilyChildIsViewer: (checked: boolean) => void;
   runPremium: (
     kind?: RelationshipKind,
-    options?: { forceRegenerate?: boolean },
+    options?: { forceRegenerate?: boolean; createOwn?: boolean },
   ) => Promise<boolean>;
+  /** Which readable copy is shown: "mine" | "shared" | "legacy" (server-decided). */
+  premiumSource: string | null;
+  /** Readable copies of the active kind for this viewer (server-decided). */
+  premiumSources: string[];
+  /** Id of the shown copy (mine/shared); null for legacy. */
+  premiumReportId: string | null;
+  selectPremiumSource: (source: string) => void;
   regeneratePremium: () => void;
   showRegenerateConfirm: boolean;
   cancelRegeneratePremium: () => void;
@@ -170,6 +177,15 @@ export function useRelationshipDetail({
     (urlParentType === "mother" || urlParentType === "father") &&
     (urlChildIsViewer === "true" || urlChildIsViewer === "false");
   const urlAutostart = searchParams.get("autostart") === "1";
+  // Which copy to show when more than one is readable ("mine" | "shared" |
+  // "legacy"). Only a preference: the server decides what this viewer may
+  // read and falls back to mine > shared > legacy.
+  const requestedSourceRef = useRef<string | null>(
+    searchParams.get("premiumSource")?.trim() || null,
+  );
+  const [premiumSource, setPremiumSource] = useState<string | null>(null);
+  const [premiumSources, setPremiumSources] = useState<string[]>([]);
+  const [premiumReportId, setPremiumReportId] = useState<string | null>(null);
   const { locale, messages, href } = useLocale();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
@@ -366,7 +382,7 @@ export function useRelationshipDetail({
             ? `&relationshipKind=${encodeURIComponent(explicitKind)}`
             : "";
         const res = await fetch(
-          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}${kindQuery}&language=${encodeURIComponent(locale)}`,
+          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}${kindQuery}&language=${encodeURIComponent(locale)}${requestedSourceRef.current ? `&premiumSource=${encodeURIComponent(requestedSourceRef.current)}` : ""}`,
           { headers: { "x-aha-locale": locale } },
         );
         const data = await res.json();
@@ -405,6 +421,13 @@ export function useRelationshipDetail({
           parseRelationshipKind(data.relationship_kind ?? kindForRequest),
         );
         setServerPremiumReady(data.premium_ready === true);
+        {
+          const k = String(data.relationship_kind ?? kindForRequest);
+          const sources = (data.premium_access as Record<string, string[]> | undefined)?.[k];
+          setPremiumSources(Array.isArray(sources) ? sources : []);
+          setPremiumSource(typeof data.premium_source === "string" ? data.premium_source : null);
+          setPremiumReportId(typeof data.premium_report_id === "string" ? data.premium_report_id : null);
+        }
         setBasic((data.perspective_basic ?? null) as RelationshipPerspective);
         setPremium(
           (data.perspective_premium ?? null) as RelationshipPerspective,
@@ -632,10 +655,11 @@ export function useRelationshipDetail({
   const runPremium = useCallback(
     async (
       kind: RelationshipKind = premiumKind,
-      options?: { forceRegenerate?: boolean },
+      options?: { forceRegenerate?: boolean; createOwn?: boolean },
     ) => {
       if (!resolvedRelationshipId) return false;
       const forceRegenerate = options?.forceRegenerate === true;
+      const createOwn = options?.createOwn === true;
       const premiumSeq = ++premiumSeqRef.current;
       const kindAtStart = kind;
       if (forceRegenerate) {
@@ -666,6 +690,8 @@ export function useRelationshipDetail({
           relationship_kind: kind,
           viewer_report_id: effectiveViewerReportId,
           force_regenerate: forceRegenerate,
+          // Explicit "create my own" while a shared/legacy copy is readable.
+          create_own: createOwn,
           language: locale,
           locale,
           ...(kind === "family"
@@ -778,6 +804,7 @@ export function useRelationshipDetail({
           return false;
         }
         setServerPremiumReady(true);
+        if (createOwn || forceRegenerate) requestedSourceRef.current = "mine";
         await load(kind, { silent: true });
         void refreshRelationshipCredits();
         return true;
@@ -1012,6 +1039,14 @@ export function useRelationshipDetail({
     runAutostartPremium,
   ]);
 
+  const selectPremiumSource = useCallback(
+    (source: string) => {
+      requestedSourceRef.current = source;
+      void load(premiumKind);
+    },
+    [load, premiumKind],
+  );
+
   return {
     router,
     viewerReportId: effectiveViewerReportId,
@@ -1076,5 +1111,9 @@ export function useRelationshipDetail({
     showRegenerateConfirm,
     cancelRegeneratePremium,
     confirmRegeneratePremium,
+    premiumSource,
+    premiumSources,
+    premiumReportId,
+    selectPremiumSource,
   };
 }

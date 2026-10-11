@@ -6,6 +6,7 @@ import {
   mergeRelationshipRowsFromOutboundInvites,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
+import { fetchAccessiblePremiumKinds } from "@/lib/relationship/premiumAccess";
 
 function isBasicComplete(resultBasic: unknown): boolean {
   const basic = resultBasic as { perspectives?: unknown } | null;
@@ -52,6 +53,12 @@ export async function countHubRelationshipSummary(
     if (!inv.relationship_report_id) pending++;
   }
 
+  const accessibleByRr = await fetchAccessiblePremiumKinds(
+    supabase,
+    reportId,
+    rows.map((r) => r.id as string),
+  );
+
   for (const r of rows) {
     const at = r.analysis_type as string;
     const basicDone = isBasicComplete(r.result_basic);
@@ -59,6 +66,8 @@ export async function countHubRelationshipSummary(
       at,
       r.result_premium_by_kind,
       r.relationship_kind,
+      undefined,
+      accessibleByRr.get(r.id as string),
     );
     const done = basicDone && (at !== "premium" || premiumDone);
     if (done) completed++;

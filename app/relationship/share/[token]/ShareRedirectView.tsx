@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { localizedPath } from "@/lib/i18n/locale";
 import { buildRelationshipAnalyzeUrl } from "@/lib/relationship/hubNavigation";
 import { isAnalysisSurface } from "@/lib/relationship/analysisSurface";
 
@@ -42,7 +43,14 @@ export default function ShareRedirectView({ token }: { token: string }) {
         // Marks this as a shared-report visit so the report end shows the
         // recipient's continuation CTAs instead of the owner's.
         const separator = analyzeUrl.includes("?") ? "&" : "?";
-        router.replace(localize(`${analyzeUrl}${separator}via=share`));
+        const sharedParam = data.premiumSource === "shared" ? "&premiumSource=shared" : "";
+        const target = `${analyzeUrl}${separator}via=share${sharedParam}`;
+        // A shared report exists in the language it was made in: open it there.
+        router.replace(
+          data.locale === "ko-KR" || data.locale === "en-US"
+            ? localizedPath(target, data.locale)
+            : localize(target),
+        );
       } catch {
         if (!cancelled) setState("error");
       }

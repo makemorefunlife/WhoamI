@@ -2184,12 +2184,20 @@ export const messagesEnUS = {
       copyLinkFallbackHint: "Want to send a link directly instead?",
       stopSharingCta: "Stop sharing",
       stopSharingConfirm:
-        "Stop sharing this report? They will no longer be able to open it.",
-      stopSharingDone: "Sharing stopped. The link no longer works.",
+        "Stop sharing this report? From now on they won't be able to open it again. This doesn't undo what they've already seen.",
+      stopSharingDone: "Sharing stopped. They can no longer open this report.",
       accessDeniedTitle: "This report isn't shared with you",
       accessDeniedBody: "Only the person this report was shared with can open it.",
       authRequiredBody: "Please sign in to open this shared report.",
       createFailed: "We couldn't create a share link. Please try again.",
+      notOwner: "Only the person who created this report can share it or stop sharing.",
+      sourceMine: "My analysis",
+      sourceShared: (name: string) => `Shared by ${name}`,
+      sourceLegacy: "Earlier analysis",
+      legacyNote:
+        "This analysis was made before creators were recorded. It is kept and shown as it was until it's sorted out.",
+      sharedNote: "You can read a shared analysis without using a credit.",
+      createOwnCta: "Create my own analysis (uses 1 credit)",
     },
     mapShare: {
       cta: "Share my Relationship Map",
@@ -4095,6 +4103,13 @@ export type MessageCatalog = {
       accessDeniedBody: string;
       authRequiredBody: string;
       createFailed: string;
+      notOwner: string;
+      sourceMine: string;
+      sourceShared: (name: string) => string;
+      sourceLegacy: string;
+      legacyNote: string;
+      sharedNote: string;
+      createOwnCta: string;
     };
     mapShare: {
       cta: string;

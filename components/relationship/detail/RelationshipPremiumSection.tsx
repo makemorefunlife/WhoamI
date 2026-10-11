@@ -50,6 +50,8 @@ type RelationshipPremiumSectionProps = {
   displayFriendshipDeep: FriendReportBody | null;
   onRunPremium: (kind: RelationshipKind) => Promise<boolean>;
   onRegeneratePremium: () => void;
+  /** false = the shown copy is not the viewer's own (shared / legacy): no "regenerate" here. */
+  canRegenerate?: boolean;
   forceVisible?: boolean;
   onReportReadyRef?: RefObject<HTMLDivElement | null>;
   /** True right after a generation attempt failed specifically for lack of a relationship credit (see useRelationshipDetail's premiumCreditExhausted). */
@@ -109,6 +111,7 @@ export default function RelationshipPremiumSection({
   displayFriendshipDeep,
   onRunPremium,
   onRegeneratePremium,
+  canRegenerate = true,
   forceVisible = false,
   onReportReadyRef,
   creditExhausted = false,
@@ -450,7 +453,7 @@ export default function RelationshipPremiumSection({
         </div>
       ) : premiumReady && !hasSnapshotView && familyNewAnalysisOpen ? (
         <div className="mt-4">{familySetup("new")}</div>
-      ) : premiumReady && !hasSnapshotView ? (
+      ) : premiumReady && !hasSnapshotView && canRegenerate ? (
         <div className="mt-4 space-y-2 text-center">
           <button
             type="button"

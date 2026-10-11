@@ -36,7 +36,7 @@ export async function GET(req: Request) {
 
     const { data: share, error } = await supabase
       .from("relationship_report_shares")
-      .select("relationship_report_id, kind, recipient_report_id, status")
+      .select("relationship_report_id, kind, recipient_report_id, status, premium_report_id")
       .eq("share_token", token)
       .maybeSingle();
 
@@ -79,10 +79,31 @@ export async function GET(req: Request) {
       );
     }
 
+    // A share of one report (2026-10-11): send the recipient to exactly that
+    // report (its language, source "shared"). detail/analyze re-check the
+    // active share on every request; this route only resolves the link.
+    let reportLocale: string | null = null;
+    if (share!.premium_report_id) {
+      const { data: pr } = await supabase
+        .from("relationship_premium_reports")
+        .select("id, locale")
+        .eq("id", share!.premium_report_id)
+        .maybeSingle();
+      if (!pr) {
+        return NextResponse.json(
+          { error: messages.relationshipMap.reportShare.accessDeniedTitle },
+          { status: 404 },
+        );
+      }
+      reportLocale = (pr.locale as string) ?? null;
+    }
+
     return NextResponse.json({
       relationshipReportId: share!.relationship_report_id,
       kind: share!.kind,
       viewerReportId: share!.recipient_report_id,
+      premiumSource: share!.premium_report_id ? "shared" : null,
+      locale: reportLocale,
     });
   } catch (e) {
     logServerError("relationship/share/view", e, "internal_error");

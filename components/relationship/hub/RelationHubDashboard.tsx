@@ -713,7 +713,7 @@ export default function RelationHubDashboard() {
     if (!hubReportId) return;
     router.push(
       localize(
-        `/relationship/${log.relationship_report_id}?viewer=${encodeURIComponent(hubReportId)}&kind=${encodeURIComponent(log.relationship_kind === "unspecified" ? "friendship" : log.relationship_kind)}&via=share`,
+        `/relationship/${log.relationship_report_id}?viewer=${encodeURIComponent(hubReportId)}&kind=${encodeURIComponent(log.relationship_kind === "unspecified" ? "friendship" : log.relationship_kind)}&via=share&premiumSource=shared`,
       ),
     );
   }

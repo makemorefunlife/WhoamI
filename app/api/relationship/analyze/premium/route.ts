@@ -14,8 +14,6 @@ import { resolveFamilyRolesFromViewer } from "@/lib/relationship/familyParent/re
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
-  getPremiumPayloadForKindLocale,
-  hasPremiumCacheForKindLocale,
   parseRelationshipKind,
   type ResultPremiumByKind,
 } from "@/lib/relationship/relationshipKind";
@@ -35,7 +33,6 @@ import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/fri
 import { relationshipKindUsesDeepPipeline } from "@/lib/relationship/relationshipAnalysisKinds";
 import {
   fetchRelationshipReportByIdSafe,
-  mergeRelationshipPremiumByKind,
   updateRelationshipReportSafe,
 } from "@/lib/relationship/relationshipReportQuery";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
@@ -70,6 +67,11 @@ import {
   getRelationshipPremiumSaveFailedMessage,
 } from "@/lib/relationship/relationshipPremiumGuard";
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
+import {
+  decidePremiumPost,
+  loadPremiumAccess,
+  saveOwnedRelationshipPremium,
+} from "@/lib/relationship/premiumAccess";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
   acquireRelationshipPremiumGenerationLock,
@@ -241,16 +243,41 @@ export async function POST(req: Request) {
       (body as { force_regenerate?: unknown }).force_regenerate === true;
     const language = toLegacyShortLocale(locale) as RomanticSajuDeepLocale;
 
-    // Cache-first, always: a saved result for this kind+locale is returned
-    // as-is whenever it exists — staleness/version-mismatch is never a
-    // reason to silently regenerate. The ONLY way to trigger a real LLM
-    // call when a cache already exists is an explicit force_regenerate:true
-    // from the user-confirmed "새로 분석하기" flow (see
-    // useRelationshipDetail.ts's regenerate confirm modal). This is what
-    // keeps autostart/revisit/refresh from ever burning a credit or an LLM
-    // call on their own.
-    if (!forceRegenerate && hasPremiumCacheForKindLocale(byKind, kind, locale)) {
-      const cached = getPremiumPayloadForKindLocale(byKind, kind, locale);
+    // Read-before-generate against what THIS viewer may read (premiumAccess.ts):
+    //   - own report for this kind+language -> returned, no charge;
+    //   - otherwise (unless the user explicitly asked to create their own)
+    //     an actively shared report of the partner, then the legacy row ->
+    //     returned, no charge;
+    //   - a partner report that is NOT shared to the viewer is never
+    //     returned and never reused: the viewer generates their own.
+    // The ONLY ways to start a real (charged) generation when something is
+    // readable are an explicit force_regenerate (user-confirmed "새로
+    // 분석하기", replaces + archives the viewer's own copy) or create_own.
+    const partnerReportId =
+      rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
+    const { access: premiumAccess, ok: premiumAccessOk } = await loadPremiumAccess(supabase, {
+      relationshipReportId,
+      viewerReportId,
+      partnerReportId,
+      viewerClerkUserId: userId,
+      locale,
+      legacyByKind: byKind,
+      withPayload: true,
+    });
+    if (!premiumAccessOk) {
+      return NextResponse.json(
+        { error: getMessages(locale).errors.generic },
+        { status: 503 },
+      );
+    }
+    const kindAccess = premiumAccess[kind];
+    const createOwn = (body as { create_own?: unknown }).create_own === true;
+    const decision = decidePremiumPost(kindAccess, { forceRegenerate, createOwn });
+    const existing = "serve" in decision
+      ? { source: decision.serve, payload: decision.payload }
+      : null;
+    if (existing) {
+      const cached = existing.payload;
       const forClient =
         kind === "family"
           ? stripFamilyContextOutputForClient(
@@ -277,8 +304,31 @@ export async function POST(req: Request) {
         relationship_kind: kind,
         locale,
         result_premium: forClient,
+        premium_source: existing.source,
+        generated: false,
       });
     }
+    const saveReason: "first_generation" | "user_regenerate" =
+      "generate" in decision ? decision.generate : "first_generation";
+    /** Saves the result as the VIEWER's own report (never the legacy row, never the partner's). */
+    const saveMine = async (payload: unknown) => {
+      const { error } = await saveOwnedRelationshipPremium(supabase, {
+        relationshipReportId,
+        ownerReportId: viewerReportId,
+        ownerClerkUserId: userId,
+        kind,
+        locale,
+        payload,
+        reason: saveReason,
+      });
+      if (!error) {
+        // Unchanged side effect of the old merge: remember the last kind.
+        await updateRelationshipReportSafe(supabase, relationshipReportId, {
+          relationship_kind: kind,
+        });
+      }
+      return { error };
+    };
 
     const [fetchA, fetchB, clerkUser] = await Promise.all([
       fetchReportWithBirthCoords(supabase, rr.report_id_a, "clerk_user_id, report_type"),
@@ -614,8 +664,10 @@ export async function POST(req: Request) {
       const persist = await persistRomanticPremiumResult(supabase, {
         relationshipReportId,
         viewerReportId,
+        ownerClerkUserId: userId,
         romanticPayload,
         locale,
+        reason: saveReason,
       });
 
       if (!persist.ok) {
@@ -695,13 +747,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error: upErr } = await mergeRelationshipPremiumByKind(
-        supabase,
-        relationshipReportId,
-        "work",
-        workWithLocale,
-        { relationshipKind: kind, locale },
-      );
+      const { error: upErr } = await saveMine(workWithLocale);
 
       if (upErr) {
         logServerError("relationship/analyze/premium work update:", upErr, "internal_error");
@@ -801,13 +847,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error: upErr } = await mergeRelationshipPremiumByKind(
-        supabase,
-        relationshipReportId,
-        "cohabitation",
-        cohabitationWithLocale,
-        { relationshipKind: kind, locale },
-      );
+      const { error: upErr } = await saveMine(cohabitationWithLocale);
 
       if (upErr) {
         logServerError("relationship/analyze/premium cohabitation update:", upErr, "internal_error");
@@ -911,11 +951,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error: upErr } = await mergeRelationshipPremiumByKind(
-        supabase,
-        relationshipReportId,
-        "family",
-        {
+      const { error: upErr } = await saveMine({
           ...familyPayload,
           report: {
             ...familyPayload.report,
@@ -925,9 +961,7 @@ export async function POST(req: Request) {
               language: toLegacyShortLocale(locale),
             },
           },
-        },
-        { relationshipKind: kind, locale },
-      );
+        });
 
       if (upErr) {
         logServerError("relationship/analyze/premium family update:", upErr, "internal_error");
@@ -1011,11 +1045,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error: upErr } = await mergeRelationshipPremiumByKind(
-        supabase,
-        relationshipReportId,
-        "friendship",
-        {
+      const { error: upErr } = await saveMine({
           ...friendshipPayload,
           report: {
             ...friendshipPayload.report,
@@ -1025,9 +1055,7 @@ export async function POST(req: Request) {
               language: toLegacyShortLocale(locale),
             },
           },
-        },
-        { relationshipKind: kind, locale },
-      );
+        });
 
       if (upErr) {
         logServerError("relationship/analyze/premium friendship update:", upErr, "internal_error");

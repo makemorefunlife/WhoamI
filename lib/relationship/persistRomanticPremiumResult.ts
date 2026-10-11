@@ -6,7 +6,7 @@ import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
   getRelationshipPremiumSaveFailedMessage,
 } from "@/lib/relationship/relationshipPremiumGuard";
-import { mergeRelationshipPremiumByKind } from "@/lib/relationship/relationshipReportQuery";
+import { saveOwnedRelationshipPremium } from "@/lib/relationship/premiumAccess";
 
 export type PersistRomanticPremiumResult =
   | { ok: true }
@@ -17,8 +17,11 @@ export async function persistRomanticPremiumResult(
   params: {
     relationshipReportId: string;
     viewerReportId: string;
+    /** Creator (signed-in user). The report is saved as THEIR report only. */
+    ownerClerkUserId: string;
     romanticPayload: RomanticSajuDeepPayload;
     locale?: string;
+    reason?: "first_generation" | "user_regenerate";
   },
 ): Promise<PersistRomanticPremiumResult> {
   const locale =
@@ -29,13 +32,17 @@ export async function persistRomanticPremiumResult(
         ? params.romanticPayload.report.meta.language
         : "en-US");
 
-  const { error: upErr } = await mergeRelationshipPremiumByKind(
-    supabase,
-    params.relationshipReportId,
-    "romantic",
-    params.romanticPayload,
-    { relationshipKind: "romantic", locale },
-  );
+  // Per-creator report (2026-10-11): never written into the shared legacy
+  // result_premium_by_kind, never over the other participant's report.
+  const { error: upErr } = await saveOwnedRelationshipPremium(supabase, {
+    relationshipReportId: params.relationshipReportId,
+    ownerReportId: params.viewerReportId,
+    ownerClerkUserId: params.ownerClerkUserId,
+    kind: "romantic",
+    locale,
+    payload: params.romanticPayload,
+    reason: params.reason ?? "first_generation",
+  });
 
   if (upErr) {
     logServerError("persistRomanticPremiumResult update:", upErr, "internal_error");

@@ -93,6 +93,9 @@ export async function acquireRelationshipPremiumGenerationLock(
       .eq("relationship_report_id", relationshipReportId)
       .eq("kind", kind)
       .eq("locale", locale)
+      // One slot per creator (20261011090000): each participant generates
+      // their own report, so they never block or steal each other's slot.
+      .eq("requested_by_report_id", requestedByReportId)
       .maybeSingle();
     const previousRequestId = previous.data?.current_request_id as string | undefined;
 
@@ -104,6 +107,7 @@ export async function acquireRelationshipPremiumGenerationLock(
         current_request_id: generationRequestId,
       })
       .eq("relationship_report_id", relationshipReportId)
+      .eq("requested_by_report_id", requestedByReportId)
       .eq("kind", kind)
       .eq("locale", locale)
       .lt("started_at", staleCutoff)

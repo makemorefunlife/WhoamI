@@ -44,7 +44,9 @@ async function main() {
   // cached report BEFORE it ever reaches reserve_credit.
   assert.doesNotMatch(detailRoute, /reserve(Relationship)?Credit|consume(Relationship)?Credit/);
   assert.ok(
-    before(premiumRoute, "hasPremiumCacheForKindLocale(byKind, kind, locale)", "reserveRelationshipCredit(supabase"),
+    // 2026-10-11: readable copy (own / shared / legacy) decided by
+    // decidePremiumPost and returned before any credit reservation.
+    before(premiumRoute, "decidePremiumPost(kindAccess", "reserveRelationshipCredit(supabase"),
     "cache hit must return before credit reservation",
   );
   ok("saved report -> shows report state; detail read and cache hit never touch credits");

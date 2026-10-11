@@ -6,6 +6,7 @@ import {
   supabaseConfigErrorResponse,
 } from "@/lib/supabase/serverClient";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import { fetchAccessiblePremiumKinds } from "@/lib/relationship/premiumAccess";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import {
@@ -63,6 +64,13 @@ export async function GET(req: Request) {
       (names ?? []).map((n) => [n.id, n.name?.trim() || "탐사자"]),
     );
 
+    const accessibleByRr = await fetchAccessiblePremiumKinds(
+      supabase,
+      reportId,
+      rows.map((r) => r.id as string),
+      locale,
+    );
+
     const items = rows.map((r) => {
       const partnerId =
         r.report_id_a === reportId ? r.report_id_b : r.report_id_a;
@@ -77,6 +85,7 @@ export async function GET(req: Request) {
         r.result_premium_by_kind,
         r.relationship_kind,
         locale,
+        accessibleByRr.get(r.id as string),
       );
 
       return {

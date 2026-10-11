@@ -6,6 +6,7 @@ import {
   fetchRelationshipReportRowsForHub,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
+import { fetchAccessiblePremiumKinds } from "@/lib/relationship/premiumAccess";
 import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { inviteExpiryCutoffIso } from "@/lib/relationship/inviteExpiry";
@@ -258,6 +259,14 @@ export async function GET(req: Request) {
       }
     }
 
+    // Readiness by what THIS viewer can open (own + actively shared to them).
+    const accessibleByRr = await fetchAccessiblePremiumKinds(
+      supabase,
+      reportId,
+      rows.map((r) => r.id as string),
+      locale,
+    );
+
     for (const r of rows) {
       const partnerId =
         r.report_id_a === reportId ? r.report_id_b : r.report_id_a;
@@ -282,6 +291,7 @@ export async function GET(req: Request) {
         r.result_premium_by_kind,
         r.relationship_kind,
         locale,
+        accessibleByRr.get(r.id as string),
       );
       const completed = basicDone && (at !== "premium" || premiumDone);
 

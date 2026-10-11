@@ -49,7 +49,14 @@ import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFr
 import { isStaleWorkReportBlock, isStaleFriendReportBlock } from "@/lib/relationship/reportStalenessGuard";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
-import { mergePremiumKindLocale } from "@/lib/relationship/premiumByKind";
+import {
+  accessibleSources,
+  buildViewerByKind,
+  loadPremiumAccess,
+  pickPremiumSource,
+  saveOwnedRelationshipPremium,
+  type PremiumSource,
+} from "@/lib/relationship/premiumAccess";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const runtime = "nodejs";
@@ -62,6 +69,9 @@ export async function GET(req: Request) {
     const viewerReportId = sp.get("viewerReportId")?.trim();
 
     const kindParam = sp.get("relationshipKind")?.trim();
+    // "mine" | "shared" | "legacy" -- which readable copy to show (falls back
+    // to mine > shared > legacy when the requested one is not readable).
+    const requestedSource = sp.get("premiumSource")?.trim() || null;
     const relationshipKind = parseRelationshipKind(kindParam);
     const locale = resolveRequestLocale({
       bodyLanguage: sp.get("language") ?? sp.get("locale"),
@@ -142,7 +152,26 @@ export async function GET(req: Request) {
     const storedKind = parseRelationshipKind(rr.relationship_kind);
     const activeKind = kindParam ? relationshipKind : storedKind;
 
-    const byKind = (rr.result_premium_by_kind ?? {}) as ResultPremiumByKind;
+    // Only what THIS viewer may read (premiumAccess.ts): own report, an
+    // actively shared report of the partner, or the legacy row. Nothing else
+    // reaches the response -- no body, no summary.
+    const legacyByKind = (rr.result_premium_by_kind ?? {}) as ResultPremiumByKind;
+    const { access } = await loadPremiumAccess(supabase, {
+      relationshipReportId,
+      viewerReportId,
+      partnerReportId: partnerId,
+      viewerClerkUserId: userId ?? null,
+      locale,
+      legacyByKind,
+      withPayload: true,
+    });
+    const chosenSource = {} as Record<RelationshipKind, PremiumSource | null>;
+    for (const k of RELATIONSHIP_KINDS) {
+      chosenSource[k] = pickPremiumSource(access[k], k === activeKind ? requestedSource : null);
+    }
+    const byKind = buildViewerByKind(access, locale, chosenSource, legacyByKind);
+    const activeSource = chosenSource[activeKind];
+    const activeAccess = access[activeKind];
 
     const perspectivePremium = getPremiumPerspectiveForKind(
       byKind,
@@ -221,7 +250,10 @@ export async function GET(req: Request) {
     // or generated under old analysis_engine_version), re-hydrate it on the fly
     // deterministically (0 LLM credits, ~10ms execution) so the user gets fresh,
     // fully-wired Saju report data immediately on read.
-    if (activeKind === "work" && (!workColleagueDeepRaw || isStaleWorkReportBlock(workColleagueDeepRaw))) {
+    // Stale-format upgrade only for a report this viewer can already read
+    // (never builds a paid report from nothing). Saved only into the
+    // viewer's OWN report; a shared or legacy original is never rewritten.
+    if (activeKind === "work" && workColleagueDeepRaw && isStaleWorkReportBlock(workColleagueDeepRaw)) {
       if (repA?.birth_date && repB?.birth_date) {
         try {
           const bundleA = calculateSajuBundle({
@@ -267,14 +299,17 @@ export async function GET(req: Request) {
             locale,
           });
 
-          const updatedByKind = mergePremiumKindLocale(byKind, "work", locale as Locale, {
-            format: WORK_COLLEAGUE_DEEP_FORMAT,
-            report: workColleagueDeepRaw,
-          });
-          void supabase
-            .from("relationship_reports")
-            .update({ result_premium_by_kind: updatedByKind })
-            .eq("id", relationshipReportId);
+          if (activeSource === "mine" && userId) {
+            void saveOwnedRelationshipPremium(supabase, {
+              relationshipReportId,
+              ownerReportId: viewerReportId,
+              ownerClerkUserId: userId,
+              kind: "work",
+              locale: locale as Locale,
+              payload: { format: WORK_COLLEAGUE_DEEP_FORMAT, report: workColleagueDeepRaw },
+              reason: "auto_upgrade",
+            });
+          }
         } catch (e) {
           logServerError("Auto-upgrade work report failed", e);
         }
@@ -306,7 +341,7 @@ export async function GET(req: Request) {
         ? getFriendSocialDeepReport(byKind, locale)
         : null;
 
-    if (activeKind === "friendship" && (!friendshipDeepRaw || isStaleFriendReportBlock(friendshipDeepRaw))) {
+    if (activeKind === "friendship" && friendshipDeepRaw && isStaleFriendReportBlock(friendshipDeepRaw)) {
       if (repA?.birth_date && repB?.birth_date) {
         try {
           const bundleA = calculateSajuBundle({
@@ -352,14 +387,17 @@ export async function GET(req: Request) {
             locale,
           });
 
-          const updatedByKind = mergePremiumKindLocale(byKind, "friendship", locale as Locale, {
-            format: FRIEND_SOCIAL_DEEP_FORMAT,
-            report: friendshipDeepRaw,
-          });
-          void supabase
-            .from("relationship_reports")
-            .update({ result_premium_by_kind: updatedByKind })
-            .eq("id", relationshipReportId);
+          if (activeSource === "mine" && userId) {
+            void saveOwnedRelationshipPremium(supabase, {
+              relationshipReportId,
+              ownerReportId: viewerReportId,
+              ownerClerkUserId: userId,
+              kind: "friendship",
+              locale: locale as Locale,
+              payload: { format: FRIEND_SOCIAL_DEEP_FORMAT, report: friendshipDeepRaw },
+              reason: "auto_upgrade",
+            });
+          }
         } catch (e) {
           logServerError("Auto-upgrade friend report failed", e);
         }
@@ -428,9 +466,23 @@ export async function GET(req: Request) {
       premium_ready: activeKindReportReady,
       // Per kind, in the language being viewed (another language's report
       // doesn't count -- it is generated separately).
+      // Readiness = what THIS viewer can open in this language.
       premium_kinds_ready: RELATIONSHIP_KINDS.filter((k) =>
         hasPremiumCacheForKindLocale(byKind, k, locale),
       ),
+      /** Per kind: readable copies for this viewer ("mine" | "shared" | "legacy"). */
+      premium_access: Object.fromEntries(
+        RELATIONSHIP_KINDS.map((k) => [k, accessibleSources(access[k])]),
+      ),
+      /** Which copy of the active kind this response carries. */
+      premium_source: activeSource,
+      /** Id of that copy (mine/shared only; legacy has none). Used by the share section. */
+      premium_report_id:
+        activeSource === "mine"
+          ? activeAccess.mine?.id ?? null
+          : activeSource === "shared"
+            ? activeAccess.shared?.id ?? null
+            : null,
       locale,
       /** Locale the stored result_basic was generated in; null = unknown/legacy row. */
       basic_locale: getResultBasicLocale(rr.result_basic),

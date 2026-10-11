@@ -10,20 +10,23 @@ import NoticeDialog from "@/components/common/NoticeDialog";
 type ShareState = "loading" | "private" | "shared";
 
 /**
- * Explicit, opt-in share consent at the end of a premium report — spec
- * sections 32-36. Reports are PRIVATE by default; nothing here fires until
- * the owner clicks the share button, and nothing here notifies the other
- * person either way.
+ * Explicit, opt-in share consent at the end of the viewer's OWN premium
+ * report — spec sections 32-36. Reports are PRIVATE to their creator by
+ * default; the other participant can open this exact report only while it
+ * is shared. Stopping blocks new opens; it does not take back what was read.
  */
 export default function ReportShareSection({
   relationshipReportId,
   viewerReportId,
   kind,
+  premiumReportId,
   recipientName,
 }: {
   relationshipReportId: string;
   viewerReportId: string;
   kind: string;
+  /** The viewer's own report being shared (server re-checks the creator). */
+  premiumReportId: string;
   recipientName: string;
 }) {
   const { messages } = useLocale();
@@ -39,7 +42,7 @@ export default function ReportShareSection({
     void (async () => {
       try {
         const res = await fetch(
-          `/api/relationship/share/status?relationshipReportId=${encodeURIComponent(relationshipReportId)}&ownerReportId=${encodeURIComponent(viewerReportId)}&kind=${encodeURIComponent(kind)}`,
+          `/api/relationship/share/status?relationshipReportId=${encodeURIComponent(relationshipReportId)}&ownerReportId=${encodeURIComponent(viewerReportId)}&kind=${encodeURIComponent(kind)}&premiumReportId=${encodeURIComponent(premiumReportId)}`,
         );
         const data = await res.json().catch(() => null);
         if (cancelled) return;
@@ -56,7 +59,7 @@ export default function ReportShareSection({
     return () => {
       cancelled = true;
     };
-  }, [relationshipReportId, viewerReportId, kind]);
+  }, [relationshipReportId, viewerReportId, kind, premiumReportId]);
 
   async function handleShare() {
     if (busy) return;
@@ -65,7 +68,7 @@ export default function ReportShareSection({
       const res = await fetch("/api/relationship/share/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ relationshipReportId, ownerReportId: viewerReportId, kind }),
+        body: JSON.stringify({ relationshipReportId, ownerReportId: viewerReportId, kind, premiumReportId }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.shareToken) {
@@ -93,7 +96,7 @@ export default function ReportShareSection({
       const res = await fetch("/api/relationship/share/revoke", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ relationshipReportId, ownerReportId: viewerReportId, kind }),
+        body: JSON.stringify({ relationshipReportId, ownerReportId: viewerReportId, kind, premiumReportId }),
       });
       if (res.ok) {
         setState("private");

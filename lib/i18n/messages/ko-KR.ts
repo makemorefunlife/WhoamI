@@ -2109,12 +2109,21 @@ export const messagesKoKR: MessageCatalog = {
       linkReadyTitle: "공유했어요. 상대방 홈 화면에 바로 나타나요.",
       copyLinkFallbackHint: "링크로 직접 보내고 싶다면:",
       stopSharingCta: "공유 중지",
-      stopSharingConfirm: "공유를 중지할까요? 상대는 더 이상 이 보고서를 열어볼 수 없어요.",
-      stopSharingDone: "공유가 중지됐어요. 이전 링크는 더 이상 열리지 않아요.",
+      stopSharingConfirm:
+        "공유를 중지할까요? 중지하면 상대는 이 보고서를 더 이상 새로 열 수 없어요. 이미 본 내용을 되돌리지는 않아요.",
+      stopSharingDone: "공유를 중지했어요. 상대는 이제 이 보고서를 새로 열 수 없어요.",
       accessDeniedTitle: "공유받지 않은 보고서예요",
       accessDeniedBody: "이 보고서는 공유받은 사람만 열어볼 수 있어요.",
       authRequiredBody: "공유된 보고서를 열려면 먼저 로그인해주세요.",
       createFailed: "공유 링크를 만들지 못했어요. 잠시 후 다시 시도해주세요.",
+      notOwner: "내가 만든 보고서만 공유하거나 공유를 중지할 수 있어요.",
+      sourceMine: "내 분석",
+      sourceShared: (name: string) => `${name}님이 공유한 분석`,
+      sourceLegacy: "이전 분석",
+      legacyNote:
+        "만든 사람이 기록되기 전에 만들어진 분석이에요. 정리가 끝날 때까지 지금처럼 그대로 보관하고 보여드려요.",
+      sharedNote: "공유받은 분석은 이용권 없이 볼 수 있어요.",
+      createOwnCta: "내 이용권으로 내 분석 만들기 (1회 사용)",
     },
     mapShare: {
       cta: "관계 지도 공유하기",

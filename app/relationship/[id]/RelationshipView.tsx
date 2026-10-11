@@ -12,6 +12,7 @@ import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 import RegenerateConfirmDialog from "@/components/relationship/detail/RegenerateConfirmDialog";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
+import PremiumSourceBar from "@/components/relationship/detail/PremiumSourceBar";
 import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { relationshipBasicFeedbackContext } from "@/lib/feedback/feedbackContext";
@@ -98,6 +99,10 @@ export default function RelationshipView({
     setFamilyChildIsViewer,
     runPremium,
     regeneratePremium,
+    premiumSource,
+    premiumSources,
+    premiumReportId,
+    selectPremiumSource,
     showRegenerateConfirm,
     cancelRegeneratePremium,
     confirmRegeneratePremium,
@@ -406,6 +411,17 @@ export default function RelationshipView({
             </div>
           ) : null}
 
+          {!viewingBasicSurface && premiumReady && premiumSource && !showGeneratingPanel ? (
+            <PremiumSourceBar
+              source={premiumSource}
+              sources={premiumSources}
+              partnerName={partnerName}
+              busy={generating}
+              onSelect={selectPremiumSource}
+              onCreateOwn={() => void runPremium(premiumKind, { createOwn: true })}
+            />
+          ) : null}
+
           {!viewingBasicSurface ? (
             <RelationshipPremiumSection
               relationshipReportId={resolvedRelationshipId}
@@ -431,6 +447,7 @@ export default function RelationshipView({
               displayFriendshipDeep={displayFriendshipDeep}
               onRunPremium={runPremium}
               onRegeneratePremium={regeneratePremium}
+              canRegenerate={premiumSource !== "shared" && premiumSource !== "legacy"}
               forceVisible={urlAutostart || generating}
               onReportReadyRef={reportAnchorRef}
               creditExhausted={premiumCreditExhausted}
@@ -466,11 +483,13 @@ export default function RelationshipView({
               <p className="mt-4 text-center text-sm font-medium text-secondary">
                 {messages.report.reportReadyNotice}
               </p>
-              {resolvedRelationshipId && viewerReportId && !viaShare ? (
+              {/* Share controls only on the viewer's OWN report (server re-checks creator). */}
+              {resolvedRelationshipId && viewerReportId && premiumSource === "mine" && premiumReportId ? (
                 <ReportShareSection
                   relationshipReportId={resolvedRelationshipId}
                   viewerReportId={viewerReportId}
                   kind={premiumKind}
+                  premiumReportId={premiumReportId}
                   recipientName={partnerName}
                 />
               ) : null}
@@ -479,7 +498,7 @@ export default function RelationshipView({
                   relationshipReportId={resolvedRelationshipId}
                   viewerReportId={viewerReportId}
                   currentKind={premiumKind}
-                  variant={viaShare ? "recipient" : "owner"}
+                  variant={viaShare || premiumSource === "shared" ? "recipient" : "owner"}
                 />
               ) : null}
             </>

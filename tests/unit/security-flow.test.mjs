@@ -437,7 +437,9 @@ async function run() {
       "app/api/relationship/analyze/premium/route.ts",
       "utf8",
     );
-    assert.match(premiumSrc, /mergeRelationshipPremiumByKind/);
+    // 2026-10-11: results are saved as the requester's own report
+    // (per-creator table), no longer merged into the shared legacy column.
+    assert.match(premiumSrc, /saveOwnedRelationshipPremium/);
     assert.match(premiumSrc, /ensureRelationshipPremiumSlot/);
     const policySrc = fs.readFileSync(
       "lib/product/premiumAccessPolicy.ts",
