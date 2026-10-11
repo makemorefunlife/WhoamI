@@ -686,6 +686,12 @@ export const messagesEnUS = {
     myAccessJournalLabel: "Decision Journal",
     myAccessJournalUnlimitedUntil: (date: string) => `Unlimited entries until ${date}`,
     myAccessJournalNormalAllowance: "20 entries included",
+    myAccessUsableHere: (n: number) => `${n} available on this screen`,
+    myAccessSharedNote: (n: number) => `${n} of these are earlier passes you can use in any language.`,
+    myAccessOtherLanguage: (n: number) => `${n} more were bought for the Korean screen and can be used there.`,
+    myAccessTriple: (remaining: number, total: number) => `Relationship Triple · ${remaining} of ${total} left`,
+    myAccessPassUntil: (date: string) => `30-Day Pass active until ${date}`,
+    billingNoPlanKr: "Pick another pass whenever you need one.",
     myAccessLoadError: "We couldn't load your access info. Please try again.",
     myAccessGiftsTitle: "Personal Analysis Gifts",
     myAccessGiftsSubtitle:
@@ -730,6 +736,7 @@ export const messagesEnUS = {
     selectorTitlePersonal: "Unlock your deep report",
     selectorTitleRelationship: "Unlock this relationship's deep report",
     selectorTitleAccount: "Choose your plan",
+    selectorTitleJournal: "Keep writing in your Decision Journal",
     selectorPrimaryBadge: "Recommended for you",
     selectorSelectedBadge: "Selected analysis",
     selectorBestValueBadge: "Best value",
@@ -1176,6 +1183,9 @@ export const messagesEnUS = {
     journalCapReachedNotice: (cap: number) =>
       `You've reached your ${cap}-entry Decision Journal limit. Upgrade to a 30-Day Insight Pass or 12-Month Membership for unlimited entries.`,
     journalCapUpgradeCta: "See upgrade options",
+    deviceMoveNotice: (n: number) => `There are ${n} entries saved on this device. Move them to your account to see them on any device. The copy on this device stays.`,
+    deviceMoveConfirm: "Move to my account",
+    deviceMoveDismiss: "These aren't mine",
   },
   legal: {
     backHome: "← Back home",
@@ -3002,6 +3012,12 @@ export type MessageCatalog = {
     myAccessJournalLabel: string;
     myAccessJournalUnlimitedUntil: (date: string) => string;
     myAccessJournalNormalAllowance: string;
+    myAccessUsableHere: (n: number) => string;
+    myAccessSharedNote: (n: number) => string;
+    myAccessOtherLanguage: (n: number) => string;
+    myAccessTriple: (remaining: number, total: number) => string;
+    myAccessPassUntil: (date: string) => string;
+    billingNoPlanKr: string;
     myAccessLoadError: string;
     myAccessGiftsTitle: string;
     myAccessGiftsSubtitle: string;
@@ -3038,6 +3054,7 @@ export type MessageCatalog = {
     selectorTitlePersonal: string;
     selectorTitleRelationship: string;
     selectorTitleAccount: string;
+    selectorTitleJournal: string;
     selectorPrimaryBadge: string;
     selectorSelectedBadge: string;
     selectorBestValueBadge: string;
@@ -3285,6 +3302,9 @@ export type MessageCatalog = {
     starRatingAria: (value: number, max: number) => string;
     journalCapReachedNotice: (cap: number) => string;
     journalCapUpgradeCta: string;
+    deviceMoveNotice: (n: number) => string;
+    deviceMoveConfirm: string;
+    deviceMoveDismiss: string;
   };
   legal: {
     backHome: string;

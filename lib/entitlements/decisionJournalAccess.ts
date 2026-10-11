@@ -72,24 +72,41 @@ export async function getDecisionJournalAccess(
   // is intentionally never joined against us_purchase_grants -- see
   // 20260922060000_kr_purchase_grants_provider_agnostic.sql). Without this
   // check a KR Pass buyer would incorrectly get hasAccess: false here.
-  const { data: krPass } = await supabase
+  // The window starts at the purchase (a guest purchase linked later is
+  // re-anchored to its approval time by claim_paid_guest_toss_order), and a
+  // refunded / cancelled Toss order gives no access (2026-10-11).
+  const { data: krPasses } = await supabase
     .from("kr_purchase_grants")
-    .select("created_at")
+    .select("created_at, provider_transaction_id")
     .eq("clerk_user_id", clerkUserId)
     .eq("plan_id", "kr_insight_pass_30d")
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(5);
 
-  if (krPass) {
+  for (const krPass of (krPasses ?? []) as { created_at: string; provider_transaction_id: string | null }[]) {
     const expiresAt = new Date(
-      new Date(krPass.created_at as string).getTime() +
-        INSIGHT_PASS_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+      new Date(krPass.created_at).getTime() + INSIGHT_PASS_WINDOW_DAYS * 24 * 60 * 60 * 1000,
     );
-    if (expiresAt.getTime() > Date.now()) {
-      return { hasAccess: true, source: "insight_pass_30d", expiresAt: expiresAt.toISOString() };
-    }
+    if (expiresAt.getTime() <= Date.now()) continue;
+    if (await isRefundedTossTransaction(supabase, krPass.provider_transaction_id)) continue;
+    return { hasAccess: true, source: "insight_pass_30d", expiresAt: expiresAt.toISOString() };
   }
 
   return { hasAccess: false };
+}
+
+/** "toss:<paymentKey>" grant whose order was refunded / cancelled. Unknown -> not refunded. */
+export async function isRefundedTossTransaction(
+  supabase: SupabaseClient,
+  providerTransactionId: string | null | undefined,
+): Promise<boolean> {
+  const key = providerTransactionId?.startsWith("toss:") ? providerTransactionId.slice(5) : null;
+  if (!key) return false;
+  const { data, error } = await supabase
+    .from("toss_payment_orders")
+    .select("status")
+    .eq("payment_key", key)
+    .maybeSingle();
+  if (error || !data) return false;
+  return ["refunded", "canceled", "cancelled"].includes(String((data as { status?: string }).status));
 }

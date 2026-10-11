@@ -23,7 +23,15 @@ type MembershipInfo = {
 
 type LoadState = "loading" | "loaded" | "error";
 
-type CreditSummary = { remaining: number; soonestExpiresAt: string | null };
+type CreditBreakdown = {
+  usableHere: { remaining: number; soonestExpiresAt: string | null };
+  thisLanguage: number;
+  shared: number;
+  otherLanguage: number;
+  triple: { remaining: number; total: number; expiresAt: string | null } | null;
+  pass: { remaining: number; expiresAt: string | null } | null;
+};
+type CreditSummary = { remaining: number; soonestExpiresAt: string | null; breakdown?: CreditBreakdown };
 type JournalSummary = { unlimited: boolean; unlimitedUntil: string | null; unlimitedSource: string | null };
 type PersonalGiftEntry = { code: string; status: "available" | "claimed" | "expired" };
 type EntitlementsInfo = {
@@ -96,7 +104,7 @@ export default function AccountBillingPage() {
           headers: { "Content-Type": "application/json" },
           body: "{}",
         }).catch(() => null);
-        const res = await fetch("/api/account/entitlements");
+        const res = await fetch(`/api/account/entitlements?${new URLSearchParams({ locale })}`);
         const body = (await res.json().catch(() => null)) as EntitlementsInfo | null;
         if (cancelled) return;
         if (!res.ok || !body) {
@@ -112,7 +120,7 @@ export default function AccountBillingPage() {
     return () => {
       cancelled = true;
     };
-  }, [isSignedIn]);
+  }, [isSignedIn, locale]);
 
   async function handleConfirmCancel() {
     if (cancelling) return;
@@ -199,7 +207,7 @@ export default function AccountBillingPage() {
       // until their next visit or manual reload.
     }
     try {
-      const res = await fetch("/api/account/entitlements");
+      const res = await fetch(`/api/account/entitlements?${new URLSearchParams({ locale })}`);
       const body = (await res.json().catch(() => null)) as EntitlementsInfo | null;
       if (res.ok && body) {
         setEntitlements(body);
@@ -233,23 +241,29 @@ export default function AccountBillingPage() {
                 { label: copy.myAccessPersonalLabel, credit: entitlements.personal },
                 { label: copy.myAccessRelationshipLabel, credit: entitlements.relationship },
               ] as const
-            ).map(({ label, credit }) => (
+            ).map(({ label, credit }) => {
+              // Usable on THIS screen's language (own + any-language lots); older
+              // responses without a breakdown fall back to the plain total.
+              const b = credit.breakdown;
+              const usable = b ? b.usableHere.remaining : credit.remaining;
+              const expires = b ? b.usableHere.soonestExpiresAt : credit.soonestExpiresAt;
+              return (
               <div
                 key={label}
                 className="rounded-xl border border-outline-variant/25 bg-surface-container-lowest/70 p-4"
               >
                 <p className="text-sm font-medium text-on-surface">{label}</p>
                 <p className="mt-1 text-sm text-on-surface-variant">
-                  {credit.remaining > 0
-                    ? copy.myAccessRemainingCount(credit.remaining)
+                  {usable > 0
+                    ? b ? copy.myAccessUsableHere(usable) : copy.myAccessRemainingCount(usable)
                     : copy.myAccessNoneRemaining}
                 </p>
-                {credit.remaining > 0 ? (
+                {usable > 0 ? (
                   <p className="mt-0.5 text-xs text-on-surface-variant">
-                    {credit.soonestExpiresAt ? (
+                    {expires ? (
                       <>
-                        {copy.myAccessExpiresOn(formatDecisionDate(credit.soonestExpiresAt, locale))}
-                        {isExpiringSoon(credit.soonestExpiresAt) ? (
+                        {copy.myAccessExpiresOn(formatDecisionDate(expires, locale))}
+                        {isExpiringSoon(expires) ? (
                           <span className="ml-1 font-semibold text-amber-700">
                             · {copy.myAccessExpiringSoon}
                           </span>
@@ -260,8 +274,23 @@ export default function AccountBillingPage() {
                     )}
                   </p>
                 ) : null}
+                {b && b.shared > 0 && b.thisLanguage > 0 ? (
+                  <p className="mt-0.5 text-xs text-on-surface-variant">{copy.myAccessSharedNote(b.shared)}</p>
+                ) : null}
+                {b?.triple ? (
+                  <p className="mt-0.5 text-xs text-on-surface-variant">
+                    {copy.myAccessTriple(b.triple.remaining, b.triple.total)}
+                    {b.triple.remaining > 0 && b.triple.expiresAt
+                      ? ` · ${copy.myAccessExpiresOn(formatDecisionDate(b.triple.expiresAt, locale))}`
+                      : null}
+                  </p>
+                ) : null}
+                {b && b.otherLanguage > 0 ? (
+                  <p className="mt-0.5 text-xs text-on-surface-variant">{copy.myAccessOtherLanguage(b.otherLanguage)}</p>
+                ) : null}
               </div>
-            ))}
+              );
+            })}
 
             <div className="rounded-xl border border-outline-variant/25 bg-surface-container-lowest/70 p-4">
               <p className="text-sm font-medium text-on-surface">{copy.myAccessJournalLabel}</p>
@@ -272,6 +301,11 @@ export default function AccountBillingPage() {
                     )
                   : copy.myAccessJournalNormalAllowance}
               </p>
+              {entitlements.journal.unlimitedSource === "insight_pass_30d" && entitlements.journal.unlimitedUntil ? (
+                <p className="mt-0.5 text-xs text-on-surface-variant">
+                  {copy.myAccessPassUntil(formatDecisionDate(entitlements.journal.unlimitedUntil, locale))}
+                </p>
+              ) : null}
             </div>
 
             {membership && entitlements.personalGifts.length > 0 ? (
@@ -346,8 +380,9 @@ export default function AccountBillingPage() {
           <p className="text-sm text-on-surface-variant">{copy.billingLoadError}</p>
         ) : !membership ? (
           <div className="space-y-4">
+            {/* KR has no membership product: never mention the US membership there. */}
             <p className="text-sm leading-relaxed text-on-surface-variant">
-              {copy.billingNoActiveMembership}
+              {locale === "ko-KR" ? copy.billingNoPlanKr : copy.billingNoActiveMembership}
             </p>
             <button
               type="button"

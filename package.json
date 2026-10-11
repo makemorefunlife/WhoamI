@@ -45,7 +45,9 @@
     "test:verify-ce": "npx tsx tests/scripts/verify-romantic-v4-rendered-ce.ts",
     "typecheck:relationship": "node tests/scripts/check-relationship-typecheck-baseline.mjs",
     "test:guest-relationship": "tsx tests/unit/guest-relationship-flow.test.ts",
-    "test:guest-relationship-sql": "bash tests/scripts/run-guest-relationship-sql.sh"
+    "test:guest-relationship-sql": "bash tests/scripts/run-guest-relationship-sql.sh",
+    "test:stage5-entitlements": "tsx tests/unit/stage5-entitlements-journal.test.ts",
+    "test:decision-journal-sql": "bash tests/scripts/run-decision-journal-sql.sh"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.0",

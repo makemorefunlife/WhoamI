@@ -12,11 +12,7 @@ import DecisionReviewCard from "@/components/decision/DecisionReviewCard";
 import DecisionReviewSheet from "@/components/decision/DecisionReviewSheet";
 import { decisionPanelClass } from "@/components/decision/decisionPanelClass";
 import { stitchPillClass } from "@/components/decision/stitchPillClass";
-import {
-  completeDecisionReview,
-  readDecisionJournal,
-  readDecisionReportId,
-} from "@/lib/decision/session";
+import { useDecisionJournal } from "@/lib/decision/useDecisionJournal";
 import { sortDecisionsForReview } from "@/lib/decision/sort";
 import {
   isDecisionReviewed,
@@ -53,9 +49,8 @@ export default function DecisionHistoryContent() {
   const { openSignIn } = useClerk();
   const isGuest = isLoaded && !user;
 
-  const [reportId, setReportId] = useState("");
-  const [entries, setEntries] = useState<DecisionEntry[]>([]);
-  const [journalReady, setJournalReady] = useState(false);
+  const journal = useDecisionJournal();
+  const { entries, ready: journalReady } = journal;
   const [statusFilter, setStatusFilter] = useState<HistoryStatusFilter>("all");
   const [ratingFilter, setRatingFilter] =
     useState<HistoryRatingFilter>("all");
@@ -66,19 +61,8 @@ export default function DecisionHistoryContent() {
   const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
-    const id = readDecisionReportId();
-    setReportId(id);
-    setEntries(readDecisionJournal(id));
-    setJournalReady(true);
-  }, []);
-
-  useEffect(() => {
     setVisibleCount(10);
   }, [statusFilter, ratingFilter, categoryFilter]);
-
-  const persist = useCallback((next: DecisionEntry[]) => {
-    setEntries(next);
-  }, []);
 
   const requireAuth = useCallback(() => {
     openSignIn?.({
@@ -113,9 +97,7 @@ export default function DecisionHistoryContent() {
   };
 
   const handleSaveReview = (id: string, rating: number, note: string) => {
-    if (!reportId) return;
-    const next = completeDecisionReview(reportId, id, rating, note);
-    persist(next);
+    void journal.completeReview(id, rating, note);
   };
 
   const clearFilters = () => {
