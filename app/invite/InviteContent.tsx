@@ -84,11 +84,6 @@ export default function InviteContent() {
           <p className="text-balance leading-relaxed text-on-surface">
             {message}
           </p>
-          {token ? (
-            <p className="mt-3 break-all text-xs text-on-surface-variant/60">
-              token: {token}
-            </p>
-          ) : null}
         </div>
 
         {unavailable ? null : (

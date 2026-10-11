@@ -9,6 +9,45 @@ export const messagesEnUS = {
     infoChangedSince:
       "Your info has changed since. This report is kept as it is. To see the new info, you can make a new one (uses 1 credit).",
   },
+  guestInvite: {
+    continueWithoutSignup: "Continue without signing up",
+    continueWithoutSignupHint: "You can see your relationship result without an account. Your info is kept for only 30 days from when you join.",
+    joinTitle: "Continue without an account",
+    joinBody: "Add a name and confirm the consent below. You'll be connected on your friend's Relation Map and see the free relationship result.",
+    nameLabel: "Name your friend will see",
+    ageConsent: "[Required] I am at least 14 years old.",
+    privacyConsent:
+      "[Required] I agree that the birth details (and survey) I entered are used to show the relationship result. If I don't sign up, they are deleted 30 days after I join.",
+    surveyRequired: "In this language, please finish the survey to see the relationship result.",
+    joinCta: "See the relationship result",
+    joining: "Connecting…",
+    errorUnavailable: "This invite was already used or has expired. Ask your friend for a new link.",
+    errorConsent: "Please agree to the required items.",
+    errorGeneric: "Please try again in a moment.",
+    noDraft: "We couldn't find what you entered. Please start again from the invite link.",
+    connectedTitle: (name: string) => `You're connected on ${name}'s Relation Map`,
+    connectedTitleGeneric: "You're connected on your friend's Relation Map",
+    keepUntil: (date: string) => `If you don't sign up, it's kept until ${date} and then deleted.`,
+    saveCta: "Sign up and save this relationship",
+    signInCta: "I already have an account · Sign in",
+    linking: "Saving to your account…",
+    linkCta: "Save this relationship to my account",
+    linkFailed: "We couldn't save it. Please try again in a moment.",
+    paidNote: "A paid relationship report is visible only when the person who made it shares it.",
+    emailTitle: "Continue on another device (optional)",
+    emailBody: "Confirm your email and you can pick this up in another browser. Only a confirmed email is saved.",
+    emailPlaceholder: "Email",
+    sendCode: "Send code",
+    codePlaceholder: "6-digit code",
+    verifyCode: "Confirm",
+    emailVerified: (masked: string) => `${masked} confirmed`,
+    codeSent: "Code sent. Enter it within 10 minutes.",
+    wrongCode: "That code is wrong or has expired.",
+    recoverTitle: "Continue on another device",
+    recoverBody: "Enter the email you confirmed when you joined, and we'll send you a code.",
+    recoverSent: "If that email was confirmed, a code is on its way. Check your inbox.",
+    recoverDone: "You're back in.",
+  },
   nav: {
     home: "Home",
     dashboard: "Dashboard",
@@ -2345,6 +2384,44 @@ export type MessageCatalog = {
     madeWithInfoNote: (date: string) => string;
     madeWithInfoGeneric: string;
     infoChangedSince: string;
+  };
+  guestInvite: {
+    continueWithoutSignup: string;
+    continueWithoutSignupHint: string;
+    joinTitle: string;
+    joinBody: string;
+    nameLabel: string;
+    ageConsent: string;
+    privacyConsent: string;
+    surveyRequired: string;
+    joinCta: string;
+    joining: string;
+    errorUnavailable: string;
+    errorConsent: string;
+    errorGeneric: string;
+    noDraft: string;
+    connectedTitle: (name: string) => string;
+    connectedTitleGeneric: string;
+    keepUntil: (date: string) => string;
+    saveCta: string;
+    signInCta: string;
+    linking: string;
+    linkCta: string;
+    linkFailed: string;
+    paidNote: string;
+    emailTitle: string;
+    emailBody: string;
+    emailPlaceholder: string;
+    sendCode: string;
+    codePlaceholder: string;
+    verifyCode: string;
+    emailVerified: (masked: string) => string;
+    codeSent: string;
+    wrongCode: string;
+    recoverTitle: string;
+    recoverBody: string;
+    recoverSent: string;
+    recoverDone: string;
   };
   nav: {
     home: string;

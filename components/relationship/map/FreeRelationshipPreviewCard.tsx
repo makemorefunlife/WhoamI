@@ -40,9 +40,15 @@ type FreePreviewApiState =
 export default function FreeRelationshipPreviewCard({
   relationshipReportId,
   viewerReportId,
+  endpoint,
+  guest = false,
 }: {
   relationshipReportId: string;
   viewerReportId: string;
+  /** Guest invite participant: session-cookie endpoint instead of the member one. */
+  endpoint?: string;
+  /** Hides member-only follow-ups (personal analysis / survey links). */
+  guest?: boolean;
 }) {
   const { locale, messages, href: localize } = useLocale();
   const [state, setState] = useState<FreePreviewApiState>({ status: "loading" });
@@ -57,7 +63,9 @@ export default function FreeRelationshipPreviewCard({
     void (async () => {
       try {
         const res = await fetch(
-          `/api/relationship/map/free-preview?relationshipReportId=${encodeURIComponent(relationshipReportId)}&viewerReportId=${encodeURIComponent(viewerReportId)}`,
+          endpoint ??
+            `/api/relationship/map/free-preview?relationshipReportId=${encodeURIComponent(relationshipReportId)}&viewerReportId=${encodeURIComponent(viewerReportId)}`,
+          { cache: "no-store" },
         );
         const data = await res.json().catch(() => null);
         if (cancelled) return;
@@ -84,7 +92,7 @@ export default function FreeRelationshipPreviewCard({
     return () => {
       cancelled = true;
     };
-  }, [relationshipReportId, viewerReportId]);
+  }, [relationshipReportId, viewerReportId, endpoint]);
 
   if (state.status === "loading") {
     return (
@@ -195,7 +203,7 @@ export default function FreeRelationshipPreviewCard({
         existing-report link (blueprintRoute), no new birth entry, no new
         analysis logic.
       */}
-      {!viewerSurveyCompleted ? (
+      {!viewerSurveyCompleted && !guest ? (
         <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>
           <div className="flex items-start gap-3">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-secondary/15 text-xs font-bold text-secondary select-none" aria-hidden>
@@ -223,7 +231,7 @@ export default function FreeRelationshipPreviewCard({
         </div>
       ) : null}
 
-      {!viewerSurveyCompleted && !surveyChoiceDismissed ? (
+      {!viewerSurveyCompleted && !surveyChoiceDismissed && !guest ? (
         <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>
           <div className="space-y-0.5">
             <p className="text-sm font-semibold text-primary">

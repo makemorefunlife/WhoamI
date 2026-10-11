@@ -437,6 +437,21 @@ function InviteBirthContent() {
             </div>
           )}
 
+          {/* Invite only (not personal connect links): a non-member may continue
+              without an account; sign-up stays the recommended, first option. */}
+          {typeof window !== "undefined" && localStorage.getItem("inviteToken") ? (
+            <div className="w-full max-w-[400px] space-y-1 text-center">
+              <button
+                type="button"
+                onClick={() => router.push(localize("/invite/guest"))}
+                className="stitch-cta-secondary w-full"
+              >
+                {messages.guestInvite.continueWithoutSignup}
+              </button>
+              <p className="text-xs text-on-surface-variant">{messages.guestInvite.continueWithoutSignupHint}</p>
+            </div>
+          ) : null}
+
           <button
             type="button"
             onClick={() => setEntryMode("form")}

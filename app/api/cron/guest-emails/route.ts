@@ -36,7 +36,13 @@ async function run(req: Request) {
   const { data: purged, error } = await supabase.rpc("purge_guest_personal_data");
   if (error) logServerError("cron/guest-emails", error, "purge_failed");
   const purgedRows = Array.isArray(purged) ? Number(Object.values((purged[0] ?? {}) as Record<string, unknown>)[0] ?? 0) : Number(purged ?? 0);
-  return NextResponse.json({ ...result, purgedRows }, { headers: { "Cache-Control": "no-store" } });
+  // Guest invite participation: 30 days from joining (20261011130000).
+  const { data: invitePurged, error: inviteErr } = await supabase.rpc("purge_guest_invite_data");
+  if (inviteErr) logServerError("cron/guest-emails", inviteErr, "invite_purge_failed");
+  const purgedInvites = Number(
+    (Array.isArray(invitePurged) ? Object.values((invitePurged[0] ?? {}) as Record<string, unknown>)[0] : invitePurged) ?? 0,
+  );
+  return NextResponse.json({ ...result, purgedRows, purgedInvites }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export const GET = run;

@@ -31,7 +31,11 @@ async function fetchClerkProfilesByUserId(
   clerkUserIds: (string | null | undefined)[],
   logContext: string,
 ): Promise<Record<string, ClerkProfile>> {
-  const unique = [...new Set(clerkUserIds.filter((id): id is string => Boolean(id)))];
+  // Only real Clerk ids (guest invite profiles use "guest_invite:<id>",
+  // manual/legacy rows may hold other placeholders).
+  const unique = [
+    ...new Set(clerkUserIds.filter((id): id is string => Boolean(id) && String(id).startsWith("user_"))),
+  ];
   if (unique.length === 0) return {};
 
   const result: Record<string, ClerkProfile> = {};
