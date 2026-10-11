@@ -107,6 +107,20 @@ async function main() {
     }
   });
 
+  await ok("server Journal stays off until the privacy policy is updated (env switch, default off)", async () => {
+    const { journalServerStorageEnabled } = await import("../../lib/decision/serverJournal");
+    const prev = process.env.DECISION_JOURNAL_SERVER_STORAGE;
+    delete process.env.DECISION_JOURNAL_SERVER_STORAGE;
+    assert.equal(journalServerStorageEnabled(), false);
+    process.env.DECISION_JOURNAL_SERVER_STORAGE = "on";
+    assert.equal(journalServerStorageEnabled(), true);
+    if (prev === undefined) delete process.env.DECISION_JOURNAL_SERVER_STORAGE;
+    else process.env.DECISION_JOURNAL_SERVER_STORAGE = prev;
+    for (const f of ["app/api/decision/journal/route.ts", "app/api/decision/journal/import/route.ts"]) {
+      assert.match(readFileSync(f, "utf8"), /journalServerStorageEnabled\(\)/, f);
+    }
+  });
+
   console.log(`\n${n} passed`);
 }
 

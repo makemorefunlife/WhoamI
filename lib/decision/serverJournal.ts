@@ -11,6 +11,15 @@ import { logServerError } from "@/lib/security/safeLog";
  * are always kept, even above the allowance.
  */
 export const DECISION_JOURNAL_FREE_CAP = 20;
+
+/**
+ * Off until the privacy policy says the Journal is stored on our server
+ * (it currently says the Journal stays on the device). Turn on per
+ * environment with DECISION_JOURNAL_SERVER_STORAGE=on -- DEV first.
+ */
+export function journalServerStorageEnabled(): boolean {
+  return process.env.DECISION_JOURNAL_SERVER_STORAGE?.trim() === "on";
+}
 const MAX_IMPORT = 500;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

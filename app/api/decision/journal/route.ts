@@ -8,6 +8,7 @@ import {
   DECISION_JOURNAL_FREE_CAP,
   completeJournalReview,
   createJournalEntry,
+  journalServerStorageEnabled,
   listJournalEntries,
 } from "@/lib/decision/serverJournal";
 
@@ -16,12 +17,14 @@ const noStore = { "Cache-Control": "no-store" };
 
 /**
  * The signed-in account's Decision Journal (server storage, 20261011150000).
- * { available: false } when the table is not there yet -- the page then keeps
- * using this device's records as before.
+ * { available: false } when it is switched off (privacy policy not updated
+ * yet) or the table is not there -- the page then keeps using this device's
+ * records as before.
  */
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!journalServerStorageEnabled()) return NextResponse.json({ available: false }, { headers: noStore });
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
   try {
@@ -48,6 +51,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!journalServerStorageEnabled()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
   try {
@@ -67,6 +71,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!journalServerStorageEnabled()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
   try {

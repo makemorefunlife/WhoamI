@@ -130,9 +130,11 @@ export function useDecisionJournal() {
     const timer = setTimeout(() => {
       void (async () => {
         if (!userId) return void loadDevice(false);
-        await moveDevice(userId, []);
+        // Server storage may be switched off: only then is anything moved.
+        if (!(await loadServer())) return void loadDevice(true);
         if (cancelled) return;
-        if (!(await loadServer())) await loadDevice(true);
+        await moveDevice(userId, []);
+        if (!cancelled) await loadServer();
       })();
     }, 0);
     return () => {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
-import { importDeviceEntries, type DeviceGroup } from "@/lib/decision/serverJournal";
+import { importDeviceEntries, journalServerStorageEnabled, type DeviceGroup } from "@/lib/decision/serverJournal";
 
 export const runtime = "nodejs";
 
@@ -17,6 +17,7 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!journalServerStorageEnabled()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
   try {
