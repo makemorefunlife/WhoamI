@@ -1419,20 +1419,23 @@ export const messagesEnUS = {
     // satisfied for both locales.
     business: {
       companyLabel: "Company",
-      companyName: "Aha Its me",
+      // 2026-10-12 owner request: US footer business block.
+      companyName: "아하잇츠미 (Aha It's me)",
       ceoLabel: "CEO",
-      ceoName: "Hong Sunghyun",
-      bizNumberLabel: "Business registration no.",
+      ceoName: "Sunghyun Hong",
+      bizNumberLabel: "Business Registration",
       bizNumber: "387-06-03769",
       mailOrderLabel: "Mail-order registration no.",
       mailOrderNumber: "",
       addressLabel: "Address",
-      address: "5F, Ga-8, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, 06053, Republic of Korea",
+      address: "5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea",
       phoneLabel: "Phone",
-      phone: "070-4571-9748",
+      phone: "+82-70-4571-9748",
       phoneNote: "",
       emailLabel: "Email",
-      email: "contact@ahaitsme.com",
+      email: "support@ahaitsme.com",
+      // One line: "Customer Support: <phone> / <email>" (KR keeps separate lines).
+      supportLabel: "Customer Support",
       bizVerifyLabel: "Verify Business Registration",
     },
   },
@@ -3540,6 +3543,8 @@ export type MessageCatalog = {
       phoneNote: string;
       emailLabel: string;
       email: string;
+      /** When set, phone + email render as one "<label>: phone / email" line. */
+      supportLabel?: string;
       bizVerifyLabel: string;
     };
   };

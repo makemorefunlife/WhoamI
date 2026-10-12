@@ -631,24 +631,39 @@ export default function StitchLandingPage({
                 {messages.footer.business.addressLabel}:{" "}
                 {messages.footer.business.address}
               </p>
-              <p>
-                {messages.footer.business.phoneLabel}:{" "}
-                {messages.footer.business.phone}
-              </p>
-              {messages.footer.business.phoneNote ? (
-                <p className="text-on-primary/40">
-                  {messages.footer.business.phoneNote}
+              {messages.footer.business.supportLabel ? (
+                <p>
+                  {messages.footer.business.supportLabel}:{" "}
+                  {messages.footer.business.phone} /{" "}
+                  <a
+                    href={`mailto:${messages.footer.business.email}`}
+                    className="underline underline-offset-2 hover:text-on-primary"
+                  >
+                    {messages.footer.business.email}
+                  </a>
                 </p>
-              ) : null}
-              <p>
-                {messages.footer.business.emailLabel}:{" "}
-                <a
-                  href={`mailto:${messages.footer.business.email}`}
-                  className="underline underline-offset-2 hover:text-on-primary"
-                >
-                  {messages.footer.business.email}
-                </a>
-              </p>
+              ) : (
+                <>
+                  <p>
+                    {messages.footer.business.phoneLabel}:{" "}
+                    {messages.footer.business.phone}
+                  </p>
+                  {messages.footer.business.phoneNote ? (
+                    <p className="text-on-primary/40">
+                      {messages.footer.business.phoneNote}
+                    </p>
+                  ) : null}
+                  <p>
+                    {messages.footer.business.emailLabel}:{" "}
+                    <a
+                      href={`mailto:${messages.footer.business.email}`}
+                      className="underline underline-offset-2 hover:text-on-primary"
+                    >
+                      {messages.footer.business.email}
+                    </a>
+                  </p>
+                </>
+              )}
               {locale === "ko-KR" ? (
                 <p>
                   <a

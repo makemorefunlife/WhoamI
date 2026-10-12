@@ -96,16 +96,27 @@ export default function StitchAppFooter() {
           <p>
             {biz.addressLabel}: {biz.address}
           </p>
-          <p>
-            {biz.phoneLabel}: {biz.phone}
-          </p>
-          {biz.phoneNote ? <p className="text-on-primary/45">{biz.phoneNote}</p> : null}
-          <p>
-            {biz.emailLabel}:{" "}
-            <a href={`mailto:${biz.email}`} className="underline underline-offset-2 hover:text-on-primary">
-              {biz.email}
-            </a>
-          </p>
+          {biz.supportLabel ? (
+            <p>
+              {biz.supportLabel}: {biz.phone} /{" "}
+              <a href={`mailto:${biz.email}`} className="underline underline-offset-2 hover:text-on-primary">
+                {biz.email}
+              </a>
+            </p>
+          ) : (
+            <>
+              <p>
+                {biz.phoneLabel}: {biz.phone}
+              </p>
+              {biz.phoneNote ? <p className="text-on-primary/45">{biz.phoneNote}</p> : null}
+              <p>
+                {biz.emailLabel}:{" "}
+                <a href={`mailto:${biz.email}`} className="underline underline-offset-2 hover:text-on-primary">
+                  {biz.email}
+                </a>
+              </p>
+            </>
+          )}
           {locale === "ko-KR" ? (
             <p>
               <a
