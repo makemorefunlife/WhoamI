@@ -138,7 +138,11 @@ export function useTossCheckout() {
         return "redirecting";
       } catch (e) {
         // The SDK rejects with code USER_CANCEL when the buyer closes the window.
-        const code = (e as { code?: string } | null)?.code;
+        const errObj = e as { code?: string; message?: string } | null;
+        const code = errObj?.code;
+        if (code !== "USER_CANCEL") {
+          console.error("[TossCheckout] requestPayment failed:", errObj?.code || "unknown", errObj?.message || "");
+        }
         return code === "USER_CANCEL" ? "cancelled" : "error";
       } finally {
         setBusy(false);

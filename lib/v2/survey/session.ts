@@ -1,4 +1,5 @@
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 import {
   readJsonStorage,
   removeJsonStorage,
@@ -32,10 +33,13 @@ export function readSurveyV2Session(
   reportId: string,
 ): SurveyV2SessionBundle | null {
   if (!reportId) return null;
-  return readJsonStorage<SurveyV2SessionBundle>(
+  const bundle = readJsonStorage<SurveyV2SessionBundle>(
     storageKey(reportId),
     storageKey(reportId),
   );
+  if (!bundle || !bundle.answers || !bundle.profile) return null;
+  if (!isSurveyV2AnswersComplete(bundle.answers)) return null;
+  return bundle;
 }
 
 export function clearSurveyV2Session(reportId: string) {

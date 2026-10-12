@@ -121,10 +121,6 @@ export default function StitchResultsDashboard({
   };
 
   const toggleTab = (tab: LiteTab) => {
-    if (isGuest) {
-      requireAuthForFeature();
-      return;
-    }
     setActiveTab((prev) => (prev === tab ? null : tab));
   };
 
@@ -305,9 +301,7 @@ export default function StitchResultsDashboard({
               animate={{ opacity: 1 }}
               className="text-center text-xs text-on-surface-variant"
             >
-              {isGuest
-                ? messages.report.guestOpenAnalysisHint
-                : messages.report.openAnalysisHint}
+              {messages.report.openAnalysisHint}
             </motion.p>
           )}
         </AnimatePresence>

@@ -316,15 +316,15 @@ export const messagesEnUS = {
     moreAnalysisBody:
       "New personal analyses across work, relationships, emotions, and decisions will be added sequentially.",
     guestNoticeTitle: "You're not signed in",
-    guestNoticeP1Lead: "The survey and birth info you're viewing now ",
-    guestNoticeP1Bold1: "isn't saved",
+    guestNoticeP1Lead: "The self analysis you're viewing now is ",
+    guestNoticeP1Bold1: "temporarily kept in this browser",
     guestNoticeP1Mid:
-      ". If you close your browser or switch devices, your results ",
-    guestNoticeP1Bold2: "may be lost",
+      ". If you clear storage or switch devices, results ",
+    guestNoticeP1Bold2: "may be reset",
     guestNoticeP2Lead:
-      "To use free detailed analysis, relationship analysis, decision helper, and more, ",
-    guestNoticeP2Bold: "you'll need to sign in (or sign up)",
-    guestNoticeSignInCta: "Sign in · Sign up",
+      "To permanently preserve your reports across devices or invite friends, ",
+    guestNoticeP2Bold: "save it to an account (sign in / sign up)",
+    guestNoticeSignInCta: "Save to account",
     relationshipKindNames: {
       romantic: "Romantic",
       work: "Colleague",
