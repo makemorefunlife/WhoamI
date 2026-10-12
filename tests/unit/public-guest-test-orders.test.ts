@@ -29,9 +29,14 @@ assert.match(confirm, /used >= testGrantLimit\(\)/);
 console.log("ok - per-email limit for guest test orders");
 
 const route = readFileSync("app/api/payments/toss/confirm/route.ts", "utf8");
-assert.match(route, /const proveEmailFirst = testOrderRestricted\(isTest\);/);
-assert.match(route, /guestUse && !proveEmailFirst/);
-console.log("ok - no same-browser shortcut for public test orders (email link / code first)");
+// Same browser: signed buyer cookie (purchase proof) opens the session, test or not.
+assert.doesNotMatch(route, /proveEmailFirst/);
+assert.match(route, /isBuyerCookieFor\(buyerRaw, orderId\)/);
+assert.match(route, /openGuestSession\(supabase, orderId, "purchase"\)/);
+// Other browsers: emailed link (signed token) or a code to the purchase email.
+assert.match(readFileSync("app/api/guest/access/link/route.ts", "utf8"), /openGuestSession\(supabase, orderId, "link"\)/);
+assert.match(readFileSync("app/api/guest/access/verify/route.ts", "utf8"), /openGuestSession\(supabase, orderId, "code"\)/);
+console.log("ok - paying browser continues via the buyer-cookie proof; other browsers need the email link / code");
 
 const success = readFileSync("app/checkout/toss/success/TossSuccessClient.tsx", "utf8");
 assert.match(success, /view\.emailSent \? t\.guestUse\.mailStatusSent : t\.guestUse\.mailStatusPending/);
