@@ -27,12 +27,18 @@ function BlueprintPreviewPageContent() {
     logContext: "blueprint-preview",
   });
 
+  // Signed out: a reportId left in this browser (after logging out) is not
+  // viewable, so never load it or jump to its missing step (birth / consent /
+  // sign-in) -- show the personal choice instead.
+  const signedOut = authLoaded && !isSignedIn;
+
   const { bundle, loading: bundleLoading } = useBlueprintBundle(
     canonicalReportId,
-    Boolean(canonicalReportId),
+    Boolean(canonicalReportId) && authLoaded && !signedOut,
   );
 
   useEffect(() => {
+    if (!authLoaded || signedOut) return;
     if (!canonicalReportId || bundleLoading || bundle) return;
 
     void (async () => {
@@ -40,13 +46,13 @@ function BlueprintPreviewPageContent() {
       const next = await blueprintMissingStepPath(canonicalReportId, surveyRequired);
       if (next) router.replace(localize(next));
     })();
-  }, [canonicalReportId, bundle, bundleLoading, router, localize, surveyRequired]);
+  }, [authLoaded, signedOut, canonicalReportId, bundle, bundleLoading, router, localize, surveyRequired]);
 
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
       <main className="px-5 sm:px-6">
-        {!canonicalReportId && !resolving && authLoaded && !isSignedIn ? (
-          // Signed out, no profile (menu '나를 읽다'): the same personal
+        {signedOut ? (
+          // Signed out (menu '나를 읽다', old bookmarked link): the same personal
           // choice as the dock -- free trial (login asked on the home start)
           // or guest purchase (no login).
           <div className="mx-auto flex min-h-[40dvh] max-w-md flex-col justify-center gap-5 py-16">

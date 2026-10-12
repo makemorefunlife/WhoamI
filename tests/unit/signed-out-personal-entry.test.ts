@@ -26,6 +26,8 @@ assert.doesNotMatch(dock, /openSignIn/, "dock '나' never opens sign-in");
 assert.doesNotMatch(dock, /pathname === "\/"/, "no '/'-only check (failed on /kr)");
 assert.match(dock, /openStitchPersonalChoice\(\)/);
 assert.match(dock, /localize\("\/\?start=personal"\)/);
+// A reportId left in the browser after logout must not turn '나' into a blueprint link.
+assert.match(dock, /const showMeLink = hydrated && Boolean\(isSignedIn\);/);
 console.log("ok - dock '나' (signed out, no profile): personal choice in place, or home with ?start=personal");
 
 const home = readFileSync("app/homecontent.tsx", "utf8");
@@ -47,7 +49,10 @@ assert.doesNotMatch(opts, /openSignIn|useClerk/, "choosing does not itself open 
 console.log("ok - choice = free trial (with 'login first' note) + guest purchase");
 
 const bp = readFileSync("app/blueprint-preview/page.tsx", "utf8");
-assert.match(bp, /authLoaded && !isSignedIn/);
+assert.match(bp, /const signedOut = authLoaded && !isSignedIn;/);
+assert.match(bp, /\{signedOut \? \(/, "signed out: choice even with a leftover reportId");
+assert.match(bp, /if \(!authLoaded \|\| signedOut\) return;/, "no missing-step redirect (birth / consent / sign-in) while signed out");
+assert.match(bp, /Boolean\(canonicalReportId\) && authLoaded && !signedOut/, "no blueprint fetch while signed out");
 assert.match(bp, /localize\("\/\?start=self"\)/);
 assert.match(bp, /localize\(ROUTES\.pricing\)/);
 console.log("ok - /blueprint-preview signed out without a profile shows the same choice");

@@ -137,7 +137,10 @@ export default function StitchScrollDock(_props: {
   const reportId = hydrated
     ? sessionReportId?.trim() || storedReportId
     : "";
-  const showMeLink = hydrated && Boolean(reportId || isSignedIn);
+  // Only a signed-in account opens its blueprint. A reportId left in this
+  // browser after logging out is not viewable signed out (it led to the
+  // birth step / sign-in), so signed out always gets the personal choice.
+  const showMeLink = hydrated && Boolean(isSignedIn);
 
   const showLockToast = useCallback(() => {
     setLockToastVisible(true);
