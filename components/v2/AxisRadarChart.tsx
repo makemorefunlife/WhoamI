@@ -29,8 +29,8 @@ function polygonPoints(
 
 export default function AxisRadarChart({
   scores,
-  stroke = "#67B7FF",
-  fill = "rgba(103,183,255,0.22)",
+  stroke = "#3A8F6E",
+  fill = "rgba(58,143,110,0.18)",
   label,
 }: {
   scores: PrimaryAxesScores;
@@ -43,7 +43,7 @@ export default function AxisRadarChart({
   return (
     <div className="mx-auto w-full max-w-[300px]">
       {label ? (
-        <p className="mb-3 text-center text-sm font-medium text-[rgba(255,255,255,0.88)]">
+        <p className="mb-3 text-center text-sm font-medium text-on-surface">
           {label}
         </p>
       ) : null}
@@ -62,7 +62,7 @@ export default function AxisRadarChart({
               ) as PrimaryAxesScores,
             )}
             fill="none"
-            stroke="rgba(255,255,255,0.1)"
+            stroke="rgba(26,51,40,0.12)"
             strokeWidth={1}
           />
         ))}
@@ -78,7 +78,7 @@ export default function AxisRadarChart({
                 y1={CENTER}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="rgba(255,255,255,0.12)"
+                stroke="rgba(26,51,40,0.14)"
                 strokeWidth={1}
               />
               <text
@@ -86,7 +86,7 @@ export default function AxisRadarChart({
                 y={labelPt.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-[rgba(255,255,255,0.65)] text-[9px]"
+                className="fill-[#4A5C52] text-[9px]"
               >
                 {PRIMARY_AXIS_EN_LABELS[key as PrimaryAxisKey]}
               </text>

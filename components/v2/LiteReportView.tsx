@@ -7,13 +7,13 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 function SectionBlock({ section }: { section: LiteSection }) {
   if (!section?.body?.trim()) return null;
   return (
-    <div className="space-y-1.5 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3.5">
+    <div className="space-y-1.5 rounded-xl border border-outline-variant/40 bg-surface-container-low/50 px-4 py-3.5">
       {section.title ? (
-        <h3 className="text-sm font-semibold text-[rgba(255,255,255,0.9)]">
+        <h3 className="text-sm font-semibold text-on-surface">
           {section.title}
         </h3>
       ) : null}
-      <p className="text-sm leading-relaxed text-[rgba(255,255,255,0.78)]">
+      <p className="text-sm leading-relaxed text-on-surface-variant">
         {section.body}
       </p>
     </div>
@@ -30,7 +30,7 @@ export function CurrentLiteReportView({
   return (
     <div className="space-y-4">
       {oneLineSummary ? (
-        <p className="text-center text-[15px] font-medium leading-snug text-[#7B9BFF]">
+        <p className="text-center text-[15px] font-medium leading-snug text-primary">
           {oneLineSummary}
         </p>
       ) : null}
@@ -53,7 +53,7 @@ export function EssenceLiteReportView({
   return (
     <div className="space-y-4">
       {oneLineSummary ? (
-        <p className="text-center text-[15px] font-medium leading-snug text-[#FF9A3C]">
+        <p className="text-center text-[15px] font-medium leading-snug text-primary">
           {oneLineSummary}
         </p>
       ) : null}

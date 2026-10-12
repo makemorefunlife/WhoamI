@@ -6,19 +6,17 @@ import { Suspense, useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useParams, useRouter } from "next/navigation";
-import SpaceBackground from "@/components/space/SpaceBackground";
-import GlassCard from "@/components/space/GlassCard";
-import GlowButton from "@/components/space/GlowButton";
+import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
+import {
+  StitchReportError,
+  StitchReportLoading,
+} from "@/components/results/deep/StitchReportStatus";
 import AxisRadarChart from "@/components/v2/AxisRadarChart";
 import {
   STITCH_ESSENCE_FILL,
   STITCH_ESSENCE_STROKE,
 } from "@/components/v2/DualAxisRadarChart";
-import {
-  EssenceLiteReportView,
-  LiteReportError,
-  LiteReportLoading,
-} from "@/components/v2/LiteReportView";
+import { EssenceLiteReportView } from "@/components/v2/LiteReportView";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
 import { useEssenceLiteReport } from "@/lib/v2/lite/useLiteReport";
 import FreeBadge from "@/components/v2/FreeBadge";
@@ -59,13 +57,11 @@ function EssenceDetailContent() {
 
   if (!ready || bundleLoading || !bundle || !essence || !birth) {
     return (
-      <SpaceBackground showProbe={false}>
-        <div className="flex min-h-screen items-center justify-center px-6">
-          <p className="text-sm text-[rgba(255,255,255,0.55)]">
-            {messages.report.chrome.loading}
-          </p>
+      <StitchSurveyShell className="stitch-survey stitch-results">
+        <div className="flex min-h-[50vh] items-center justify-center px-6">
+          <p className="text-sm text-on-surface-variant">{messages.report.chrome.loading}</p>
         </div>
-      </SpaceBackground>
+      </StitchSurveyShell>
     );
   }
 
@@ -78,11 +74,10 @@ function EssenceDetailContent() {
     : [];
 
   return (
-    <SpaceBackground showProbe={false}>
-      {/* No min-h-screen: SpaceBackground/StitchAppChrome already own the
-          "at least one screen" guarantee — a third layer here was the most
-          direct cause of the long empty scroll on this specific page (short
-          real content: a radar chart + a few lines + buttons). */}
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      {/* No min-h-screen: the shell / StitchAppChrome already own the
+          "at least one screen" guarantee (a third layer caused a long
+          empty scroll on this short page). */}
       <main className="mx-auto flex max-w-lg flex-col gap-5 px-5 py-16">
         <div className="text-center">
           <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-primary">
@@ -93,45 +88,53 @@ function EssenceDetailContent() {
             <FreeBadge />
           </h1>
           {birth.birthTimeUnknown ? (
-            <p className="mt-2 text-xs text-amber-100/80">
+            <p className="mt-2 text-xs text-amber-700">
               {messages.blueprint.essenceBirthTimeUnknownNotice}
             </p>
           ) : null}
         </div>
 
-        <GlassCard className="space-y-4 !py-6">
+        <div className="space-y-4 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest px-4 py-6 shadow-sm">
           <AxisRadarChart
             scores={essence.primary_axes}
             stroke={STITCH_ESSENCE_STROKE}
             fill={STITCH_ESSENCE_FILL}
             label={messages.blueprint.axisChartLabel}
           />
-        </GlassCard>
+        </div>
 
-        {loading && !report ? <LiteReportLoading /> : null}
+        {loading && !report ? (
+          <StitchReportLoading
+            message={messages.report.analyzing}
+            hint={messages.report.analyzingHint}
+          />
+        ) : null}
         {error && !report ? (
-          <LiteReportError message={error} onRetry={retry} />
+          <StitchReportError
+            message={error}
+            onRetry={retry}
+            retryLabel={messages.report.chrome.retry}
+          />
         ) : null}
         {report ? (
-          <GlassCard className="!py-6">
+          <div className="rounded-2xl border border-outline-variant/35 bg-surface-container-lowest px-4 py-6 shadow-sm">
             <EssenceLiteReportView
               oneLineSummary={report.one_line_summary}
               sections={sections}
             />
-          </GlassCard>
+          </div>
         ) : null}
 
-        <div className="space-y-2 border-t border-white/10 pt-5">
-          <p className="text-center text-xs font-semibold tracking-wide text-white/55">
+        <div className="space-y-2 border-t border-outline-variant/40 pt-5">
+          <p className="text-center text-xs font-semibold tracking-wide text-on-surface-variant">
             {messages.blueprint.deepExploration}
           </p>
-          <EssenceDeepEntryButton reportId={reportId} />
+          <EssenceDeepEntryButton reportId={reportId} featured />
         </div>
 
-        <GlowButton
+        <button
           type="button"
-          variant="primary"
-          className="w-full"
+          className="stitch-cta-primary w-full"
           onClick={() =>
             router.push(
               localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
@@ -139,28 +142,26 @@ function EssenceDetailContent() {
           }
         >
           {messages.blueprint.backToBlueprint}
-        </GlowButton>
+        </button>
         <LocaleLink
           href={`/blueprint-preview/${encodeURIComponent(reportId)}/current`}
-          className="text-center text-sm text-white/50 underline-offset-2 hover:text-white/75 hover:underline"
+          className="text-center text-sm text-on-surface-variant underline-offset-2 hover:text-primary hover:underline"
         >
           {messages.blueprint.viewCurrentProfile}
         </LocaleLink>
       </main>
-    </SpaceBackground>
+    </StitchSurveyShell>
   );
 }
 
 function EssenceDetailFallback() {
   const { messages } = useLocale();
   return (
-    <SpaceBackground showProbe={false}>
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <p className="text-sm text-[rgba(255,255,255,0.55)]">
-          {messages.report.chrome.loading}
-        </p>
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      <div className="flex min-h-[50vh] items-center justify-center px-6">
+        <p className="text-sm text-on-surface-variant">{messages.report.chrome.loading}</p>
       </div>
-    </SpaceBackground>
+    </StitchSurveyShell>
   );
 }
 
