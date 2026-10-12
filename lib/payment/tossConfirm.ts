@@ -9,7 +9,7 @@ import {
 import { sameAmount } from "@/lib/payment/tossCatalog";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
-import { decideTestGrant, guestEmailAllowlisted, testOrderRestricted, type TestGrantDecision } from "@/lib/payment/tossTestMode";
+import { decideTestGrant, guestEmailAllowlisted, testGrantLimit, testOrderRestricted, type TestGrantDecision } from "@/lib/payment/tossTestMode";
 import { sendGuestPurchaseEmail, type GuestEmailStatus } from "@/lib/email/guestPurchaseEmail";
 import type { MailSender } from "@/lib/email/resend";
 
@@ -115,6 +115,22 @@ async function flagForOperator(
     { onConflict: "provider,provider_transaction_id", ignoreDuplicates: true },
   );
   if (error) logServerError("toss.confirm", error, "manual_review_insert_failed");
+}
+
+/** Test guest orders of this purchase email that went through (not blocked), other than this one. */
+async function countGuestTestOrders(supabase: SupabaseClient, email: string, exceptOrderId: string): Promise<number | null> {
+  const { data, error } = await supabase
+    .from("toss_payment_orders")
+    .select("order_id")
+    .eq("is_test", true)
+    .eq("guest_email", email.trim().toLowerCase())
+    .in("status", ["paid", "granted"])
+    .limit(100);
+  if (error) {
+    logServerError("toss.confirm", error, "test_count_failed");
+    return null;
+  }
+  return ((data ?? []) as { order_id: string }[]).filter((r) => r.order_id !== exceptOrderId).length;
 }
 
 function rpcRow<T>(data: unknown): T | undefined {
@@ -305,6 +321,15 @@ export async function completeTossOrder(
       // decided on the claiming account (claimGuestTossOrders).
       if (!guestEmailAllowlisted(meta.guest_email)) {
         return completeTestWithoutGrant(supabase, { orderId: input.orderId, reason: "not_allowlisted" });
+      }
+      // Allowlisted test buyer: at most TOSS_TEST_GRANT_LIMIT open test orders
+      // per purchase email (same limit as accounts). Using one still needs the
+      // purchase email to be proven (emailed link / code) -- the confirm route
+      // opens no same-browser session for these orders.
+      const used = await countGuestTestOrders(supabase, meta.guest_email as string, input.orderId);
+      if (used === null) return { status: "pending_retry", reason: "test_count_failed" };
+      if (used >= testGrantLimit()) {
+        return completeTestWithoutGrant(supabase, { orderId: input.orderId, reason: "limit_reached" });
       }
     } else {
       const decision = input.testAccess ? await input.testAccess() : ({ allowed: false, reason: "not_allowlisted" } as const);

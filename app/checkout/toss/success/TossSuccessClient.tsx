@@ -14,7 +14,7 @@ import { isGuestPersonalPlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string }
-  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean; guestUse?: boolean }
+  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean; guestUse?: boolean; isTest?: boolean }
   | { status: "test_no_grant"; reason: string }
   | { status: "payment_failed"; code: string }
   | { status: "pending_retry"; reason: string }
@@ -26,7 +26,7 @@ type ConfirmBody =
 type ViewState =
   | { kind: "confirming" }
   | { kind: "granted"; planId: string }
-  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string; guestUse: boolean }
+  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string; guestUse: boolean; isTest: boolean }
   | { kind: "test_no_grant" }
   | { kind: "pending" }
   | { kind: "failed" }
@@ -82,6 +82,7 @@ function SuccessContent() {
           planId: body.planId,
           // Server decides per order (older guest Relationship orders keep the account flow).
           guestUse: typeof body.guestUse === "boolean" ? body.guestUse : isGuestPersonalPlan(body.planId),
+          isTest: body.isTest === true,
         });
       }
       if (status === "test_no_grant") return setView({ kind: "test_no_grant" });
@@ -146,6 +147,8 @@ function SuccessContent() {
             {view.maskedEmail ? (
               <p className="mb-5 text-center text-xs text-[#4A5C52]/70 break-keep">
                 {t.guestPurchaseEmailMasked(view.maskedEmail)}
+                {/* "sent" only after the mail provider accepted it. */}
+                {` · ${view.emailSent ? t.guestUse.mailStatusSent : t.guestUse.mailStatusPending}`}
               </p>
             ) : null}
             <button
@@ -155,6 +158,13 @@ function SuccessContent() {
             >
               {t.guestUse.useCtaFromSuccess}
             </button>
+            {/* Use later: the purchase email (or a code to it) opens the same flow. */}
+            <button type="button" className={secondaryButton} onClick={() => router.push(localizedPath("/", locale))}>
+              {t.guestUse.useLaterCta}
+            </button>
+            {view.isTest ? (
+              <p className="mt-4 text-center text-xs text-[#4A5C52]/70">{t.guestUse.testPurchaseNote}</p>
+            ) : null}
           </TossResultShell>
         );
       }

@@ -10,7 +10,7 @@ import { processDueGuestEmails } from "@/lib/email/guestPurchaseEmail";
 import { completeTossOrder } from "@/lib/payment/tossConfirm";
 import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
 import { clientIpKey, maskEmail } from "@/lib/payment/guestCheckout";
-import { decideTestGrant } from "@/lib/payment/tossTestMode";
+import { decideTestGrant, testOrderRestricted } from "@/lib/payment/tossTestMode";
 import { CLAIM_COOKIE, CLAIM_COOKIE_MAX_AGE_S, claimTokenFor } from "@/lib/payment/guestClaimToken";
 import { cookies } from "next/headers";
 import { isGuestUseOrder } from "@/lib/payment/guestUseOrder";
@@ -91,10 +91,11 @@ export async function POST(req: Request) {
       // Show the buyer which address to verify (masked) -- never the full email.
       const { data } = await supabase
         .from("toss_payment_orders")
-        .select("guest_email, approved_at, claim_token_nonce, claim_token_expires_at")
+        .select("guest_email, approved_at, claim_token_nonce, claim_token_expires_at, is_test")
         .eq("order_id", orderId)
         .maybeSingle();
       const row = data as {
+        is_test: boolean | null;
         guest_email: string | null;
         approved_at: string | null;
         claim_token_nonce: string | null;
@@ -108,7 +109,11 @@ export async function POST(req: Request) {
       // on this device). Anywhere else, the email link / code is still needed.
       let deviceSession: string | null = null;
       const guestUse = await isGuestUseOrder(supabase, orderId, outcome.planId);
-      if (guestUse && approvedMs > 0 && Date.now() - approvedMs < BUYER_SESSION_WINDOW_S * 1000) {
+      // Test order on the public site: the purchase email must be proven first
+      // (emailed link or code), so no same-browser shortcut.
+      const isTest = row?.is_test === true;
+      const proveEmailFirst = testOrderRestricted(isTest);
+      if (guestUse && !proveEmailFirst && approvedMs > 0 && Date.now() - approvedMs < BUYER_SESSION_WINDOW_S * 1000) {
         const buyerRaw = (await cookies()).get(GUEST_BUYER_COOKIE)?.value ?? null;
         if (isBuyerCookieFor(buyerRaw, orderId)) {
           deviceSession = await openGuestSession(supabase, orderId, "purchase");
@@ -116,7 +121,7 @@ export async function POST(req: Request) {
       }
 
       const res = NextResponse.json(
-        { ...outcome, maskedEmail: email ? maskEmail(email) : null, deviceReady: deviceSession !== null, guestUse },
+        { ...outcome, maskedEmail: email ? maskEmail(email) : null, deviceReady: deviceSession !== null, guestUse, isTest },
         { status: 200 },
       );
       if (deviceSession) {

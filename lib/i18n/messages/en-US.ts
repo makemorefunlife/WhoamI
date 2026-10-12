@@ -1633,6 +1633,10 @@ export const messagesEnUS = {
       successBodyPending: "Check your analysis now.",
       successBodyDevice: "Check your analysis now.",
       useCtaFromSuccess: "Start now",
+      useLaterCta: "Use it later",
+      testPurchaseNote: "This is a test payment. You were not charged.",
+      mailStatusSent: "sent",
+      mailStatusPending: "sending. If it doesn't arrive in a few minutes, you can get a code on the use page",
       verifyTitle: "Confirm your purchase email",
       verifyBody: "Confirm with the link or code from your purchase email to start. We won't ask again on this device for 7 days.",
       startOnDevice: "Start on this device",
@@ -3704,6 +3708,10 @@ export type MessageCatalog = {
       successBodyPending: string;
       successBodyDevice: string;
       useCtaFromSuccess: string;
+      useLaterCta: string;
+      testPurchaseNote: string;
+      mailStatusSent: string;
+      mailStatusPending: string;
       verifyTitle: string;
       verifyBody: string;
       startOnDevice: string;
