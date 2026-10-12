@@ -39,6 +39,28 @@ assert.match(readFileSync("app/api/guest/access/verify/route.ts", "utf8"), /open
 console.log("ok - paying browser continues via the buyer-cookie proof; other browsers need the email link / code");
 
 const success = readFileSync("app/checkout/toss/success/TossSuccessClient.tsx", "utf8");
-assert.match(success, /view\.emailSent \? t\.guestUse\.mailStatusSent : t\.guestUse\.mailStatusPending/);
+// Mail state comes from the queue row; failed / not queued are never shown as sent or "sending".
+assert.match(success, /view\.emailState === "sent"\s*\? t\.guestUse\.mailStatusSent/);
+assert.match(success, /: t\.guestUse\.mailStatusFailed/);
+assert.match(success, /t\.guestUse\.successBodyThanks/);
+assert.match(success, /t\.guestUse\.useLaterNote/);
+assert.match(route, /const mail = await readGuestEmailState\(supabase, orderId\);/);
+assert.match(route, /emailReason: isTest && mail\.status !== "sent" \? mail\.reason : undefined/);
 assert.match(success, /t\.guestUse\.useLaterCta/);
 console.log("ok - success page: use now / later, mail status only 'sent' when accepted");
+
+// readGuestEmailState: real queue state, reason codes only (no address / token)
+import("../../lib/email/guestPurchaseEmail").then(async ({ readGuestEmailState }) => {
+  const fake = (row: unknown) =>
+    ({ from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: row, error: null }) }) }) }) }) as never;
+  assert.deepEqual(await readGuestEmailState(fake({ guest_email_status: "sent", guest_email_last_error: null }), "o"), { status: "sent", reason: null });
+  assert.deepEqual(await readGuestEmailState(fake({ guest_email_status: "retry", guest_email_last_error: "app_base_url_missing" }), "o"), {
+    status: "retry",
+    reason: "app_base_url_missing",
+  });
+  assert.deepEqual(await readGuestEmailState(fake({ guest_email_status: null, guest_email_last_error: null }), "o"), {
+    status: "not_queued",
+    reason: "queue_missing",
+  });
+  console.log("ok - mail state read from the queue row with a non-secret reason code");
+});

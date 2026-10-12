@@ -6,7 +6,7 @@ import {
 } from "@/lib/supabase/serverClient";
 import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
-import { processDueGuestEmails } from "@/lib/email/guestPurchaseEmail";
+import { processDueGuestEmails, readGuestEmailState } from "@/lib/email/guestPurchaseEmail";
 import { completeTossOrder } from "@/lib/payment/tossConfirm";
 import { enforceRateLimit, rateLimitResponse } from "@/lib/security/rateLimit";
 import { clientIpKey, maskEmail } from "@/lib/payment/guestCheckout";
@@ -115,6 +115,7 @@ export async function POST(req: Request) {
       // minutes of approval -> no extra code. Any other browser still needs
       // the emailed link or a code sent to the purchase email.
       const isTest = row?.is_test === true;
+      const mail = await readGuestEmailState(supabase, orderId);
       if (guestUse && approvedMs > 0 && Date.now() - approvedMs < BUYER_SESSION_WINDOW_S * 1000) {
         const buyerRaw = (await cookies()).get(GUEST_BUYER_COOKIE)?.value ?? null;
         if (isBuyerCookieFor(buyerRaw, orderId)) {
@@ -123,7 +124,22 @@ export async function POST(req: Request) {
       }
 
       const res = NextResponse.json(
-        { ...outcome, maskedEmail: email ? maskEmail(email) : null, deviceReady: deviceSession !== null, guestUse, isTest },
+        {
+          ...outcome,
+          // What the queue actually recorded (never "sent" unless Resend accepted it).
+          emailStatus:
+            mail.status === "sent"
+              ? "sent"
+              : mail.status === "pending" || mail.status === "retry" || mail.status === "sending"
+                ? "pending"
+                : "failed",
+          // Non-secret reason code, shown on TEST purchases to make setup problems visible.
+          emailReason: isTest && mail.status !== "sent" ? mail.reason : undefined,
+          maskedEmail: email ? maskEmail(email) : null,
+          deviceReady: deviceSession !== null,
+          guestUse,
+          isTest,
+        },
         { status: 200 },
       );
       if (deviceSession) {

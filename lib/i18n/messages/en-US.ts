@@ -1636,7 +1636,11 @@ export const messagesEnUS = {
       useLaterCta: "Use it later",
       testPurchaseNote: "Test payment · no real charge",
       mailStatusSent: "sent",
-      mailStatusPending: "sending. If it doesn't arrive in a few minutes, you can get a code on the use page",
+      mailStatusPending: "sending",
+      mailStatusFailed: "not sent yet. You can get the guide again or use a code on the use page",
+      successBodyThanks: "Thank you for your purchase. Your payment details and how to use it are in the email below.",
+      useLaterNote: "It's fine to start later. Use the link in the guide email to continue anytime.",
+      mailCheckCode: (code: string) => `Mail check code: ${code}`,
       verifyTitle: "Confirm your purchase email",
       verifyBody: "Confirm with the link or code from your purchase email to start. We won't ask again on this device for 7 days.",
       startOnDevice: "Start on this device",
@@ -3712,6 +3716,10 @@ export type MessageCatalog = {
       testPurchaseNote: string;
       mailStatusSent: string;
       mailStatusPending: string;
+      mailStatusFailed: string;
+      successBodyThanks: string;
+      useLaterNote: string;
+      mailCheckCode: (code: string) => string;
       verifyTitle: string;
       verifyBody: string;
       startOnDevice: string;

@@ -309,3 +309,26 @@ export async function processDueGuestEmails(
   }
   return out;
 }
+
+/**
+ * The order's purchase-guide email state as recorded by the queue (no email
+ * address, no tokens): status + the last non-secret reason code written by
+ * sendGuestPurchaseEmail / Resend (e.g. "app_base_url_missing",
+ * "claim_token_secret_missing", "mail_not_configured", "resend_403_...").
+ * "queue_missing" = nothing was queued (queue functions / columns not there).
+ */
+export async function readGuestEmailState(
+  supabase: SupabaseClient,
+  orderId: string,
+): Promise<{ status: string; reason: string | null }> {
+  const { data, error } = await supabase
+    .from("toss_payment_orders")
+    .select("guest_email_status, guest_email_last_error")
+    .eq("order_id", orderId)
+    .maybeSingle();
+  if (error || !data) return { status: "unknown", reason: error ? "state_read_failed" : null };
+  const row = data as { guest_email_status: string | null; guest_email_last_error: string | null };
+  if (!row.guest_email_status) return { status: "not_queued", reason: "queue_missing" };
+  return { status: row.guest_email_status, reason: row.guest_email_last_error };
+}
+

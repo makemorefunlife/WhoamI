@@ -14,7 +14,7 @@ import { isGuestPersonalPlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
   | { status: "granted"; alreadyProcessed: boolean; planId: string; isTest?: boolean }
-  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean; guestUse?: boolean; isTest?: boolean }
+  | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean; guestUse?: boolean; isTest?: boolean; emailReason?: string }
   | { status: "test_no_grant"; reason: string }
   | { status: "payment_failed"; code: string }
   | { status: "pending_retry"; reason: string }
@@ -26,7 +26,18 @@ type ConfirmBody =
 type ViewState =
   | { kind: "confirming" }
   | { kind: "granted"; planId: string; isTest: boolean }
-  | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string; guestUse: boolean; isTest: boolean }
+  | {
+      kind: "awaiting_claim";
+      maskedEmail: string;
+      emailSent: boolean;
+      /** What the mail queue recorded: sent | pending | failed (never "sent" before Resend accepted it). */
+      emailState: "sent" | "pending" | "failed";
+      emailReason: string | null;
+      deviceReady?: boolean;
+      planId: string;
+      guestUse: boolean;
+      isTest: boolean;
+    }
   | { kind: "test_no_grant" }
   | { kind: "pending" }
   | { kind: "failed" }
@@ -78,6 +89,8 @@ function SuccessContent() {
           kind: "awaiting_claim",
           maskedEmail: body.maskedEmail ?? "",
           emailSent: body.emailStatus === "sent",
+          emailState: body.emailStatus === "sent" ? "sent" : body.emailStatus === "pending" ? "pending" : "failed",
+          emailReason: typeof body.emailReason === "string" ? body.emailReason : null,
           deviceReady: body.deviceReady === true,
           planId: body.planId,
           // Server decides per order (older guest Relationship orders keep the account flow).
@@ -143,13 +156,19 @@ function SuccessContent() {
           <TossResultShell
             tone="success"
             title={t.guestDoneTitle}
-            body={view.deviceReady ? t.guestUse.successBodyDevice : view.emailSent ? t.guestUse.successBodySent : t.guestUse.successBodyPending}
+            body={t.guestUse.successBodyThanks}
           >
             {view.maskedEmail ? (
               <p className="mb-5 text-center text-xs text-[#4A5C52]/70 break-keep">
                 {t.guestPurchaseEmailMasked(view.maskedEmail)}
                 {/* "sent" only after the mail provider accepted it. */}
-                {` · ${view.emailSent ? t.guestUse.mailStatusSent : t.guestUse.mailStatusPending}`}
+                {` · ${
+                  view.emailState === "sent"
+                    ? t.guestUse.mailStatusSent
+                    : view.emailState === "pending"
+                      ? t.guestUse.mailStatusPending
+                      : t.guestUse.mailStatusFailed
+                }`}
               </p>
             ) : null}
             <button
@@ -163,8 +182,12 @@ function SuccessContent() {
             <button type="button" className={secondaryButton} onClick={() => router.push(localizedPath("/", locale))}>
               {t.guestUse.useLaterCta}
             </button>
+            <p className="mt-4 text-center text-xs leading-relaxed text-[#4A5C52] break-keep">{t.guestUse.useLaterNote}</p>
             {view.isTest ? (
-              <p className="mt-4 text-center text-xs text-[#4A5C52]/70">{t.guestUse.testPurchaseNote}</p>
+              <p className="mt-3 text-center text-xs text-[#4A5C52]/70">
+                {t.guestUse.testPurchaseNote}
+                {view.emailReason ? ` · ${t.guestUse.mailCheckCode(view.emailReason)}` : null}
+              </p>
             ) : null}
           </TossResultShell>
         );
