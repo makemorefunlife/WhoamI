@@ -150,10 +150,13 @@ export async function POST(req: Request) {
       return NextResponse.json(outcome, { status: 200 });
     }
 
+    if (outcome.status === "granted") {
+      const { data: t } = await supabase.from("toss_payment_orders").select("is_test").eq("order_id", orderId).maybeSingle();
+      return NextResponse.json({ ...outcome, isTest: (t as { is_test?: boolean } | null)?.is_test === true }, { status: 200 });
+    }
+
     const httpStatus =
-      outcome.status === "granted"
-        ? 200
-        : outcome.status === "pending_retry"
+      outcome.status === "pending_retry"
           ? 202
           : outcome.status === "payment_failed"
             ? 402

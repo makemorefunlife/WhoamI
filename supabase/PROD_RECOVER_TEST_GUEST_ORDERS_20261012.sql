@@ -1,3 +1,8 @@
+-- !!! SUPERSEDED (2026-10-12, open test policy): do NOT run.
+-- The app now reopens these orders itself, only after Toss confirms the
+-- payment is still DONE (cancelled ones stay closed): guests via
+-- "구매 안내 메일 다시 받기" (/api/guest/lookup), members on sign-in
+-- (/api/payments/toss/claim). Kept for the record only.
 -- =============================================================================
 -- PROD ONE-OFF (2026-10-12): reopen the test buyer's guest TEST orders that the
 -- public site closed as "not allowlisted", so the purchase-guide email and the

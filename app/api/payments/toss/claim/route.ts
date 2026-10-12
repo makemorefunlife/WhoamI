@@ -6,7 +6,7 @@ import {
 } from "@/lib/supabase/serverClient";
 import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
-import { claimGuestTossOrders } from "@/lib/payment/tossConfirm";
+import { claimGuestTossOrders, recoverBlockedTestOrders } from "@/lib/payment/tossConfirm";
 
 export const runtime = "nodejs";
 
@@ -41,6 +41,9 @@ export async function POST(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
+    // Old-allowlist test orders of this account / its verified emails (Toss
+    // must still show them paid; limits re-checked).
+    await recoverBlockedTestOrders(supabase, { clerkUserId: userId, verifiedEmails }).catch(() => 0);
     const results = await claimGuestTossOrders(supabase, {
       clerkUserId: userId,
       verifiedEmails,

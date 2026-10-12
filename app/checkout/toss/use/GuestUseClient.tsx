@@ -35,6 +35,7 @@ type State = {
   status: "unverified" | "needs_input" | "ready" | "generating" | "generated" | "saved" | "expired" | "linked" | "not_available" | "error";
   linkReady?: boolean;
   planId?: string;
+  isTest?: boolean;
   maskedEmail?: string | null;
   email?: string | null;
   surveyRequired?: boolean;
@@ -493,6 +494,7 @@ function UseContent() {
         ) : null}
 
         {notice ? <p role="status" className="text-center text-sm text-amber-700">{notice}</p> : null}
+        {state.isTest ? <p className="text-center text-xs text-[#4A5C52]/70">{messages.payments.guestUse.testPurchaseNote}</p> : null}
       </main>
     </div>
   );

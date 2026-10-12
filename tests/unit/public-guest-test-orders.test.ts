@@ -6,7 +6,7 @@
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { guestEmailAllowlisted, testOrderRestricted } from "../../lib/payment/tossTestMode";
+import { guestEmailAllowlisted, guestTestBuyerAllowed, testOrderRestricted } from "../../lib/payment/tossTestMode";
 
 const env = { ...process.env };
 process.env.VERCEL_ENV = "production";
@@ -15,8 +15,13 @@ assert.equal(testOrderRestricted(true), true);
 assert.equal(testOrderRestricted(false), false, "real orders never restricted");
 assert.equal(guestEmailAllowlisted("Tester@Example.com "), true);
 assert.equal(guestEmailAllowlisted("visitor@example.com"), false);
+// 2026-10-12: allowlist no longer required -- anyone may continue (limit + email proof still apply)
+assert.equal(guestTestBuyerAllowed("visitor@example.com"), true);
+process.env.TOSS_TEST_ALLOWLIST_REQUIRED = "true";
+assert.equal(guestTestBuyerAllowed("visitor@example.com"), false, "optional old mode");
+delete process.env.TOSS_TEST_ALLOWLIST_REQUIRED;
 process.env = env;
-console.log("ok - allowlist decides only for test orders on the public site");
+console.log("ok - test buyers open by default; allowlist only in the optional old mode");
 
 const confirm = readFileSync("lib/payment/tossConfirm.ts", "utf8");
 assert.match(confirm, /countGuestTestOrders\(supabase, meta\.guest_email as string, input\.orderId\)/);

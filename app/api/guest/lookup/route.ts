@@ -7,6 +7,7 @@ import { clientIpKey, normalizeGuestEmail } from "@/lib/payment/guestCheckout";
 import { claimTokenExpiry, newClaimNonce } from "@/lib/payment/guestClaimToken";
 import { sendGuestPurchaseEmail } from "@/lib/email/guestPurchaseEmail";
 import { rpcText } from "@/lib/payment/guestAccess";
+import { recoverBlockedTestOrders } from "@/lib/payment/tossConfirm";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,9 @@ export async function POST(req: Request) {
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
+    // Test orders closed under the old allowlist rule: reopened only if Toss
+    // still shows them paid (never cancelled ones); the guide then goes out.
+    await recoverBlockedTestOrders(supabase, { guestEmail: email }).catch(() => 0);
     const { data } = await supabase
       .from("toss_payment_orders")
       .select("order_id")

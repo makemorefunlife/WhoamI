@@ -13,7 +13,7 @@ import AccountLinkPanel, { useClaimInfo } from "../AccountLinkPanel";
 import { isGuestPersonalPlan } from "@/lib/payment/tossCatalog";
 
 type ConfirmBody =
-  | { status: "granted"; alreadyProcessed: boolean; planId: string }
+  | { status: "granted"; alreadyProcessed: boolean; planId: string; isTest?: boolean }
   | { status: "awaiting_claim"; planId: string; maskedEmail: string | null; emailStatus?: string; deviceReady?: boolean; guestUse?: boolean; isTest?: boolean }
   | { status: "test_no_grant"; reason: string }
   | { status: "payment_failed"; code: string }
@@ -25,7 +25,7 @@ type ConfirmBody =
 
 type ViewState =
   | { kind: "confirming" }
-  | { kind: "granted"; planId: string }
+  | { kind: "granted"; planId: string; isTest: boolean }
   | { kind: "awaiting_claim"; maskedEmail: string; emailSent: boolean; deviceReady?: boolean; planId: string; guestUse: boolean; isTest: boolean }
   | { kind: "test_no_grant" }
   | { kind: "pending" }
@@ -71,7 +71,7 @@ function SuccessContent() {
         body = null;
       }
       const status = body?.status;
-      if (status === "granted" && body && "planId" in body) return setView({ kind: "granted", planId: body.planId });
+      if (status === "granted" && body && "planId" in body) return setView({ kind: "granted", planId: body.planId, isTest: body.isTest === true });
       if (status === "awaiting_claim" && body && "maskedEmail" in body) {
         // "sent" only when the mail provider accepted the message.
         return setView({
@@ -131,6 +131,7 @@ function SuccessContent() {
           <button type="button" className={primaryButton} disabled={starting} onClick={() => void startAnalysis(view.planId)}>
             {linked.cta}
           </button>
+          {view.isTest ? <p className="mt-4 text-center text-xs text-[#4A5C52]/70">{t.guestUse.testPurchaseNote}</p> : null}
         </TossResultShell>
       );
     }

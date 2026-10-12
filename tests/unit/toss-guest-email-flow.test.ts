@@ -63,6 +63,21 @@ function fakeSupabase(): SupabaseClient {
       is: (c: string, v: null) => (filters.push(`${c} is ${v === null ? "null" : lit(v)}`), q),
       in: (c: string, vs: unknown[]) => (filters.push(`${c} in (${vs.map(lit).join(",")})`), q),
       limit: (n: number) => ((limit = `limit ${n}`), q),
+      order: () => q,
+      update: (obj: Record<string, unknown>) => {
+        const set = Object.entries(obj).map(([k, v]) => `${k} = ${lit(v)}`).join(", ");
+        const u = {
+          eq: (c: string, v: unknown) => (filters.push(`${c} = ${lit(v)}`), u),
+          select: async () => {
+            const where = filters.length ? `where ${filters.join(" and ")}` : "";
+            const rows = JSON.parse(
+              psql(DB, `with u as (update public.${table} set ${set} ${where} returning order_id) select coalesce(json_agg(u), '[]') from u`),
+            ) as unknown[];
+            return { data: rows, error: null };
+          },
+        };
+        return u;
+      },
       then: (res: (v: { data: unknown[]; error: null }) => unknown) => res({ data: run(), error: null }),
       maybeSingle: async () => ({ data: run()[0] ?? null, error: null }),
       upsert: async (obj: Record<string, unknown>) => {
@@ -276,6 +291,8 @@ async function main() {
     // 6. public deployment: ordinary test payments record test_completed, nothing granted, no cancel, no mail
     {
       process.env.TOSS_TEST_RESTRICT = "true";
+      // Optional old mode: allowlisted testers only.
+      process.env.TOSS_TEST_ALLOWLIST_REQUIRED = "true";
       process.env.TOSS_TEST_ALLOWLIST = "u_tester,qa@example.com";
       process.env.TOSS_TEST_GRANT_LIMIT = "1";
       const g = guestOrder("visitor@example.com");
@@ -327,8 +344,63 @@ async function main() {
       assert.equal(credits("u_qa"), 1);
       delete process.env.TOSS_TEST_RESTRICT;
       delete process.env.TOSS_TEST_ALLOWLIST;
+      delete process.env.TOSS_TEST_ALLOWLIST_REQUIRED;
       delete process.env.TOSS_TEST_GRANT_LIMIT;
       ok("public: allowlisted tester (Clerk id / verified email, server-side) gets a pass up to the limit, then test_completed");
+    }
+
+    // 7b. 2026-10-12 policy (default): anyone, no allowlist; per-email / per-account limit; old blocked orders recovered
+    {
+      const { decideTestGrant } = await import("../../lib/payment/tossTestMode");
+      const { recoverBlockedTestOrders } = await import("../../lib/payment/tossConfirm");
+      process.env.TOSS_TEST_RESTRICT = "true";
+      process.env.TOSS_TEST_GRANT_LIMIT = "2";
+      const prevKey = process.env.TOSS_SECRET_KEY;
+      process.env.TOSS_SECRET_KEY = "test_sk_dummy";
+      const h = harness();
+      // guest, not on any list: guide email goes out
+      const g1 = guestOrder("anyone@example.com");
+      const r1 = await completeTossOrder(sb, { clerkUserId: null, orderId: g1, paymentKey: "pk_o1", amount: 7900 }, h.deps);
+      assert.equal(r1.status === "awaiting_claim" && r1.emailStatus, "sent");
+      const g2 = guestOrder("anyone@example.com");
+      assert.equal((await completeTossOrder(sb, { clerkUserId: null, orderId: g2, paymentKey: "pk_o2", amount: 7900 }, h.deps)).status, "awaiting_claim");
+      const g3 = guestOrder("anyone@example.com");
+      assert.deepEqual(await completeTossOrder(sb, { clerkUserId: null, orderId: g3, paymentKey: "pk_o3", amount: 7900 }, h.deps), {
+        status: "test_no_grant",
+        reason: "limit_reached",
+      });
+      // member, not on any list: pass granted up to the per-account limit
+      const access = () => decideTestGrant(sb, { clerkUserId: "u_open", verifiedEmails: [] });
+      const m1 = memberOrder("u_open");
+      assert.equal((await completeTossOrder(sb, { clerkUserId: "u_open", orderId: m1, paymentKey: "pk_o4", amount: 7900, testAccess: access }, h.deps)).status, "granted");
+      assert.equal(credits("u_open"), 1);
+
+      // recovery: closed under the old rule, Toss still DONE -> reopened + guide; cancelled -> stays closed
+      const old1 = guestOrder("late@example.com");
+      const old2 = guestOrder("late@example.com");
+      for (const [id, pk] of [[old1, "pk_r1"], [old2, "pk_r2"]] as const) {
+        psql(DB, `update toss_payment_orders set status='test_completed', test_grant_blocked_reason='not_allowlisted', payment_key=${lit(pk)},
+                  guest_email_status='skipped', approved_at=now() where order_id=${lit(id)}`);
+      }
+      const recDeps = {
+        ...h.deps,
+        get: async (key: string) =>
+          key === "pk_r1"
+            ? ({ kind: "ok", payment: payment(old1, key, 7900) } as TossResult)
+            : ({ kind: "ok", payment: { ...payment(old2, key, 7900), status: "CANCELED" } } as TossResult),
+      };
+      const n = await recoverBlockedTestOrders(sb, { guestEmail: "late@example.com" }, recDeps);
+      assert.equal(n, 1);
+      assert.equal(col(old1, "status"), "paid");
+      assert.equal(col(old1, "guest_email_status"), "sent", "guide email sent after recovery");
+      assert.equal(col(old2, "status"), "test_completed", "cancelled at Toss: never reopened");
+      assert.equal(await recoverBlockedTestOrders(sb, { guestEmail: "late@example.com" }, recDeps), 0, "idempotent");
+
+      process.env.TOSS_SECRET_KEY = prevKey;
+      if (prevKey === undefined) delete process.env.TOSS_SECRET_KEY;
+      delete process.env.TOSS_TEST_RESTRICT;
+      delete process.env.TOSS_TEST_GRANT_LIMIT;
+      ok("public (open test policy): anyone can buy & use within the per-email / per-account limit; old blocked orders reopen only if Toss still shows them paid");
     }
 
     // 8. claim-link token: valid / wrong / expired / rotated by a new-link request

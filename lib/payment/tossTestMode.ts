@@ -54,6 +54,24 @@ export function testGrantLimit(): number {
   return Math.min(Math.max(Math.trunc(n), 0), 50);
 }
 
+/**
+ * 2026-10-12 policy: on the public site EVERYONE may complete a Toss TEST
+ * purchase and use it (members get the pass, guests use it after proving the
+ * purchase email). The allowlist is no longer required; set
+ * TOSS_TEST_ALLOWLIST_REQUIRED=true to go back to allowlisted testers only.
+ * Repeat test purchases are capped per account / purchase email by
+ * TOSS_TEST_GRANT_LIMIT (default 3) -- a separate setting.
+ */
+export function testAllowlistRequired(): boolean {
+  return process.env.TOSS_TEST_ALLOWLIST_REQUIRED?.trim() === "true";
+}
+
+/** Guest test order may continue (subject to the per-email limit and email proof). */
+export function guestTestBuyerAllowed(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return testAllowlistRequired() ? guestEmailAllowlisted(email) : true;
+}
+
 export type TestGrantDecision =
   | { allowed: true }
   | { allowed: false; reason: "not_allowlisted" | "limit_reached" | "lookup_failed" };
@@ -70,7 +88,7 @@ export async function decideTestGrant(
   const listed =
     list.userIds.has(account.clerkUserId) ||
     account.verifiedEmails.some((e) => list.emails.has(e.trim().toLowerCase()));
-  if (!listed) return { allowed: false, reason: "not_allowlisted" };
+  if (testAllowlistRequired() && !listed) return { allowed: false, reason: "not_allowlisted" };
   const { data, error } = await supabase.rpc("count_toss_test_grants", { p_clerk_user_id: account.clerkUserId });
   if (error) {
     logServerError("toss.testMode", error, "count_failed");

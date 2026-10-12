@@ -1501,7 +1501,7 @@ export const messagesKoKR: MessageCatalog = {
     guestDoneBodyEmailPending: "구매가 완료됐어요. 아래 버튼을 눌러 구매 이메일로 가입하거나 로그인하면 이용권이 연결돼요.",
     guestLinkCta: "가입하고 이용권 연결하기",
     testNoGrantTitle: "테스트 결제가 정상 처리됐어요",
-    testNoGrantBody: "테스트 결제라 실제 청구는 없어요. 이 결제는 자동 취소되었고 이용권은 지급되지 않아요.",
+    testNoGrantBody: "테스트 결제 · 실제 청구 없음. 같은 이메일·계정의 테스트 결제 이용 한도를 넘어 이 결제에는 이용권이 지급되지 않아요.",
     claimSignedOutTitle: "계정을 연결하고 분석을 시작하세요",
     claimSignUpCta: "이 이메일로 가입하기",
     claimSignInCta: "이미 계정이 있어요 · 로그인",
@@ -1510,7 +1510,7 @@ export const messagesKoKR: MessageCatalog = {
     claimLinkExpiredNotice: "링크 기한이 지났어요. 구매와 이용권은 그대로예요. 아래에서 로그인하면 바로 연결돼요.",
     claimNewLinkCta: "구매 이메일로 새 링크 받기",
     claimNewLinkRequested: "요청을 접수했어요. 결제가 확인된 주문이라면 구매 이메일로 새 링크를 보내드려요. 몇 분 안에 오지 않으면 스팸함을 확인해 주세요.",
-    claimTestNotAllowedBody:"공개 사이트의 테스트 결제는 허용된 테스트 계정에서만 이용권으로 연결돼요. 실제 청구는 없었어요.",
+    claimTestNotAllowedBody:"테스트 결제 · 실제 청구 없음. 같은 이메일·계정의 테스트 결제 이용 한도를 넘어 이 결제는 이용권으로 연결되지 않아요.",
     guestPurchaseEmailMasked: (email: string) =>
       `안내 메일: ${email}`,
     claimSignedOutBody: (email: string) =>
@@ -1562,7 +1562,7 @@ export const messagesKoKR: MessageCatalog = {
       successBodyDevice: "지금 바로 확인해 보세요.",
       useCtaFromSuccess: "바로 시작하기",
       useLaterCta: "나중에 이용하기",
-      testPurchaseNote: "테스트 결제예요. 실제로 청구되지 않아요.",
+      testPurchaseNote: "테스트 결제 · 실제 청구 없음",
       mailStatusSent: "보냈어요",
       mailStatusPending: "보내는 중이에요. 몇 분 안에 오지 않으면 이용 화면에서 인증코드를 받을 수 있어요",
       verifyTitle: "구매 이메일을 확인해 주세요",

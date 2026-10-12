@@ -45,6 +45,7 @@ type Person = {
 type State = {
   status: "needs_input" | "ready" | "generating" | "generated" | "saved" | "expired" | "linked" | "not_available" | "unverified" | "error";
   surveyRequired?: boolean;
+  isTest?: boolean;
   expiresAt?: string | null;
   input?: {
     me: Person & { hasSurvey: boolean };
@@ -504,6 +505,7 @@ export default function GuestRelationshipUse({ orderId, wantsSave }: { orderId: 
         ) : null}
 
         {notice ? <p role="status" className="text-center text-sm text-amber-700">{notice}</p> : null}
+        {state.isTest ? <p className="text-center text-xs text-[#4A5C52]/70">{tu.testPurchaseNote}</p> : null}
       </main>
     </div>
   );

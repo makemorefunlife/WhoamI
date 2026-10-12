@@ -62,6 +62,7 @@ type OrderRow = {
   locale: string | null;
   guest_use_status: string | null;
   guest_use_enabled?: boolean | null;
+  is_test?: boolean | null;
 };
 
 type GuestRelOrderRow = {
@@ -91,6 +92,7 @@ type PersonInput = {
 export type GuestRelationshipState = {
   status: "needs_input" | "ready" | "generating" | "generated" | "saved" | "expired" | "linked" | "not_available";
   product: "relationship";
+  isTest: boolean;
   planId: string;
   locale: Locale;
   surveyRequired: boolean;
@@ -153,7 +155,7 @@ export function stripGuestPremiumForClient(kind: RelationshipKind, payload: unkn
 async function readOrder(supabase: SupabaseClient, orderId: string): Promise<OrderRow | null> {
   const { data, error } = await supabase
     .from("toss_payment_orders")
-    .select("order_id, plan_id, status, guest_email, clerk_user_id, approved_at, locale, guest_use_status, guest_use_enabled")
+    .select("order_id, plan_id, status, guest_email, clerk_user_id, approved_at, locale, guest_use_status, guest_use_enabled, is_test")
     .eq("order_id", orderId)
     .maybeSingle();
   if (error) {
@@ -279,6 +281,7 @@ export async function loadGuestRelationshipState(
   return {
     status,
     product: "relationship",
+    isTest: order.is_test === true,
     planId: order.plan_id,
     locale,
     surveyRequired: isPsychSurveyRequired(locale),

@@ -34,6 +34,7 @@ export type GuestOrderRow = {
   approved_at: string | null;
   locale: string | null;
   guest_use_status: string | null;
+  is_test?: boolean | null;
 };
 
 export type GuestProfileRow = {
@@ -55,6 +56,8 @@ export type GuestProfileRow = {
 export type GuestPersonalState = {
   status: "needs_input" | "ready" | "generating" | "generated" | "saved" | "expired" | "linked" | "not_available";
   planId: string;
+  /** Toss test order: shown as "test payment · no real charge". */
+  isTest: boolean;
   locale: Locale;
   surveyRequired: boolean;
   passExpiresAt: string | null;
@@ -88,7 +91,7 @@ export async function loadGuestPersonalState(
 ): Promise<GuestPersonalState | null> {
   const { data: o, error } = await supabase
     .from("toss_payment_orders")
-    .select("order_id, plan_id, amount, currency, status, guest_email, clerk_user_id, approved_at, locale, guest_use_status")
+    .select("order_id, plan_id, amount, currency, status, guest_email, clerk_user_id, approved_at, locale, guest_use_status, is_test")
     .eq("order_id", orderId)
     .maybeSingle();
   if (error || !o) {
@@ -115,6 +118,7 @@ export async function loadGuestPersonalState(
   return {
     status,
     planId: order.plan_id,
+    isTest: order.is_test === true,
     locale,
     surveyRequired: isPsychSurveyRequired(locale),
     passExpiresAt,

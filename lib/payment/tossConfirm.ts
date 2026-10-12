@@ -9,7 +9,7 @@ import {
 import { sameAmount } from "@/lib/payment/tossCatalog";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
-import { decideTestGrant, guestEmailAllowlisted, testGrantLimit, testOrderRestricted, type TestGrantDecision } from "@/lib/payment/tossTestMode";
+import { decideTestGrant, guestTestBuyerAllowed, testAllowlistRequired, testGrantLimit, testOrderRestricted, tossKeyIsTest, type TestGrantDecision } from "@/lib/payment/tossTestMode";
 import { sendGuestPurchaseEmail, type GuestEmailStatus } from "@/lib/email/guestPurchaseEmail";
 import type { MailSender } from "@/lib/email/resend";
 
@@ -319,10 +319,10 @@ export async function completeTossOrder(
       // The checkout email is browser input: it only decides whether the flow
       // continues (guide email to an allowlisted address). The grant is still
       // decided on the claiming account (claimGuestTossOrders).
-      if (!guestEmailAllowlisted(meta.guest_email)) {
+      if (!guestTestBuyerAllowed(meta.guest_email)) {
         return completeTestWithoutGrant(supabase, { orderId: input.orderId, reason: "not_allowlisted" });
       }
-      // Allowlisted test buyer: at most TOSS_TEST_GRANT_LIMIT open test orders
+      // Test buyer: at most TOSS_TEST_GRANT_LIMIT open test orders
       // per purchase email (same limit as accounts). Using one still needs the
       // purchase email to be proven (emailed link / code) -- the confirm route
       // opens no same-browser session for these orders.
@@ -526,3 +526,98 @@ async function grant(
   await flagForOperator(supabase, { paymentKey: input.paymentKey, orderId: input.orderId, planId, reason: "already_member_cancel_failed" });
   return { status: "needs_attention", reason: "already_member_cancel_failed" };
 }
+
+/**
+ * 2026-10-12: test orders closed only because the buyer was not on the old
+ * allowlist ("not_allowlisted") are reopened -- no new purchase -- when:
+ * the allowlist is no longer required, the server key is a TEST key, Toss
+ * still reports the payment DONE for the same order and amount (a cancelled
+ * payment stays closed), and the buyer is under the test limit. Then the
+ * normal path runs: guest -> purchase-guide email + use after email proof;
+ * member -> pass granted (same idempotent grant, per-account limit).
+ *
+ * Who: { guestEmail } -- guest orders of that email (the guide goes only to
+ * that address); { clerkUserId, verifiedEmails } -- this account's own
+ * orders and guest orders of its Clerk-verified emails.
+ */
+export async function recoverBlockedTestOrders(
+  supabase: SupabaseClient,
+  who: { guestEmail: string } | { clerkUserId: string; verifiedEmails: string[] },
+  deps: TossDeps = defaultDeps,
+): Promise<number> {
+  if (!tossKeyIsTest() || testAllowlistRequired()) return 0;
+  const base = () =>
+    supabase
+      .from("toss_payment_orders")
+      .select("order_id, payment_key, amount, currency, clerk_user_id, guest_email, created_at")
+      .eq("is_test", true)
+      .eq("status", "test_completed")
+      .eq("test_grant_blocked_reason", "not_allowlisted")
+      .order("created_at", { ascending: false })
+      .limit(10);
+  type Row = { order_id: string; payment_key: string | null; amount: number | string; currency: string; clerk_user_id: string | null; guest_email: string | null };
+  const rows: Row[] = [];
+  if ("guestEmail" in who) {
+    const { data, error } = await base().is("clerk_user_id", null).eq("guest_email", who.guestEmail.trim().toLowerCase());
+    if (error) logServerError("toss.testRecover", error, "list_failed");
+    rows.push(...((data ?? []) as Row[]));
+  } else {
+    const emails = [...new Set(who.verifiedEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))];
+    const own = await base().eq("clerk_user_id", who.clerkUserId);
+    if (own.error) logServerError("toss.testRecover", own.error, "list_failed");
+    rows.push(...((own.data ?? []) as Row[]));
+    if (emails.length) {
+      const guest = await base().is("clerk_user_id", null).in("guest_email", emails);
+      if (guest.error) logServerError("toss.testRecover", guest.error, "list_failed");
+      rows.push(...((guest.data ?? []) as Row[]));
+    }
+  }
+
+  let reopened = 0;
+  for (const o of rows) {
+    if (!o.payment_key) continue;
+    const order = { orderId: o.order_id, amount: Number(o.amount), currency: o.currency };
+    const lookup = await deps.get(o.payment_key);
+    if (lookup.kind !== "ok" || !paymentMatchesOrder(lookup.payment, order)) continue; // cancelled / unknown: stays closed
+    const isGuest = o.clerk_user_id === null;
+    if (isGuest) {
+      const open = await countGuestTestOrders(supabase, o.guest_email ?? "", o.order_id);
+      if (open === null || open >= testGrantLimit()) continue;
+    }
+    const { data: upd, error } = await supabase
+      .from("toss_payment_orders")
+      .update({
+        status: "paid",
+        test_grant_blocked_reason: null,
+        ...(isGuest ? { guest_email_status: null, guest_email_next_attempt_at: null } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("order_id", o.order_id)
+      .eq("status", "test_completed")
+      .eq("test_grant_blocked_reason", "not_allowlisted")
+      .select("order_id");
+    if (error || !Array.isArray(upd) || upd.length !== 1) {
+      if (error) logServerError("toss.testRecover", error, "reopen_failed");
+      continue;
+    }
+    reopened++;
+    logServerEvent("toss.testRecover", isGuest ? "reopened_guest" : "reopened_member");
+    // Same path as a fresh approval (idempotent, limits re-checked).
+    await completeTossOrder(
+      supabase,
+      {
+        clerkUserId: o.clerk_user_id,
+        orderId: o.order_id,
+        paymentKey: o.payment_key,
+        amount: order.amount,
+        testAccess:
+          !isGuest && "clerkUserId" in who
+            ? () => decideTestGrant(supabase, { clerkUserId: who.clerkUserId, verifiedEmails: who.verifiedEmails })
+            : undefined,
+      },
+      deps,
+    );
+  }
+  return reopened;
+}
+
