@@ -1,5 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logServerError } from "@/lib/security/safeLog";
 
 /**
  * Toss TEST payments (test_sk_ keys: no real charge) on a PUBLIC deployment
@@ -11,10 +10,9 @@ import { logServerError } from "@/lib/security/safeLog";
  *    becomes an entitlement ONLY for an account on the server-side allowlist
  *    (TOSS_TEST_ALLOWLIST: Clerk user ids and/or emails, comma-separated),
  *    checked against the Clerk user id / Clerk-VERIFIED emails -- never
- *    against anything the browser sent -- and at most TOSS_TEST_GRANT_LIMIT
- *    granted test orders per account (default 3). Everyone else can still go
- *    through the payment window (e.g. the Toss review); the approved test
- *    payment is cancelled and nothing is granted.
+ *    against anything the browser sent. Everyone else can still go
+ *    through the payment window (e.g. the Toss review); nothing is granted.
+ *    (This allowlist mode is now optional -- see testAllowlistRequired.)
  *
  * Live keys (live_sk_) are never affected.
  */
@@ -48,25 +46,21 @@ export function readTestAllowlist(): Allowlist {
   return { userIds, emails };
 }
 
-export function testGrantLimit(): number {
-  const n = Number(process.env.TOSS_TEST_GRANT_LIMIT ?? "3");
-  if (!Number.isFinite(n)) return 3;
-  return Math.min(Math.max(Math.trunc(n), 0), 50);
-}
-
 /**
  * 2026-10-12 policy: on the public site EVERYONE may complete a Toss TEST
  * purchase and use it (members get the pass, guests use it after proving the
  * purchase email). The allowlist is no longer required; set
  * TOSS_TEST_ALLOWLIST_REQUIRED=true to go back to allowlisted testers only.
- * Repeat test purchases are capped per account / purchase email by
- * TOSS_TEST_GRANT_LIMIT (default 3) -- a separate setting.
+ * There is no cumulative cap on test purchases (2026-10-12: the old
+ * "3 per account / email" cap was never requested and is removed). Each order
+ * is still granted / used at most once, and guests prove the purchase (buyer
+ * cookie in the paying browser, emailed link or code elsewhere).
  */
 export function testAllowlistRequired(): boolean {
   return process.env.TOSS_TEST_ALLOWLIST_REQUIRED?.trim() === "true";
 }
 
-/** Guest test order may continue (subject to the per-email limit and email proof). */
+/** Guest test order may continue (use still needs the purchase proof). */
 export function guestTestBuyerAllowed(email: string | null | undefined): boolean {
   if (!email) return false;
   return testAllowlistRequired() ? guestEmailAllowlisted(email) : true;
@@ -74,14 +68,14 @@ export function guestTestBuyerAllowed(email: string | null | undefined): boolean
 
 export type TestGrantDecision =
   | { allowed: true }
-  | { allowed: false; reason: "not_allowlisted" | "limit_reached" | "lookup_failed" };
+  | { allowed: false; reason: "not_allowlisted" };
 
 /**
  * Server-side decision for one account. `verifiedEmails` must come from
  * Clerk on the server (verification.status === "verified").
  */
 export async function decideTestGrant(
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   account: { clerkUserId: string; verifiedEmails: string[] },
 ): Promise<TestGrantDecision> {
   const list = readTestAllowlist();
@@ -89,14 +83,6 @@ export async function decideTestGrant(
     list.userIds.has(account.clerkUserId) ||
     account.verifiedEmails.some((e) => list.emails.has(e.trim().toLowerCase()));
   if (testAllowlistRequired() && !listed) return { allowed: false, reason: "not_allowlisted" };
-  const { data, error } = await supabase.rpc("count_toss_test_grants", { p_clerk_user_id: account.clerkUserId });
-  if (error) {
-    logServerError("toss.testMode", error, "count_failed");
-    return { allowed: false, reason: "lookup_failed" };
-  }
-  const raw = Array.isArray(data) ? (data[0] as Record<string, unknown> | number | undefined) : data;
-  const count = typeof raw === "number" ? raw : Number(Object.values((raw ?? {}) as Record<string, unknown>)[0] ?? 0);
-  if (count >= testGrantLimit()) return { allowed: false, reason: "limit_reached" };
   return { allowed: true };
 }
 

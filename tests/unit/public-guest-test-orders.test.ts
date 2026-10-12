@@ -1,7 +1,7 @@
 /**
  * Public site, Toss TEST key (2026-10-12): an allowlisted purchase email can
  * run the guest flow; using it needs the email proven (link / code); at most
- * TOSS_TEST_GRANT_LIMIT open test orders per email; everyone else unchanged.
+ * no cumulative cap (removed 2026-10-12); each order granted / used once.
  * Run: npx tsx tests/unit/public-guest-test-orders.test.ts
  */
 import assert from "node:assert/strict";
@@ -24,9 +24,9 @@ process.env = env;
 console.log("ok - test buyers open by default; allowlist only in the optional old mode");
 
 const confirm = readFileSync("lib/payment/tossConfirm.ts", "utf8");
-assert.match(confirm, /countGuestTestOrders\(supabase, meta\.guest_email as string, input\.orderId\)/);
-assert.match(confirm, /used >= testGrantLimit\(\)/);
-console.log("ok - per-email limit for guest test orders");
+assert.doesNotMatch(confirm, /countGuestTestOrders|testGrantLimit/);
+assert.doesNotMatch(readFileSync("lib/payment/tossTestMode.ts", "utf8"), /TOSS_TEST_GRANT_LIMIT|count_toss_test_grants/);
+console.log("ok - no cumulative test-purchase cap");
 
 const route = readFileSync("app/api/payments/toss/confirm/route.ts", "utf8");
 // Same browser: signed buyer cookie (purchase proof) opens the session, test or not.

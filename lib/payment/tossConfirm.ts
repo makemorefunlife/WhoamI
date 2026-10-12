@@ -9,7 +9,7 @@ import {
 import { sameAmount } from "@/lib/payment/tossCatalog";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
-import { decideTestGrant, guestTestBuyerAllowed, testAllowlistRequired, testGrantLimit, testOrderRestricted, tossKeyIsTest, type TestGrantDecision } from "@/lib/payment/tossTestMode";
+import { decideTestGrant, guestTestBuyerAllowed, testAllowlistRequired, testOrderRestricted, tossKeyIsTest, type TestGrantDecision } from "@/lib/payment/tossTestMode";
 import { sendGuestPurchaseEmail, type GuestEmailStatus } from "@/lib/email/guestPurchaseEmail";
 import type { MailSender } from "@/lib/email/resend";
 
@@ -117,22 +117,6 @@ async function flagForOperator(
   if (error) logServerError("toss.confirm", error, "manual_review_insert_failed");
 }
 
-/** Test guest orders of this purchase email that went through (not blocked), other than this one. */
-async function countGuestTestOrders(supabase: SupabaseClient, email: string, exceptOrderId: string): Promise<number | null> {
-  const { data, error } = await supabase
-    .from("toss_payment_orders")
-    .select("order_id")
-    .eq("is_test", true)
-    .eq("guest_email", email.trim().toLowerCase())
-    .in("status", ["paid", "granted"])
-    .limit(100);
-  if (error) {
-    logServerError("toss.confirm", error, "test_count_failed");
-    return null;
-  }
-  return ((data ?? []) as { order_id: string }[]).filter((r) => r.order_id !== exceptOrderId).length;
-}
-
 function rpcRow<T>(data: unknown): T | undefined {
   return (Array.isArray(data) ? data[0] : data) as T | undefined;
 }
@@ -211,8 +195,15 @@ export async function completeTossOrder(
       return { status: "rejected", reason: "in_progress" };
     case "granted":
       return { status: "granted", alreadyProcessed: true, planId: claim.plan_id ?? "" };
-    case "test_completed":
+    case "test_completed": {
+      // Closed under a rule that no longer applies (old allowlist / removed
+      // cap): reopen this same order once -- Toss must still show it paid
+      // with this payment key -- then continue on the normal path.
+      if (await reopenBlockedTestOrder(supabase, input.orderId, input.paymentKey, deps)) {
+        return completeTossOrder(supabase, input, deps);
+      }
       return { status: "test_no_grant", reason: "test_completed" };
+    }
     case "awaiting_claim": {
       const meta = await readOrderMeta(supabase, input.orderId);
       if (meta?.test_grant_blocked_reason) return { status: "test_no_grant", reason: meta.test_grant_blocked_reason };
@@ -321,15 +312,6 @@ export async function completeTossOrder(
       // decided on the claiming account (claimGuestTossOrders).
       if (!guestTestBuyerAllowed(meta.guest_email)) {
         return completeTestWithoutGrant(supabase, { orderId: input.orderId, reason: "not_allowlisted" });
-      }
-      // Test buyer: at most TOSS_TEST_GRANT_LIMIT open test orders
-      // per purchase email (same limit as accounts). Using one still needs the
-      // purchase email to be proven (emailed link / code) -- the confirm route
-      // opens no same-browser session for these orders.
-      const used = await countGuestTestOrders(supabase, meta.guest_email as string, input.orderId);
-      if (used === null) return { status: "pending_retry", reason: "test_count_failed" };
-      if (used >= testGrantLimit()) {
-        return completeTestWithoutGrant(supabase, { orderId: input.orderId, reason: "limit_reached" });
       }
     } else {
       const decision = input.testAccess ? await input.testAccess() : ({ allowed: false, reason: "not_allowlisted" } as const);
@@ -528,21 +510,68 @@ async function grant(
 }
 
 /**
- * 2026-10-12: test orders closed only because the buyer was not on the old
- * allowlist ("not_allowlisted"), or over a test limit that has since been
- * raised ("limit_reached", TOSS_TEST_GRANT_LIMIT), are reopened -- no new
- * purchase -- when:
- * the allowlist is no longer required, the server key is a TEST key, Toss
- * still reports the payment DONE for the same order and amount (a cancelled
- * payment stays closed), and the buyer is under the test limit. Then the
- * normal path runs: guest -> purchase-guide email + use after email proof;
- * member -> pass granted (same idempotent grant, per-account limit).
+ * 2026-10-12: test orders closed only by a rule that no longer applies --
+ * the old allowlist ("not_allowlisted") or the removed cumulative cap
+ * ("limit_reached") -- are reopened with no new purchase when: the allowlist
+ * is not required, the server key is a TEST key, and Toss still reports the
+ * payment DONE for the same order, payment key and amount (a cancelled
+ * payment stays closed). The reopen is a single conditional update, so an
+ * order is reopened at most once; the normal path then runs (guest: guide
+ * email + use with purchase proof; member: the same idempotent grant).
  *
  * Who: { guestEmail } -- guest orders of that email (the guide goes only to
  * that address); { clerkUserId, verifiedEmails } -- this account's own
  * orders and guest orders of its Clerk-verified emails.
  */
 const RECOVERABLE_TEST_BLOCKS = ["not_allowlisted", "limit_reached"];
+
+/** Reopens one blocked test order (see above). True only when this call reopened it. */
+async function reopenBlockedTestOrder(
+  supabase: SupabaseClient,
+  orderId: string,
+  paymentKey: string,
+  deps: TossDeps,
+): Promise<boolean> {
+  if (!tossKeyIsTest() || testAllowlistRequired()) return false;
+  const { data, error } = await supabase
+    .from("toss_payment_orders")
+    .select("order_id, payment_key, amount, currency, clerk_user_id, is_test, status, test_grant_blocked_reason")
+    .eq("order_id", orderId)
+    .maybeSingle();
+  const o = data as {
+    order_id: string;
+    payment_key: string | null;
+    amount: number | string;
+    currency: string;
+    clerk_user_id: string | null;
+    is_test: boolean | null;
+    status: string;
+    test_grant_blocked_reason: string | null;
+  } | null;
+  if (error || !o || o.is_test !== true || o.status !== "test_completed") return false;
+  if (!RECOVERABLE_TEST_BLOCKS.includes(o.test_grant_blocked_reason ?? "")) return false;
+  if (!o.payment_key || o.payment_key !== paymentKey) return false;
+  const lookup = await deps.get(o.payment_key);
+  const order = { orderId: o.order_id, amount: Number(o.amount), currency: o.currency };
+  if (lookup.kind !== "ok" || !paymentMatchesOrder(lookup.payment, order)) return false; // cancelled / unknown: stays closed
+  const isGuest = o.clerk_user_id === null;
+  const { data: upd, error: upErr } = await supabase
+    .from("toss_payment_orders")
+    .update({
+      status: "paid",
+      test_grant_blocked_reason: null,
+      ...(isGuest ? { guest_email_status: null, guest_email_next_attempt_at: null } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("order_id", o.order_id)
+    .eq("status", "test_completed")
+    .in("test_grant_blocked_reason", RECOVERABLE_TEST_BLOCKS)
+    .select("order_id");
+  if (upErr) logServerError("toss.testRecover", upErr, "reopen_failed");
+  const ok = !upErr && Array.isArray(upd) && upd.length === 1;
+  if (ok) logServerEvent("toss.testRecover", isGuest ? "reopened_guest" : "reopened_member");
+  return ok;
+}
 
 export async function recoverBlockedTestOrders(
   supabase: SupabaseClient,
@@ -580,40 +609,17 @@ export async function recoverBlockedTestOrders(
   let reopened = 0;
   for (const o of rows) {
     if (!o.payment_key) continue;
-    const order = { orderId: o.order_id, amount: Number(o.amount), currency: o.currency };
-    const lookup = await deps.get(o.payment_key);
-    if (lookup.kind !== "ok" || !paymentMatchesOrder(lookup.payment, order)) continue; // cancelled / unknown: stays closed
-    const isGuest = o.clerk_user_id === null;
-    if (isGuest) {
-      const open = await countGuestTestOrders(supabase, o.guest_email ?? "", o.order_id);
-      if (open === null || open >= testGrantLimit()) continue;
-    }
-    const { data: upd, error } = await supabase
-      .from("toss_payment_orders")
-      .update({
-        status: "paid",
-        test_grant_blocked_reason: null,
-        ...(isGuest ? { guest_email_status: null, guest_email_next_attempt_at: null } : {}),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("order_id", o.order_id)
-      .eq("status", "test_completed")
-      .in("test_grant_blocked_reason", RECOVERABLE_TEST_BLOCKS)
-      .select("order_id");
-    if (error || !Array.isArray(upd) || upd.length !== 1) {
-      if (error) logServerError("toss.testRecover", error, "reopen_failed");
-      continue;
-    }
+    if (!(await reopenBlockedTestOrder(supabase, o.order_id, o.payment_key, deps))) continue;
     reopened++;
-    logServerEvent("toss.testRecover", isGuest ? "reopened_guest" : "reopened_member");
-    // Same path as a fresh approval (idempotent, limits re-checked).
+    const isGuest = o.clerk_user_id === null;
+    // Same path as a fresh approval (idempotent).
     await completeTossOrder(
       supabase,
       {
         clerkUserId: o.clerk_user_id,
         orderId: o.order_id,
         paymentKey: o.payment_key,
-        amount: order.amount,
+        amount: Number(o.amount),
         testAccess:
           !isGuest && "clerkUserId" in who
             ? () => decideTestGrant(supabase, { clerkUserId: who.clerkUserId, verifiedEmails: who.verifiedEmails })

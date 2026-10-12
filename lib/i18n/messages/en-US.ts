@@ -1573,7 +1573,7 @@ export const messagesEnUS = {
     guestDoneBodyEmailPending: "Your purchase is complete. Use the button below to sign up or log in with your purchase email and link your pass.",
     guestLinkCta: "Sign up and link my pass",
     testNoGrantTitle: "Test payment processed",
-    testNoGrantBody: "Test payment · no real charge. This email or account has reached the test-purchase limit, so no pass was issued for this payment.",
+    testNoGrantBody: "Test payment · no real charge. This test payment did not become a pass.",
     claimSignedOutTitle: "Link an account to start your analysis",
     claimSignUpCta: "Sign up with this email",
     claimSignInCta: "I already have an account · Sign in",
@@ -1582,7 +1582,7 @@ export const messagesEnUS = {
     claimLinkExpiredNotice: "This link has expired. Your purchase and pass are safe. Log in below and they'll be linked right away.",
     claimNewLinkCta: "Email me a new link",
     claimNewLinkRequested: "Request received. If this is a paid order, we'll send a new link to the purchase email. If it doesn't arrive within a few minutes, check your spam folder.",
-    claimTestNotAllowedBody: "Test payment · no real charge. This email or account has reached the test-purchase limit, so this payment does not become a pass.",
+    claimTestNotAllowedBody: "Test payment · no real charge. This test payment did not become a pass.",
     guestPurchaseEmailMasked: (email: string) =>
       `Confirmation email: ${email}`,
     claimSignedOutBody: (email: string) =>

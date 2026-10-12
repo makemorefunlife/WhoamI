@@ -295,7 +295,6 @@ async function main() {
       // Optional old mode: allowlisted testers only.
       process.env.TOSS_TEST_ALLOWLIST_REQUIRED = "true";
       process.env.TOSS_TEST_ALLOWLIST = "u_tester,qa@example.com";
-      process.env.TOSS_TEST_GRANT_LIMIT = "1";
       const g = guestOrder("visitor@example.com");
       const h = harness();
       const rg = await completeTossOrder(sb, { clerkUserId: null, orderId: g, paymentKey: "pk_p1", amount: 7900 }, h.deps);
@@ -328,8 +327,11 @@ async function main() {
       assert.equal(r1.status, "granted");
       const m2 = memberOrder("u_tester");
       const r2 = await completeTossOrder(sb, { clerkUserId: "u_tester", orderId: m2, paymentKey: "pk_t2", amount: 7900, testAccess: access }, h.deps);
-      assert.deepEqual(r2, { status: "test_no_grant", reason: "limit_reached" });
-      assert.equal(credits("u_tester"), 1);
+      assert.equal(r2.status, "granted", "no cumulative cap");
+      assert.equal(credits("u_tester"), 2);
+      const again = await completeTossOrder(sb, { clerkUserId: "u_tester", orderId: m2, paymentKey: "pk_t2", amount: 7900, testAccess: access }, h.deps);
+      assert.equal(again.status === "granted" && again.alreadyProcessed, true, "same order never granted twice");
+      assert.equal(credits("u_tester"), 2);
 
       // guest flow for an allowlisted email: email goes out, grant decided on the verified account
       const g = guestOrder("qa@example.com");
@@ -340,14 +342,15 @@ async function main() {
       const g2 = guestOrder("qa@example.com");
       await completeTossOrder(sb, { clerkUserId: null, orderId: g2, paymentKey: "pk_t4", amount: 7900 }, h.deps);
       const c2 = await claimGuestTossOrders(sb, { clerkUserId: "u_qa", verifiedEmails: ["qa@example.com"], orderIds: [g2] });
-      assert.equal(c2[0].result, "test_not_allowed", "over the per-account test limit");
-      assert.equal(col(g2, "status"), "test_completed");
-      assert.equal(credits("u_qa"), 1);
+      assert.equal(c2[0].result, "claimed", "no cumulative cap");
+      assert.equal(credits("u_qa"), 2);
+      const c3 = await claimGuestTossOrders(sb, { clerkUserId: "u_qa", verifiedEmails: ["qa@example.com"], orderIds: [g2] });
+      assert.equal(c3[0].result, "already_claimed", "same order never claimed twice");
+      assert.equal(credits("u_qa"), 2);
       delete process.env.TOSS_TEST_RESTRICT;
       delete process.env.TOSS_TEST_ALLOWLIST;
       delete process.env.TOSS_TEST_ALLOWLIST_REQUIRED;
-      delete process.env.TOSS_TEST_GRANT_LIMIT;
-      ok("public: allowlisted tester (Clerk id / verified email, server-side) gets a pass up to the limit, then test_completed");
+      ok("public (optional allowlist mode): allowlisted tester gets passes, each order once, no cumulative cap");
     }
 
     // 7b. 2026-10-12 policy (default): anyone, no allowlist; per-email / per-account limit; old blocked orders recovered
@@ -355,7 +358,6 @@ async function main() {
       const { decideTestGrant } = await import("../../lib/payment/tossTestMode");
       const { recoverBlockedTestOrders } = await import("../../lib/payment/tossConfirm");
       process.env.TOSS_TEST_RESTRICT = "true";
-      process.env.TOSS_TEST_GRANT_LIMIT = "2";
       const prevKey = process.env.TOSS_SECRET_KEY;
       process.env.TOSS_SECRET_KEY = "test_sk_dummy";
       const h = harness();
@@ -366,11 +368,8 @@ async function main() {
       const g2 = guestOrder("anyone@example.com");
       assert.equal((await completeTossOrder(sb, { clerkUserId: null, orderId: g2, paymentKey: "pk_o2", amount: 7900 }, h.deps)).status, "awaiting_claim");
       const g3 = guestOrder("anyone@example.com");
-      assert.deepEqual(await completeTossOrder(sb, { clerkUserId: null, orderId: g3, paymentKey: "pk_o3", amount: 7900 }, h.deps), {
-        status: "test_no_grant",
-        reason: "limit_reached",
-      });
-      // member, not on any list: pass granted up to the per-account limit
+      assert.equal((await completeTossOrder(sb, { clerkUserId: null, orderId: g3, paymentKey: "pk_o3", amount: 7900 }, h.deps)).status, "awaiting_claim", "no cumulative cap");
+      // member, not on any list: pass granted
       const access = () => decideTestGrant(sb, { clerkUserId: "u_open", verifiedEmails: [] });
       const m1 = memberOrder("u_open");
       assert.equal((await completeTossOrder(sb, { clerkUserId: "u_open", orderId: m1, paymentKey: "pk_o4", amount: 7900, testAccess: access }, h.deps)).status, "granted");
@@ -397,21 +396,26 @@ async function main() {
       assert.equal(col(old2, "status"), "test_completed", "cancelled at Toss: never reopened");
       assert.equal(await recoverBlockedTestOrders(sb, { guestEmail: "late@example.com" }, recDeps), 0, "idempotent");
 
-      // over the limit earlier, limit raised later -> reopened (Toss still DONE), still within the new limit
-      process.env.TOSS_TEST_GRANT_LIMIT = "5";
+      // closed by the removed cap earlier ("limit_reached"): reopening the SAME success page (same payment key)
+      // recovers it once -- guide email goes out; a different payment key or a cancelled payment never does.
       const lim = guestOrder("anyone@example.com");
       psql(DB, `update toss_payment_orders set status='test_completed', test_grant_blocked_reason='limit_reached', payment_key='pk_lim1',
                 guest_email_status='skipped', approved_at=now() where order_id=${lit(lim)}`);
-      const byKey: Record<string, string> = { pk_lim1: lim, pk_o3: g3 };
-      const limDeps = { ...h.deps, get: async (key: string) => ({ kind: "ok", payment: payment(byKey[key] ?? "x", key, 7900) }) as TossResult };
-      assert.equal(await recoverBlockedTestOrders(sb, { guestEmail: "anyone@example.com" }, limDeps), 2, "g3 + lim reopened under the raised limit");
+      const limDeps = { ...h.deps, get: async (key: string) => ({ kind: "ok", payment: payment(lim, key, 7900) }) as TossResult };
+      const wrongKey = await completeTossOrder(sb, { clerkUserId: null, orderId: lim, paymentKey: "pk_other", amount: 7900 }, limDeps);
+      assert.equal(wrongKey.status, "rejected", "another payment key cannot reopen it");
+      assert.equal(col(lim, "status"), "test_completed");
+      const back = await completeTossOrder(sb, { clerkUserId: null, orderId: lim, paymentKey: "pk_lim1", amount: 7900 }, limDeps);
+      assert.equal(back.status === "awaiting_claim" && back.emailStatus, "sent");
       assert.equal(col(lim, "status"), "paid");
+      const twice = await completeTossOrder(sb, { clerkUserId: null, orderId: lim, paymentKey: "pk_lim1", amount: 7900 }, limDeps);
+      assert.equal(twice.status, "awaiting_claim");
+      assert.equal(col(lim, "guest_email_generation"), "0", "no second guide email for the same order");
 
       process.env.TOSS_SECRET_KEY = prevKey;
       if (prevKey === undefined) delete process.env.TOSS_SECRET_KEY;
       delete process.env.TOSS_TEST_RESTRICT;
-      delete process.env.TOSS_TEST_GRANT_LIMIT;
-      ok("public (open test policy): anyone can buy & use within the per-email / per-account limit; old blocked orders reopen only if Toss still shows them paid");
+      ok("public (open test policy): anyone can buy & use, no cumulative cap; orders blocked by old rules reopen once, only if Toss still shows them paid");
     }
 
     // 8. claim-link token: valid / wrong / expired / rotated by a new-link request

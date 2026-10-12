@@ -1501,7 +1501,7 @@ export const messagesKoKR: MessageCatalog = {
     guestDoneBodyEmailPending: "구매가 완료됐어요. 아래 버튼을 눌러 구매 이메일로 가입하거나 로그인하면 이용권이 연결돼요.",
     guestLinkCta: "가입하고 이용권 연결하기",
     testNoGrantTitle: "테스트 결제가 정상 처리됐어요",
-    testNoGrantBody: "테스트 결제 · 실제 청구 없음. 같은 이메일·계정의 테스트 결제 이용 한도를 넘어 이 결제에는 이용권이 지급되지 않아요.",
+    testNoGrantBody: "테스트 결제 · 실제 청구 없음. 이 테스트 결제는 이용권으로 연결되지 않았어요.",
     claimSignedOutTitle: "계정을 연결하고 분석을 시작하세요",
     claimSignUpCta: "이 이메일로 가입하기",
     claimSignInCta: "이미 계정이 있어요 · 로그인",
@@ -1510,7 +1510,7 @@ export const messagesKoKR: MessageCatalog = {
     claimLinkExpiredNotice: "링크 기한이 지났어요. 구매와 이용권은 그대로예요. 아래에서 로그인하면 바로 연결돼요.",
     claimNewLinkCta: "구매 이메일로 새 링크 받기",
     claimNewLinkRequested: "요청을 접수했어요. 결제가 확인된 주문이라면 구매 이메일로 새 링크를 보내드려요. 몇 분 안에 오지 않으면 스팸함을 확인해 주세요.",
-    claimTestNotAllowedBody:"테스트 결제 · 실제 청구 없음. 같은 이메일·계정의 테스트 결제 이용 한도를 넘어 이 결제는 이용권으로 연결되지 않아요.",
+    claimTestNotAllowedBody:"테스트 결제 · 실제 청구 없음. 이 테스트 결제는 이용권으로 연결되지 않았어요.",
     guestPurchaseEmailMasked: (email: string) =>
       `안내 메일: ${email}`,
     claimSignedOutBody: (email: string) =>
