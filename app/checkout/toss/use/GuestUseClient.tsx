@@ -154,15 +154,20 @@ function LookupPanel() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const submit = async () => {
     setBusy(true);
-    await fetch("/api/guest/lookup", {
+    setNotice(null);
+    const res = await fetch("/api/guest/lookup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     }).catch(() => null);
     setBusy(false);
-    setDone(true);
+    // Only a request the server actually took shows the "received" sentence;
+    // throttled / rejected / network failures say so instead.
+    if (res?.ok) setDone(true);
+    else setNotice(res?.status === 429 ? t.lookupTooMany : t.codeSendFailed);
   };
   return (
     // After sending: only the result sentence (no title / instructions left over).
@@ -181,6 +186,7 @@ function LookupPanel() {
           <button type="button" className="stitch-cta-primary w-full" disabled={busy || !email.includes("@")} onClick={() => void submit()}>
             {t.lookupCta}
           </button>
+          {notice ? <p role="alert" className="text-xs leading-relaxed text-rose-600">{notice}</p> : null}
         </div>
       )}
     </TossResultShell>

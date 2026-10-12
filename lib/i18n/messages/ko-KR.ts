@@ -1586,6 +1586,7 @@ export const messagesKoKR: MessageCatalog = {
       lookupBody: "구매할 때 입력한 이메일을 적어 주세요. 결제가 확인된 구매가 있으면 그 이메일로 새 링크가 담긴 안내 메일을 보내드려요.",
       lookupCta: "안내 메일 받기",
       lookupDone: "요청을 접수했어요. 결제가 확인된 구매가 있다면 그 이메일로 안내 메일을 보냈어요.",
+      lookupTooMany: "요청이 많아요. 잠시 후 다시 시도해 주세요.",
       inputTitle: "생년월일과 출생지를 입력해 주세요",
       inputCta: "다음",
       surveyEyebrow: "선택 · 약 2분",

@@ -1658,6 +1658,7 @@ export const messagesEnUS = {
       lookupBody: "Enter the email you used at checkout. If it has a paid purchase, we'll send a purchase email with a new link to that address.",
       lookupCta: "Send it",
       lookupDone: "Request received. If that email has a paid purchase, we've sent the purchase email there.",
+      lookupTooMany: "Too many requests. Please try again a little later.",
       inputTitle: "Enter your birth date and birth place",
       inputCta: "Next",
       surveyEyebrow: "Optional · about 2 min",
@@ -3737,6 +3738,7 @@ export type MessageCatalog = {
       lookupBody: string;
       lookupCta: string;
       lookupDone: string;
+      lookupTooMany: string;
       inputTitle: string;
       inputCta: string;
       surveyEyebrow: string;

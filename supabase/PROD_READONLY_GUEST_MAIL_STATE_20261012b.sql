@@ -37,3 +37,33 @@ from public.toss_payment_orders o
 where o.guest_email is not null
 order by o.created_at desc
 limit 10;
+
+-- ───────────────────────────────────────────────────────────────
+-- '구매 안내 메일 다시 받기' 결과 추적 (이메일 기준, 읽기 전용)
+-- '<EMAIL>'를 다시 받기에 입력한 이메일로 바꿔 실행. 결과에는 마스킹된 이메일만 나옴.
+--
+--  1. 대상 주문 조회됨?   → lookup_target = true 인 행이 있어야 함 (status=paid, 계정 미연결)
+--  2. 실제 발송 시도?      → mail_generation 이 다시 받기 전보다 1 증가 + last_attempt_at 이 다시 받기 시각
+--  3. 큐 상태·오류 갱신?   → mail_status / mail_reason 이 그 시각 기준 값
+--  4. Resend 수락?         → resend_accepted = true (message id 저장) + sent_at 이 그 시각
+--     mail_status=retry 이고 mail_reason=claim_token_secret_missing 이면 운영 서버가 아직 그 값을 못 읽음
+select
+  o.order_id,
+  o.created_at,
+  o.is_test,
+  o.status                                         as order_status,
+  (o.clerk_user_id is not null)                    as linked_to_account,
+  (o.status = 'paid' and o.clerk_user_id is null)  as lookup_target,
+  o.guest_email_status                             as mail_status,
+  o.guest_email_last_error                         as mail_reason,
+  o.guest_email_generation                         as mail_generation,
+  o.guest_email_attempts                           as mail_attempts,
+  o.guest_email_locked_at                          as last_attempt_at,
+  o.guest_email_sent_at                            as sent_at,
+  (o.guest_email_message_id is not null)           as resend_accepted,
+  regexp_replace(o.guest_email, '^(.{2})[^@]*', '\1***') as email_masked,
+  now()                                            as checked_at
+from public.toss_payment_orders o
+where o.guest_email = lower(trim('<EMAIL>'))
+order by o.created_at desc
+limit 10;
