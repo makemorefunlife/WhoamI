@@ -26,6 +26,9 @@ import {
 
 export const runtime = "nodejs";
 
+/** Queue reasons that mean "will not go out until a server setting is fixed" (shown as not sent). */
+const MAIL_SETUP_MISSING = new Set(["app_base_url_missing", "claim_token_secret_missing", "mail_not_configured"]);
+
 /**
  * Called by /checkout/toss/success with the query params Toss appended to
  * successUrl (paymentKey, orderId, amount). The client values are only
@@ -130,7 +133,8 @@ export async function POST(req: Request) {
           emailStatus:
             mail.status === "sent"
               ? "sent"
-              : mail.status === "pending" || mail.status === "retry" || mail.status === "sending"
+              : (mail.status === "pending" || mail.status === "retry" || mail.status === "sending") &&
+                  !MAIL_SETUP_MISSING.has(mail.reason ?? "")
                 ? "pending"
                 : "failed",
           // Non-secret reason code, shown on TEST purchases to make setup problems visible.

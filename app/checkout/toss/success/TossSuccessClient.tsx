@@ -182,7 +182,7 @@ function SuccessContent() {
             <button type="button" className={secondaryButton} onClick={() => router.push(localizedPath("/", locale))}>
               {t.guestUse.useLaterCta}
             </button>
-            <p className="mt-4 text-center text-xs leading-relaxed text-[#4A5C52] break-keep">{t.guestUse.useLaterNote}</p>
+            <p className="mt-3 text-center text-[11px] leading-relaxed text-[#4A5C52]/80 break-keep">{t.guestUse.useLaterNote}</p>
             {view.isTest ? (
               <p className="mt-3 text-center text-xs text-[#4A5C52]/70">
                 {t.guestUse.testPurchaseNote}

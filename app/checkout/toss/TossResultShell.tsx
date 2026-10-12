@@ -36,7 +36,7 @@ export default function TossResultShell({
             )}
           </div>
           <h1 className="mb-2 text-2xl font-bold tracking-tight text-[#1A3328] break-keep sm:mb-3">{title}</h1>
-          <p className="mx-auto mb-4 text-sm leading-relaxed text-[#4A5C52] break-keep sm:mb-6">{body}</p>
+          <p className="mx-auto mb-4 whitespace-pre-line text-sm leading-relaxed text-[#4A5C52] break-keep sm:mb-6">{body}</p>
           {children}
         </div>
       </main>

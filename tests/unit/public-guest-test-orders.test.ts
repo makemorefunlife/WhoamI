@@ -64,3 +64,11 @@ import("../../lib/email/guestPurchaseEmail").then(async ({ readGuestEmailState }
   });
   console.log("ok - mail state read from the queue row with a non-secret reason code");
 });
+
+// Setup-missing retries are reported as "not sent", never "sending"
+{
+  const r = readFileSync("app/api/payments/toss/confirm/route.ts", "utf8");
+  assert.match(r, /MAIL_SETUP_MISSING = new Set\(\["app_base_url_missing", "claim_token_secret_missing", "mail_not_configured"\]\)/);
+  assert.match(r, /!MAIL_SETUP_MISSING\.has\(mail\.reason \?\? ""\)/);
+  console.log("ok - missing mail setup is shown as not sent");
+}
