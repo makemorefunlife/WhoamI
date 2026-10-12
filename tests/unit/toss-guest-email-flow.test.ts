@@ -239,6 +239,44 @@ async function main() {
       ok("429: queued for retry with backoff, background sender delivers once with the same Idempotency-Key; payment untouched");
     }
 
+    // 2b. secret missing at payment time -> stored reason; reload inside the
+    //     10-min backoff does NOT retry (screen shows the stored past result);
+    //     once the secret exists: due retry or "send again" uses it and clears the reason
+    {
+      const saved = process.env.GUEST_CLAIM_TOKEN_SECRET;
+      delete process.env.GUEST_CLAIM_TOKEN_SECRET;
+      const o = guestOrder("cfg@example.com", { isTest: true });
+      const h = harness(() => ({ kind: "sent", messageId: "m2b" }));
+      const r = await completeTossOrder(sb, { clerkUserId: null, orderId: o, paymentKey: "pk_e2b", amount: 7900 }, h.deps);
+      assert.equal(r.status === "awaiting_claim" && r.emailStatus, "pending");
+      assert.equal(col(o, "guest_email_status"), "retry");
+      assert.equal(col(o, "guest_email_last_error"), "claim_token_secret_missing");
+      assert.equal(h.calls.mails.length, 0, "nothing reaches Resend without the secret");
+      process.env.GUEST_CLAIM_TOKEN_SECRET = saved;
+      // reload of the success page right after fixing the env: not due yet -> no attempt, old reason stays
+      await completeTossOrder(sb, { clerkUserId: null, orderId: o, paymentKey: "pk_e2b", amount: 7900 }, h.deps);
+      assert.equal(h.calls.mails.length, 0, "inside the backoff a reload does not retry");
+      assert.equal(col(o, "guest_email_last_error"), "claim_token_secret_missing", "screen still shows the stored past result");
+      // (a) after the backoff, the next confirm / claim-info background run sends with the new secret
+      psql(DB, `update toss_payment_orders set guest_email_next_attempt_at = now() - interval '1 second' where order_id = ${lit(o)}`);
+      const run = await processDueGuestEmails(sb, { send: h.deps.mail });
+      assert.equal(run.sent, 1);
+      assert.equal(col(o, "guest_email_status"), "sent");
+      assert.equal(col(o, "guest_email_last_error"), "", "reason cleared on success");
+      assert.match(h.calls.mails[0].html, /claim-link\?orderId=/, "mail carries the signed use link");
+      // (b) "send again" path on another stuck order: immediate attempt, no waiting
+      delete process.env.GUEST_CLAIM_TOKEN_SECRET;
+      const o2 = guestOrder("cfg2@example.com", { isTest: true });
+      await completeTossOrder(sb, { clerkUserId: null, orderId: o2, paymentKey: "pk_e2c", amount: 7900 }, h.deps);
+      assert.equal(col(o2, "guest_email_last_error"), "claim_token_secret_missing");
+      process.env.GUEST_CLAIM_TOKEN_SECRET = saved;
+      assert.equal(psql(DB, `select reissue_guest_purchase_email(${lit(o2)})`), "reissued");
+      assert.equal(await sendGuestPurchaseEmail(sb, o2, { send: h.deps.mail }), "sent");
+      assert.equal(col(o2, "guest_email_last_error"), "");
+      assert.equal(h.calls.mails.length, 2, "one mail per order");
+      ok("secret missing: stored reason shown until the next due/forced attempt; with the secret set, retry and send-again deliver once and clear the reason");
+    }
+
     // 3. concurrent senders: one lease, one email; expired lease is retaken
     {
       const o = guestOrder("buyer3@example.com", { isTest: false });
