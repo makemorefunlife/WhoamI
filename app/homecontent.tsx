@@ -25,7 +25,7 @@ import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import StitchLandingPage from "@/components/landing/stitch/StitchLandingPage";
 import StartChoiceModal from "@/components/landing/stitch/StartChoiceModal";
 import { hasSurveyV2Session } from "@/lib/v2/survey/session";
-import { setStitchAuthHandler } from "@/lib/stitch/authBridge";
+import { setStitchAuthHandler, setStitchPersonalChoiceHandler } from "@/lib/stitch/authBridge";
 import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
 import type { EntryIntent } from "@/lib/routing/resolveEntryDestination";
 import {
@@ -78,6 +78,7 @@ export default function HomeContent() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [nameSetupOpen, setNameSetupOpen] = useState(false);
   const [startChoiceOpen, setStartChoiceOpen] = useState(false);
+  const [startChoiceVariant, setStartChoiceVariant] = useState<"all" | "personal">("all");
   const [creatingReport, setCreatingReport] = useState(false);
   const [resume, setResume] = useState<ResumeState>({
     ...emptyResume(),
@@ -91,6 +92,15 @@ export default function HomeContent() {
   useEffect(() => {
     setStitchAuthHandler(() => setAuthModalOpen(true));
     return () => setStitchAuthHandler(null);
+  }, []);
+
+  // Dock '나' while signed out: personal-analysis choice, not sign-in.
+  useEffect(() => {
+    setStitchPersonalChoiceHandler(() => {
+      setStartChoiceVariant("personal");
+      setStartChoiceOpen(true);
+    });
+    return () => setStitchPersonalChoiceHandler(null);
   }, []);
 
   useEffect(() => {
@@ -836,11 +846,13 @@ export default function HomeContent() {
   // "where to start" chooser (personal / relationship / Decision Journal).
   useEffect(() => {
     const start = searchParams.get("start");
-    if ((start !== "self" && start !== "choice") || startSelfRanRef.current) return;
+    if ((start !== "self" && start !== "choice" && start !== "personal") || startSelfRanRef.current) return;
     if (!isLoaded || resume.loading) return;
     startSelfRanRef.current = true;
     router.replace(localize("/"), { scroll: false });
-    if (start === "choice") {
+    if (start === "choice" || start === "personal") {
+      // "personal" = dock '나' from another page while signed out.
+      setStartChoiceVariant(start === "personal" ? "personal" : "all");
       setStartChoiceOpen(true);
       return;
     }
@@ -861,6 +873,7 @@ export default function HomeContent() {
 
   const openStartChoice = useCallback(() => {
     if (creatingReport) return;
+    setStartChoiceVariant("all");
     setStartChoiceOpen(true);
   }, [creatingReport]);
 
@@ -986,6 +999,7 @@ export default function HomeContent() {
 
       <StartChoiceModal
         open={startChoiceOpen}
+        variant={startChoiceVariant}
         signedIn={isSignedIn ?? false}
         busy={creatingReport}
         onClose={() => setStartChoiceOpen(false)}

@@ -2387,6 +2387,11 @@ export const messagesEnUS = {
     buyTitle: "Browse and buy without logging in",
     buyDesc: "Every product can be bought as a guest · We show whether an account is needed before you pay",
     freeNeedsLogin: "The free trial starts after you log in",
+    personalChoiceTitle: "Personal analysis",
+    personalChoiceFreeTitle: "Free trial",
+    personalChoiceFreeDesc: "See your basic results first with the free survey",
+    personalChoiceBuyTitle: "Buy as a guest",
+    personalChoiceBuyDesc: "Buy without logging in and use it right away · continue anytime from the email link",
     loginOptional: "Logging in is optional. When you log in, results are saved to your account automatically.",
   },
   decisionSample: {
@@ -4407,6 +4412,11 @@ export type MessageCatalog = {
     buyTitle: string;
     buyDesc: string;
     freeNeedsLogin: string;
+    personalChoiceTitle: string;
+    personalChoiceFreeTitle: string;
+    personalChoiceFreeDesc: string;
+    personalChoiceBuyTitle: string;
+    personalChoiceBuyDesc: string;
     loginOptional: string;
   };
   decisionSample: {

@@ -1,11 +1,10 @@
 "use client";
 
-import { continueHref, currentReturnPath } from "@/lib/auth/returnPath";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { useClerk } from "@clerk/nextjs";
+import { openStitchPersonalChoice } from "@/lib/stitch/authBridge";
 import { Compass, Home, Scale, Users } from "lucide-react";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { useHydrated } from "@/lib/hooks/useHydrated";
@@ -97,14 +96,14 @@ function DockButton({
   );
 }
 
-export default function StitchScrollDock({
-  onOpenAuth,
-}: {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function StitchScrollDock(_props: {
+  /** Kept for the chrome's API; '나' no longer opens sign-in (see below). */
   onOpenAuth?: () => void;
 }) {
   const pathname = usePathname();
-  const { messages } = useLocale();
-  const { openSignIn } = useClerk();
+  const router = useRouter();
+  const { messages, href: localize } = useLocale();
   const { isSignedIn } = useClerkReady();
   const hydrated = useHydrated();
   const { reportId: sessionReportId } = useAppSession({ hydrate: false });
@@ -234,13 +233,12 @@ export default function StitchScrollDock({
             label={messages.dock.me}
             active={active === "me"}
             onClick={() => {
-              if (pathname === "/" && onOpenAuth) {
-                onOpenAuth();
-                return;
-              }
-              openSignIn?.({
-                forceRedirectUrl: continueHref(currentReturnPath()),
-              });
+              // Signed out, no profile yet: never jump to sign-in. Show the
+              // personal-analysis choice (free trial needs login / guest
+              // purchase does not) -- in place on the home page (/ and /kr),
+              // otherwise on the home page via ?start=personal.
+              if (openStitchPersonalChoice()) return;
+              router.push(localize("/?start=personal"));
             }}
           >
             <Compass className="h-5 w-5" strokeWidth={2} aria-hidden />

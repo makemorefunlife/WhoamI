@@ -2312,6 +2312,11 @@ export const messagesKoKR: MessageCatalog = {
     buyTitle: "로그인 없이 상품 보고 구매하기",
     buyDesc: "모든 상품 비회원 구매 가능 · 상품별 가입 필요 여부를 결제 전에 안내해요",
     freeNeedsLogin: "무료 체험은 로그인 후 시작해요",
+    personalChoiceTitle: "개인분석",
+    personalChoiceFreeTitle: "무료 체험",
+    personalChoiceFreeDesc: "무료 설문으로 나의 기본 결과를 먼저 확인해요",
+    personalChoiceBuyTitle: "비회원 유료 구매",
+    personalChoiceBuyDesc: "로그인 없이 구매하고 바로 이용해요 · 안내 메일 링크로 이어서 이용할 수 있어요",
     loginOptional: "로그인은 선택이에요. 로그인하면 결과가 계정에 자동 저장돼요.",
   },
   decisionSample: {

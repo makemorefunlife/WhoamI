@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import PersonalChoiceOptions from "@/components/landing/stitch/PersonalChoiceOptions";
 
 type Props = {
   open: boolean;
@@ -15,6 +16,11 @@ type Props = {
   onGoBlueprint?: () => void;
   onGoRelationships?: () => void;
   onGoDecision?: () => void;
+  /**
+   * "personal": the dock's '나' while signed out -- personal analysis only,
+   * free trial (asks login when chosen) or guest purchase (no login).
+   */
+  variant?: "all" | "personal";
 };
 
 export default function StartChoiceModal({
@@ -28,10 +34,12 @@ export default function StartChoiceModal({
   onGoBlueprint,
   onGoRelationships,
   onGoDecision,
+  variant = "all",
 }: Props) {
   const { messages } = useLocale();
 
   if (!open) return null;
+  const personal = variant === "personal" && !signedIn && Boolean(onBrowseProducts);
 
   const handleBlueprintClick = () => {
     if (signedIn && onGoBlueprint) {
@@ -72,12 +80,18 @@ export default function StartChoiceModal({
         </div>
 
         <h2 id="start-choice-title" className="stitch-headline text-2xl font-bold text-primary">
-          {messages.startChoiceModal.title}
+          {personal ? messages.startChoiceModal.personalChoiceTitle : messages.startChoiceModal.title}
         </h2>
         <p className="mt-1 text-xs sm:text-sm leading-relaxed text-on-surface-variant/80">
-          {messages.startChoiceModal.subtitle}
+          {personal ? messages.startChoiceModal.personalDesc : messages.startChoiceModal.subtitle}
         </p>
 
+        {personal ? (
+          <div className="mt-6">
+            <PersonalChoiceOptions busy={busy} onStartFree={onStartFree} onBuyAsGuest={() => onBrowseProducts?.()} />
+          </div>
+        ) : (
+        <>
         <div className="mt-6 flex flex-col gap-3">
           {/* 1. 개인분석 (추천) */}
           <button
@@ -165,6 +179,8 @@ export default function StartChoiceModal({
             </span>
           </button>
         ) : null}
+        </>
+        )}
 
         {!signedIn ? (
           <div className="mt-5 text-center">

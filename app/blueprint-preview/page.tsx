@@ -10,10 +10,13 @@ import { blueprintMissingStepPath } from "@/lib/v2/blueprint/blueprintMissingSte
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
+import { useClerkReady } from "@/lib/clerk/useClerkReady";
+import PersonalChoiceOptions from "@/components/landing/stitch/PersonalChoiceOptions";
 
 function BlueprintPreviewPageContent() {
   const router = useRouter();
   const { messages, href: localize, locale } = useLocale();
+  const { isLoaded: authLoaded, isSignedIn } = useClerkReady();
   const surveyRequired = isPsychSurveyRequired(locale);
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
@@ -42,7 +45,25 @@ function BlueprintPreviewPageContent() {
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
       <main className="px-5 sm:px-6">
-        {!canonicalReportId && !resolving ? (
+        {!canonicalReportId && !resolving && authLoaded && !isSignedIn ? (
+          // Signed out, no profile (menu '나를 읽다'): the same personal
+          // choice as the dock -- free trial (login asked on the home start)
+          // or guest purchase (no login).
+          <div className="mx-auto flex min-h-[40dvh] max-w-md flex-col justify-center gap-5 py-16">
+            <div className="text-center">
+              <h1 className="stitch-headline text-2xl font-bold text-primary">
+                {messages.startChoiceModal.personalChoiceTitle}
+              </h1>
+              <p className="mt-1 text-sm leading-relaxed text-on-surface-variant/80">
+                {messages.startChoiceModal.personalDesc}
+              </p>
+            </div>
+            <PersonalChoiceOptions
+              onStartFree={() => router.push(localize("/?start=self"))}
+              onBuyAsGuest={() => router.push(localize(ROUTES.pricing))}
+            />
+          </div>
+        ) : !canonicalReportId && !resolving ? (
           <div className="mx-auto flex min-h-[40dvh] max-w-2xl flex-col items-center justify-center gap-4 py-16 text-center">
             <p className="text-sm text-on-surface-variant">
               {messages.blueprint.surveyRequired}
