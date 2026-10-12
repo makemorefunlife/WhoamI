@@ -529,7 +529,9 @@ async function grant(
 
 /**
  * 2026-10-12: test orders closed only because the buyer was not on the old
- * allowlist ("not_allowlisted") are reopened -- no new purchase -- when:
+ * allowlist ("not_allowlisted"), or over a test limit that has since been
+ * raised ("limit_reached", TOSS_TEST_GRANT_LIMIT), are reopened -- no new
+ * purchase -- when:
  * the allowlist is no longer required, the server key is a TEST key, Toss
  * still reports the payment DONE for the same order and amount (a cancelled
  * payment stays closed), and the buyer is under the test limit. Then the
@@ -540,6 +542,8 @@ async function grant(
  * that address); { clerkUserId, verifiedEmails } -- this account's own
  * orders and guest orders of its Clerk-verified emails.
  */
+const RECOVERABLE_TEST_BLOCKS = ["not_allowlisted", "limit_reached"];
+
 export async function recoverBlockedTestOrders(
   supabase: SupabaseClient,
   who: { guestEmail: string } | { clerkUserId: string; verifiedEmails: string[] },
@@ -552,7 +556,7 @@ export async function recoverBlockedTestOrders(
       .select("order_id, payment_key, amount, currency, clerk_user_id, guest_email, created_at")
       .eq("is_test", true)
       .eq("status", "test_completed")
-      .eq("test_grant_blocked_reason", "not_allowlisted")
+      .in("test_grant_blocked_reason", RECOVERABLE_TEST_BLOCKS)
       .order("created_at", { ascending: false })
       .limit(10);
   type Row = { order_id: string; payment_key: string | null; amount: number | string; currency: string; clerk_user_id: string | null; guest_email: string | null };
@@ -594,7 +598,7 @@ export async function recoverBlockedTestOrders(
       })
       .eq("order_id", o.order_id)
       .eq("status", "test_completed")
-      .eq("test_grant_blocked_reason", "not_allowlisted")
+      .in("test_grant_blocked_reason", RECOVERABLE_TEST_BLOCKS)
       .select("order_id");
     if (error || !Array.isArray(upd) || upd.length !== 1) {
       if (error) logServerError("toss.testRecover", error, "reopen_failed");

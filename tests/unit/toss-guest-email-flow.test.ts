@@ -68,6 +68,7 @@ function fakeSupabase(): SupabaseClient {
         const set = Object.entries(obj).map(([k, v]) => `${k} = ${lit(v)}`).join(", ");
         const u = {
           eq: (c: string, v: unknown) => (filters.push(`${c} = ${lit(v)}`), u),
+          in: (c: string, vs: unknown[]) => (filters.push(`${c} in (${vs.map(lit).join(",")})`), u),
           select: async () => {
             const where = filters.length ? `where ${filters.join(" and ")}` : "";
             const rows = JSON.parse(
@@ -395,6 +396,16 @@ async function main() {
       assert.equal(col(old1, "guest_email_status"), "sent", "guide email sent after recovery");
       assert.equal(col(old2, "status"), "test_completed", "cancelled at Toss: never reopened");
       assert.equal(await recoverBlockedTestOrders(sb, { guestEmail: "late@example.com" }, recDeps), 0, "idempotent");
+
+      // over the limit earlier, limit raised later -> reopened (Toss still DONE), still within the new limit
+      process.env.TOSS_TEST_GRANT_LIMIT = "5";
+      const lim = guestOrder("anyone@example.com");
+      psql(DB, `update toss_payment_orders set status='test_completed', test_grant_blocked_reason='limit_reached', payment_key='pk_lim1',
+                guest_email_status='skipped', approved_at=now() where order_id=${lit(lim)}`);
+      const byKey: Record<string, string> = { pk_lim1: lim, pk_o3: g3 };
+      const limDeps = { ...h.deps, get: async (key: string) => ({ kind: "ok", payment: payment(byKey[key] ?? "x", key, 7900) }) as TossResult };
+      assert.equal(await recoverBlockedTestOrders(sb, { guestEmail: "anyone@example.com" }, limDeps), 2, "g3 + lim reopened under the raised limit");
+      assert.equal(col(lim, "status"), "paid");
 
       process.env.TOSS_SECRET_KEY = prevKey;
       if (prevKey === undefined) delete process.env.TOSS_SECRET_KEY;
