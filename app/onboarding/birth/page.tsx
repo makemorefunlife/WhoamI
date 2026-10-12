@@ -2,11 +2,12 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import SpaceBackground from "@/components/space/SpaceBackground";
-import BirthInputForm, {
-  type BirthFormSubmitPayload,
-} from "@/components/onboarding/BirthInputForm";
-import GlowButton from "@/components/space/GlowButton";
+import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
+import StitchBirthInputForm, {
+  isStitchBirthFormReady,
+  type StitchBirthFormState,
+} from "@/components/onboarding/StitchBirthInputForm";
+import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import {
   clearBirthV2Session,
   readBirthV2Session,
@@ -41,6 +42,7 @@ function BirthOnboardingContent() {
   const [resetBusy, setResetBusy] = useState(wantReset);
   const [resetNotice, setResetNotice] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [birthForm, setBirthForm] = useState<StitchBirthFormState | null>(null);
   const resetStarted = useRef(false);
 
   useEffect(() => {
@@ -122,15 +124,20 @@ function BirthOnboardingContent() {
     })();
   }, [ready, reportId, wantReset, runReset, router, localize]);
 
+  // Same light Stitch form + save payload as the other birth-input screens
+  // (survey-v2/complete, guest use): unknown place -> locale fallback.
   const handleSubmit = useCallback(
-    async (payload: BirthFormSubmitPayload) => {
+    async (payload: StitchBirthFormState) => {
       if (!reportId || busy) return;
       setBusy(true);
+      const unknownFallback = getUnknownBirthFallback(locale);
+      const birthPlace = payload.birthPlaceUnknown ? unknownFallback.place : payload.birthPlace;
       writeBirthV2Session(reportId, {
         birthDate: payload.birthDate,
         birthTime: payload.birthTime,
         birthTimeUnknown: payload.birthTimeUnknown,
-        birthPlace: payload.birthPlace,
+        birthPlace,
+        birthPlaceUnknown: payload.birthPlaceUnknown,
       });
 
       try {
@@ -142,7 +149,10 @@ function BirthOnboardingContent() {
             birthDate: payload.birthDate,
             birthTime: payload.birthTimeUnknown ? null : payload.birthTime,
             birthTimeUnknown: payload.birthTimeUnknown,
-            birthPlace: payload.birthPlace,
+            birthPlace,
+            birthPlaceUnknown: payload.birthPlaceUnknown,
+            birthLatitude: payload.birthPlaceUnknown ? unknownFallback.latitude : undefined,
+            birthLongitude: payload.birthPlaceUnknown ? unknownFallback.longitude : undefined,
           }),
         });
         const data = (await res.json()) as {
@@ -161,7 +171,7 @@ function BirthOnboardingContent() {
         clearLiteReports(reportId);
         clearSlimIntegratedCache(reportId);
         invalidateReportSession(reportId);
-      } catch (e) {
+      } catch {
         console.error("[onboarding/birth] save_error");
         alert(messages.survey.birthSaveNetworkError);
         setBusy(false);
@@ -175,61 +185,80 @@ function BirthOnboardingContent() {
         localize(back ?? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
       );
     },
-    [busy, messages, reportId, router, localize],
+    [busy, messages, reportId, router, localize, locale],
   );
 
   const existingBirth =
     ready && !resetBusy && !wantReset ? readBirthV2Session(reportId) : null;
 
-  const submitLabel = wantEdit ? messages.account.birthFormSaveBirthInfo : undefined;
+  const submitLabel = wantEdit ? messages.account.birthFormSaveBirthInfo : messages.survey.next;
 
   if (!ready || resetBusy) {
     return (
-      <SpaceBackground showProbe={false}>
-        <div className="flex min-h-screen items-center justify-center px-6">
-          <p className="text-sm text-[rgba(255,255,255,0.55)]">
+      <StitchSurveyShell>
+        <div className="flex min-h-[60dvh] items-center justify-center px-6">
+          <p className="text-sm text-on-surface-variant">
             {resetBusy ? messages.onboarding.resetting : messages.account.loading}
           </p>
         </div>
-      </SpaceBackground>
+      </StitchSurveyShell>
     );
   }
 
+  const formReady = birthForm ? isStitchBirthFormReady(birthForm) : false;
+
   return (
-    <SpaceBackground showProbe={false}>
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-5 py-16">
+    <StitchSurveyShell>
+      <main className="relative z-10 mx-auto flex max-w-lg flex-col items-center px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-12">
         {resetNotice ? (
-          <p className="max-w-md rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-center text-sm text-emerald-100/95">
+          <p role="status" className="mb-4 w-full max-w-[420px] rounded-xl border border-accent-emerald/25 bg-accent-emerald-soft px-4 py-3 text-center text-sm text-primary">
             {resetNotice}
           </p>
         ) : null}
-        <BirthInputForm
+        <StitchBirthInputForm
           key={formKey}
           busy={busy}
           initialBirthDate={existingBirth?.birthDate}
           initialBirthTime={existingBirth?.birthTime}
           initialBirthTimeUnknown={existingBirth?.birthTimeUnknown}
           initialBirthPlace={existingBirth?.birthPlace}
-          submitLabel={submitLabel}
-          onSubmit={handleSubmit}
+          initialBirthPlaceUnknown={existingBirth?.birthPlaceUnknown}
+          onChange={setBirthForm}
         />
-        {existingBirth?.birthDate ? (
-          <GlowButton
+        <div className="mt-6 w-full max-w-[420px]">
+          <button
             type="button"
-            variant="ghost"
-            disabled={busy}
+            disabled={!formReady || busy}
             onClick={() => {
-              if (!window.confirm(messages.onboarding.resetConfirm)) {
-                return;
-              }
-              void runReset(reportId);
+              if (birthForm) void handleSubmit(birthForm);
             }}
+            className="stitch-cta-primary w-full disabled:cursor-not-allowed"
           >
-            {messages.onboarding.resetCta}
-          </GlowButton>
-        ) : null}
+            {busy ? messages.survey.saving : submitLabel}
+          </button>
+          {!formReady ? (
+            <p className="mt-2 text-center text-[11px] text-on-surface-variant">
+              {messages.survey.birthFormIncompleteHint}
+            </p>
+          ) : null}
+          {existingBirth?.birthDate ? (
+            <button
+              type="button"
+              disabled={busy}
+              className="mt-4 w-full text-center text-xs text-on-surface-variant underline underline-offset-4 hover:text-primary"
+              onClick={() => {
+                if (!window.confirm(messages.onboarding.resetConfirm)) {
+                  return;
+                }
+                void runReset(reportId);
+              }}
+            >
+              {messages.onboarding.resetCta}
+            </button>
+          ) : null}
+        </div>
       </main>
-    </SpaceBackground>
+    </StitchSurveyShell>
   );
 }
 
@@ -238,13 +267,11 @@ export default function BirthOnboardingPage() {
   return (
     <Suspense
       fallback={
-        <SpaceBackground showProbe={false}>
-          <div className="flex min-h-screen items-center justify-center px-6">
-            <p className="text-sm text-[rgba(255,255,255,0.55)]">
-              {messages.account.loading}
-            </p>
+        <StitchSurveyShell>
+          <div className="flex min-h-[60dvh] items-center justify-center px-6">
+            <p className="text-sm text-on-surface-variant">{messages.account.loading}</p>
           </div>
-        </SpaceBackground>
+        </StitchSurveyShell>
       }
     >
       <BirthOnboardingContent />
