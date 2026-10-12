@@ -165,9 +165,10 @@ function LookupPanel() {
     setDone(true);
   };
   return (
-    <TossResultShell tone="warning" title={t.lookupTitle} body={t.lookupBody}>
+    // After sending: only the result sentence (no title / instructions left over).
+    <TossResultShell tone={done ? "success" : "warning"} title={done ? "" : t.lookupTitle} body={done ? "" : t.lookupBody}>
       {done ? (
-        <p role="status" className="text-sm text-[#3A8F6E]">{t.lookupDone}</p>
+        <p role="status" className="text-base leading-relaxed text-[#1A3328] break-keep">{t.lookupDone}</p>
       ) : (
         <div className="space-y-3">
           <input

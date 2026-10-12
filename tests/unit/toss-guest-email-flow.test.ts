@@ -271,7 +271,7 @@ async function main() {
       assert.equal(col(o2, "guest_email_last_error"), "claim_token_secret_missing");
       process.env.GUEST_CLAIM_TOKEN_SECRET = saved;
       assert.equal(psql(DB, `select reissue_guest_purchase_email(${lit(o2)})`), "reissued");
-      assert.equal(await sendGuestPurchaseEmail(sb, o2, { send: h.deps.mail }), "sent");
+      assert.equal(await sendGuestPurchaseEmail(sb, o2, { send: h.deps.mail! }), "sent");
       assert.equal(col(o2, "guest_email_last_error"), "");
       assert.equal(h.calls.mails.length, 2, "one mail per order");
       ok("secret missing: stored reason shown until the next due/forced attempt; with the secret set, retry and send-again deliver once and clear the reason");

@@ -35,8 +35,8 @@ export default function TossResultShell({
               <span className="text-2xl font-bold">!</span>
             )}
           </div>
-          <h1 className="mb-2 text-2xl font-bold tracking-tight text-[#1A3328] break-keep sm:mb-3">{title}</h1>
-          <p className="mx-auto mb-4 whitespace-pre-line text-sm leading-relaxed text-[#4A5C52] break-keep sm:mb-6">{body}</p>
+          {title ? <h1 className="mb-2 text-2xl font-bold tracking-tight text-[#1A3328] break-keep sm:mb-3">{title}</h1> : null}
+          {body ? <p className="mx-auto mb-4 whitespace-pre-line text-sm leading-relaxed text-[#4A5C52] break-keep sm:mb-6">{body}</p> : null}
           {children}
         </div>
       </main>
