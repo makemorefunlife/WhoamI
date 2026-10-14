@@ -121,6 +121,11 @@ export const metadata: Metadata = {
     apple: "/brand/apple-touch-icon.png",
     shortcut: "/brand/favicon-32.png",
   },
+  verification: {
+    other: {
+      "naver-site-verification": "8be60df49a47ccc2c38b354621a7b52e4439827e",
+    },
+  },
 };
 
 const ORGANIZATION_JSON_LD = {
