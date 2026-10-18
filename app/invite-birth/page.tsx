@@ -13,6 +13,7 @@ import SignUpConsentFields from "@/components/legal/SignUpConsentFields";
 import SignUpUsNotice from "@/components/legal/SignUpUsNotice";
 import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { ROUTES, blueprintRoute, relationshipHubRoute } from "@/constants/routes";
+import { INVITE_CONTINUE_HOME } from "@/lib/invite/inviteEntry";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import ConnectionSuccessModal from "@/components/relationship/ConnectionSuccessModal";
 import {
@@ -187,8 +188,9 @@ function InviteBirthContent() {
         alert(result.errorMessage ?? messages.errors.generic);
         // Draft stays in localStorage on failure -- the "existing" mode
         // boot effect above recovers it if the person retries via the
-        // normal signed-in invite/connect path from home.
-        router.replace(localize("/"));
+        // normal signed-in invite/connect path from home (?continue=invite:
+        // the home page only resumes a stored invite when asked to).
+        router.replace(localize(INVITE_CONTINUE_HOME));
         return;
       }
 
@@ -225,7 +227,7 @@ function InviteBirthContent() {
     if (!isLoaded || !isSignedIn) return;
     if (entryMode !== "login") return;
     if (readPendingBirthDraft()) return; // a stray draft exists -- let the effect above own it instead
-    router.replace(localize("/"));
+    router.replace(localize(INVITE_CONTINUE_HOME));
   }, [reportId, isLoaded, isSignedIn, entryMode, router, localize]);
 
   const birthReady = birthForm ? isStitchBirthFormReady(birthForm) : false;
@@ -378,7 +380,8 @@ function InviteBirthContent() {
             </p>
           </header>
           <div className="w-full max-w-[400px] rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-4">
-            <HomeAuthSignInPanel />
+            {/* After sign-in (also a full-page OAuth round trip) come back into the invite on home. */}
+            <HomeAuthSignInPanel fallbackRedirectPath={INVITE_CONTINUE_HOME} />
           </div>
           <button
             type="button"

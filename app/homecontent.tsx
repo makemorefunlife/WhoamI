@@ -27,6 +27,7 @@ import StartChoiceModal from "@/components/landing/stitch/StartChoiceModal";
 import { hasSurveyV2Session } from "@/lib/v2/survey/session";
 import { setStitchAuthHandler, setStitchPersonalChoiceHandler } from "@/lib/stitch/authBridge";
 import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
+import { homeInviteTokens, isInviteEntry } from "@/lib/invite/inviteEntry";
 import type { EntryIntent } from "@/lib/routing/resolveEntryDestination";
 import {
   resolveHubHrefForIntent,
@@ -103,7 +104,18 @@ export default function HomeContent() {
     return () => setStitchPersonalChoiceHandler(null);
   }, []);
 
+  // Invite / connect flow only when THIS visit's URL says so (lib/invite/inviteEntry.ts):
+  // the plain site address never acts on a token left from an earlier invite.
+  // Latched for the life of this page so in-page URL updates don't drop it.
+  // Set in the effect below, which runs before the invite / connect effects.
+  const inviteEntryRef = useRef(false);
+  const storedInviteTokens = useCallback(
+    () => homeInviteTokens(inviteEntryRef.current, typeof window === "undefined" ? null : localStorage),
+    [],
+  );
+
   useEffect(() => {
+    if (isInviteEntry(searchParams)) inviteEntryRef.current = true;
     const token = searchParams.get("token");
     if (token) localStorage.setItem("inviteToken", token);
     const connectToken = searchParams.get("connectToken");
@@ -195,8 +207,7 @@ export default function HomeContent() {
 
   const goToSurvey = useCallback(
     (reportId: string, opts?: { skipSurvey?: boolean }) => {
-      const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
-      const connectToken = localStorage.getItem("connectToken")?.trim() ?? "";
+      const { inviteToken, connectToken } = storedInviteTokens();
       // Birth-data-first free relationship result: invite/connect-originated
       // signups skip the survey gate and go straight to birth entry, then a
       // free 10-role relationship result. Survey stays fully optional,
@@ -235,7 +246,7 @@ export default function HomeContent() {
       params.set("reportId", reportId);
       router.push(localize(`${ROUTES.surveyV2}?${params.toString()}`));
     },
-    [router, localize, locale],
+    [router, localize, locale, storedInviteTokens],
   );
 
   const [connectedModal, setConnectedModal] = useState<{
@@ -297,7 +308,8 @@ export default function HomeContent() {
     const reportId = resume.reportId;
     if (!reportId || !resume.surveyCompleted) return;
     // A pending invite/connect acceptance owns the home screen's modal.
-    if (localStorage.getItem("inviteToken") || localStorage.getItem("connectToken")) return;
+    const pending = storedInviteTokens();
+    if (pending.inviteToken || pending.connectToken) return;
     try {
       if (sessionStorage.getItem("discoveryPopupShown") === reportId) {
         inviterDiscoveryRanRef.current = true;
@@ -354,6 +366,7 @@ export default function HomeContent() {
       }
     })();
   }, [
+    storedInviteTokens,
     isLoaded,
     isSignedIn,
     resume.loading,
@@ -496,7 +509,7 @@ export default function HomeContent() {
    * from report creation/lifecycle.
    */
   const proceedToReportCreation = useCallback(async () => {
-    const inviteToken = localStorage.getItem("inviteToken") || "";
+    const { inviteToken, connectToken } = storedInviteTokens();
     setCreatingReport(true);
     invalidateReportSession();
     invalidateHomeResumeCache();
@@ -542,7 +555,6 @@ export default function HomeContent() {
       const result = await completeInvite(data.id, inviteToken);
       sharerName = result.sharerName;
     }
-    const connectToken = localStorage.getItem("connectToken") || "";
     if (connectToken) {
       const result = await completeConnect(data.id, connectToken);
       sharerName = result.sharerName;
@@ -569,7 +581,7 @@ export default function HomeContent() {
       return;
     }
     goToSurvey(data.id, { skipSurvey: cameFromInviteOrConnect });
-  }, [goToSurvey, messages, completeInvite, completeConnect]);
+  }, [goToSurvey, messages, completeInvite, completeConnect, storedInviteTokens]);
 
   /**
    * Explicit save from DisplayNameSetupModal (email/password signup) —
@@ -650,7 +662,7 @@ export default function HomeContent() {
    */
   useEffect(() => {
     if (!isLoaded || resume.loading || inviteAutoRanRef.current) return;
-    const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
+    const { inviteToken } = storedInviteTokens();
     if (!inviteToken) return;
 
     if (!isSignedIn) {
@@ -732,6 +744,7 @@ export default function HomeContent() {
 
     void createReportAndSurvey();
   }, [
+    storedInviteTokens,
     isLoaded,
     isSignedIn,
     resume,
@@ -753,7 +766,7 @@ export default function HomeContent() {
    */
   useEffect(() => {
     if (!isLoaded || resume.loading || connectAutoRanRef.current) return;
-    const connectToken = localStorage.getItem("connectToken")?.trim() ?? "";
+    const { connectToken } = storedInviteTokens();
     if (!connectToken) return;
 
     if (!isSignedIn) {
@@ -826,6 +839,7 @@ export default function HomeContent() {
 
     void createReportAndSurvey();
   }, [
+    storedInviteTokens,
     isLoaded,
     isSignedIn,
     resume,
