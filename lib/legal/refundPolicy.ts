@@ -68,7 +68,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
         id: "membership",
         title: "4. 12-Month Membership Cancellation and Refunds",
         paragraphs: [
-          "You may request early cancellation by emailing support@ahaitsme.com.",
+          "You may request early cancellation by emailing contact@ahaitsme.com.",
           "If you request cancellation within seven days of purchase and neither you nor a gift recipient has used any included benefit, you are eligible for a full refund.",
           "Otherwise, we provide a prorated refund for the unused membership period:",
           "Refund amount = membership price paid × unused membership days ÷ total membership days.",
@@ -99,7 +99,7 @@ export const refundPolicy: Record<Locale, PolicyDocument> = {
       {
         id: "request",
         title: "6. How to Request a Refund",
-        paragraphs: ["Email support@ahaitsme.com with:"],
+        paragraphs: ["Email contact@ahaitsme.com with:"],
         listItems: [
           "The email address used for the purchase",
           "Your order or transaction ID",

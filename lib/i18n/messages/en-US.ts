@@ -1433,7 +1433,7 @@ export const messagesEnUS = {
       phone: "+82-70-4571-9748",
       phoneNote: "",
       emailLabel: "Email",
-      email: "support@ahaitsme.com",
+      email: "contact@ahaitsme.com",
       // One line: "Customer Support: <phone> / <email>" (KR keeps separate lines).
       supportLabel: "Customer Support",
       bizVerifyLabel: "Verify Business Registration",

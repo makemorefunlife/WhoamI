@@ -11,7 +11,7 @@ const b = en.footer.business;
 assert.equal(`${b.companyLabel}: ${b.companyName} | ${b.ceoLabel}: ${b.ceoName}`, "Company: 아하잇츠미 (Aha It's me) | CEO: Sunghyun Hong");
 assert.equal(`${b.bizNumberLabel}: ${b.bizNumber}`, "Business Registration: 387-06-03769");
 assert.equal(`${b.addressLabel}: ${b.address}`, "Address: 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea");
-assert.equal(`${b.supportLabel}: ${b.phone} / ${b.email}`, "Customer Support: +82-70-4571-9748 / support@ahaitsme.com");
+assert.equal(`${b.supportLabel}: ${b.phone} / ${b.email}`, "Customer Support: +82-70-4571-9748 / contact@ahaitsme.com");
 assert.equal(ko.footer.business.supportLabel, undefined, "KR keeps separate phone / email lines");
 for (const f of ["components/layout/stitch/StitchAppFooter.tsx", "components/landing/stitch/StitchLandingPage.tsx"]) {
   assert.match(readFileSync(f, "utf8"), /supportLabel \?/, f);

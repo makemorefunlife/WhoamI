@@ -136,7 +136,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
           "Vercel Inc. (United States) -- application hosting and content delivery. Our production functions currently run in Vercel's sfo1 (San Francisco) region.",
           "Supabase (United States) -- database hosting and storage. Our production database is hosted in Supabase's us-west-1 (Oregon) region.",
           "Clerk (United States) -- authentication and account/identity management. Clerk provides no selectable regional data residency; account data is processed and hosted on Clerk's US infrastructure.",
-          "Third-party payment service providers -- payment and refund processing may be handled by a third-party payment service provider, which may act as the seller or Merchant of Record for a purchase and processes payment details directly; we never receive your full card details.",
+          "Third-party payment service providers -- payment and refund processing may be handled by a third-party payment service provider, which processes payment details directly; we never receive your full card details.",
           "OpenAI, L.L.C. (United States) -- AI-assisted analysis generation, as described in Section 4.",
           "Google LLC, via Google Tag Manager (United States) -- currently configured to load Google Analytics 4 only, for website usage analytics. No advertising or remarketing tag is configured as of this writing.",
         ],

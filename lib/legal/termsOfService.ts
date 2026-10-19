@@ -5,10 +5,9 @@ import type { Locale } from "@/lib/i18n/locale";
  * Terms of Service — en-US sourced from Legal/terms_of_service_en.md,
  * ko-KR sourced from Legal/terms_of_service_kr.md.
  *
- * Section 5 (payments) is provider-neutral as of 2026-09-29: pre-launch,
- * checkout runs on a payment provider's sandbox (test) environment while
- * the final live provider is selected, so no company is named here as
- * Merchant of Record.
+ * Section 5.1 (en-US, 2026-10-19): payments go through authorized PG
+ * providers (Toss Payments); no Merchant of Record wording. ko-KR Section 5
+ * is intentionally left as is (KR review in progress).
  */
 export const termsOfService: Record<Locale, PolicyDocument> = {
   "en-US": {
@@ -21,7 +20,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "about",
         title: "1. About the Service",
         paragraphs: [
-          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, Ga-8, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, 06053, Republic of Korea, provides a self-serve online application that generates personality and relationship insights from the survey answers and birth information you provide. The Service combines a behavioral self-assessment, Saju (Four Pillars) and astrology calculations, and AI-generated written interpretation, and includes decision-support tools (the "Service"). Results are generated through the platform.',
+          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, Ga-8, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, 06053, Republic of Korea (Business Registration Number: 387-06-03769), provides a self-serve online application that generates personality and relationship insights from the survey answers and birth information you provide. The Service combines a behavioral self-assessment, Saju (Four Pillars) and astrology calculations, and AI-generated written interpretation, and includes decision-support tools (the "Service"). Results are generated through the platform.',
         ],
       },
       {
@@ -54,7 +53,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. Payments & Refunds",
         paragraphs: [
-          "1. Global payment and refund processing may be handled through third-party payment service providers, which may act as the seller or Merchant of Record for an order and handle payment-related customer service inquiries and returns. The merchant name shown on your billing statement and the applicable provider’s own terms and privacy policy are presented at checkout and in your payment receipt; by placing an order, you agree to them.",
+          "1. Payment and refund processing are handled through authorized third-party payment service providers (including Toss Payments). The merchant name shown on your billing statement and the applicable provider’s own terms and checkout policies are presented at checkout and in your payment receipt; by placing an order, you agree to them.",
           "2. All paid products, including the 12-Month Membership, are one-time purchases. They do not renew automatically and you will not be charged again when a pass or membership expires. Memberships purchased as auto-renewing plans before October 7, 2026 keep the terms that applied when they were purchased.",
           "3. All refund requests are handled in accordance with our standalone Refund Policy and the applicable payment service provider’s terms.",
           "4. During the Beta, checkout runs in a test environment and no real charges are made.",
