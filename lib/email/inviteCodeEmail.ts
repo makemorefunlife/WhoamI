@@ -4,8 +4,8 @@ import { sendResendEmail, type MailResult, type MailSender } from "@/lib/email/r
 /**
  * Code email for a guest invite participation: confirming an email for
  * recovery ("verify") or opening the participation on another browser
- * ("recover"). Sender / reply-to come from MAIL_FROM / MAIL_REPLY_TO
- * (support@ahaitsme.com) -- unchanged.
+ * ("recover"). Sender / reply-to: lib/email/resend.ts senderFor (English
+ * emails use contact@ahaitsme.com; Korean ones keep MAIL_FROM / MAIL_REPLY_TO).
  */
 export function buildInviteCodeEmail(p: { locale: Locale; code: string; purpose: "verify" | "recover" }) {
   const ko = p.locale === "ko-KR";
@@ -48,6 +48,7 @@ export async function sendInviteCodeEmail(
   const c = buildInviteCodeEmail(params);
   return send({
     to: params.to,
+    locale: params.locale,
     subject: c.subject,
     html: c.html,
     text: c.text,

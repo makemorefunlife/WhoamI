@@ -263,6 +263,7 @@ export async function sendGuestPurchaseEmail(
 
   const result = await deps.send({
     to: order.guest_email,
+    locale,
     subject: content.subject,
     html: content.html,
     text: content.text,
