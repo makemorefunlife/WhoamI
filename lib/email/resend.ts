@@ -3,18 +3,16 @@
  *
  * Env:
  *   RESEND_API_KEY   API key (never logged / returned)
- *   MAIL_FROM        Sender, e.g. "Aha! It's me <no-reply@ahaitsme.com>". The
+ *   MAIL_FROM        Sender, e.g. "Aha It's me <contact@ahaitsme.com>". The
  *                    domain must be verified in Resend (SPF/DKIM). Resend's
  *                    shared test sender (onboarding@resend.dev) only delivers
  *                    to the Resend account owner's own address.
- *   MAIL_REPLY_TO    optional Reply-To address.
+ *   MAIL_REPLY_TO    optional Reply-To address (e.g. contact@ahaitsme.com).
  *                    Only sets the header; inbound mail routing / forwarding
  *                    is configured at the mailbox provider, not here.
  *
- * English emails (message locale "en-US", 2026-10-19): From and Reply-To use
- * contact@ahaitsme.com -- the From display name is kept from MAIL_FROM, only
- * the address changes. Optional overrides: MAIL_FROM_EN_US / MAIL_REPLY_TO_EN_US.
- * Korean / unspecified-locale emails keep MAIL_FROM / MAIL_REPLY_TO unchanged.
+ * One sender for every email (Korean and English): customer contact address
+ * is contact@ahaitsme.com (2026-10-19), set through MAIL_FROM / MAIL_REPLY_TO.
  *
  * Idempotency: every call carries an Idempotency-Key (Resend keeps it for 24
  * hours), so a retry after a timeout / crash with the same key does not send
@@ -30,8 +28,6 @@
 
 export type MailMessage = {
   to: string;
-  /** Email language; "en-US" selects the English sender (see above). */
-  locale?: "en-US" | "ko-KR";
   subject: string;
   html: string;
   text: string;
@@ -51,26 +47,6 @@ export type MailSender = (msg: MailMessage) => Promise<MailResult>;
 const RESEND_URL = "https://api.resend.com/emails";
 const TIMEOUT_MS = 10_000;
 
-export const EN_CONTACT_ADDRESS = "contact@ahaitsme.com";
-
-/** "Name <addr>" -> "Name <newAddr>"; a bare address becomes newAddr. */
-function withAddress(from: string, address: string): string {
-  const m = /^(.*?)<[^>]*>\s*$/.exec(from);
-  const name = m ? m[1].trim() : "";
-  return name ? `${name} <${address}>` : address;
-}
-
-/** From / Reply-To for one message. Only en-US differs from the shared env. */
-export function senderFor(locale: MailMessage["locale"]): { from: string | null; replyTo: string | null } {
-  const from = process.env.MAIL_FROM?.trim() || null;
-  const replyTo = process.env.MAIL_REPLY_TO?.trim() || null;
-  if (locale !== "en-US") return { from, replyTo };
-  return {
-    from: process.env.MAIL_FROM_EN_US?.trim() || (from ? withAddress(from, EN_CONTACT_ADDRESS) : null),
-    replyTo: process.env.MAIL_REPLY_TO_EN_US?.trim() || EN_CONTACT_ADDRESS,
-  };
-}
-
 export function mailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim() && process.env.MAIL_FROM?.trim());
 }
@@ -86,8 +62,9 @@ function retryAfter(res: Response): number | undefined {
 
 export const sendResendEmail: MailSender = async (msg) => {
   const key = process.env.RESEND_API_KEY?.trim();
-  const { from, replyTo } = senderFor(msg.locale);
+  const from = process.env.MAIL_FROM?.trim();
   if (!key || !from) return { kind: "not_configured" };
+  const replyTo = process.env.MAIL_REPLY_TO?.trim() || null;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);

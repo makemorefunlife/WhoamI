@@ -46,7 +46,6 @@ export async function sendGuestCodeEmail(
   const c = buildGuestCodeEmail(params);
   return send({
     to: params.to,
-    locale: params.locale,
     subject: c.subject,
     html: c.html,
     text: c.text,

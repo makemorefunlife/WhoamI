@@ -1,7 +1,8 @@
 /**
  * Sends ONE real test copy of the guest purchase-guide email through Resend,
- * using the same template and sender logic as the app (lib/email/*), so the
+ * using the same template and sender as the app (lib/email/*), so the
  * received mail shows the actual From, Reply-To and contact address.
+ * Every email (Korean and English) uses MAIL_FROM / MAIL_REPLY_TO.
  * Marked as a TEST purchase; no order / payment / pass is touched.
  * Reads RESEND_API_KEY / MAIL_FROM / MAIL_REPLY_TO from .env.local; prints no key.
  *
@@ -23,7 +24,7 @@ async function main() {
     process.exit(1);
   }
   const { buildGuestPurchaseEmail } = await import("../../lib/email/guestPurchaseEmail");
-  const { sendResendEmail, senderFor } = await import("../../lib/email/resend");
+  const { sendResendEmail } = await import("../../lib/email/resend");
   const base = "https://www.ahaitsme.com";
   const c = buildGuestPurchaseEmail({
     locale,
@@ -37,11 +38,11 @@ async function main() {
     receiptUrl: null,
     guestUse: true,
   });
-  const s = senderFor(locale);
-  console.log(`locale=${locale}\nFrom: ${s.from}\nReply-To: ${s.replyTo ?? "(none)"}\nSubject: ${c.subject}`);
+  const from = process.env.MAIL_FROM?.trim() || "(MAIL_FROM not set)";
+  const replyTo = process.env.MAIL_REPLY_TO?.trim() || "(none)";
+  console.log(`locale=${locale}\nFrom: ${from}\nReply-To: ${replyTo}\nSubject: ${c.subject}`);
   const r = await sendResendEmail({
     to,
-    locale,
     subject: c.subject,
     html: c.html,
     text: c.text,
