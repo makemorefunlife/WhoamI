@@ -71,6 +71,7 @@
 ## 7b. 프로덕션 배포
 
 - 배포 전 **`docs/dev/DEPLOY_CHECKLIST.md`** — 특히 PersonCore `saju_master_v2` 마이그레이션 확인 (`verify-person-core-saju-schema-v2.mjs`)
+- Supabase 마이그레이션(새 테이블·함수)은 **`docs/dev/SUPABASE_MIGRATION_RULES.md`** — RLS·GRANT/REVOKE 명시, anon/authenticated 일괄 부여 금지, 기본 권한이 달라도 같은 권한 재현 검증
 
 ---
 

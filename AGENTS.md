@@ -18,6 +18,10 @@ This version has breaking changes. Read `node_modules/next/dist/docs/` before wr
 세션 시작: `00_Status.md` 읽기.  
 종료 시 사용자가 "오늘 로그 남겨줘" → `daily/` + Status 갱신.
 
+## Supabase 마이그레이션
+
+새 테이블·함수 마이그레이션은 `docs/dev/SUPABASE_MIGRATION_RULES.md`를 따른다 (RLS·GRANT/REVOKE 명시, `anon`/`authenticated` 일괄 부여 금지, 기본 권한이 달라도 같은 권한이 재현되는지 검증).
+
 ## 테스트
 
 - `tests/` — 수동·스크립트 검증 (프로덕션 아님)
