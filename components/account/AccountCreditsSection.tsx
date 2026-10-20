@@ -7,7 +7,12 @@ import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import GiftShareModal, { type PersonalGiftEntry } from "@/components/account/GiftShareModal";
 
-type CreditSummary = { remaining: number; soonestExpiresAt: string | null };
+type CreditSummary = {
+  remaining: number;
+  soonestExpiresAt: string | null;
+  /** Per-site view from /api/account/entitlements?locale=… (usableHere = what this site can spend). */
+  breakdown?: { usableHere?: { remaining: number } | null } | null;
+};
 type JournalSummary = { unlimited: boolean; unlimitedUntil: string | null; unlimitedSource: string | null };
 type EntitlementsInfo = {
   personal: CreditSummary;
@@ -29,7 +34,10 @@ export default function AccountCreditsSection() {
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch("/api/account/entitlements");
+        // en-US asks for its own site's view; ko-KR keeps the original request (unchanged display).
+        const res = await fetch(isEn ? "/api/account/entitlements?locale=en-US" : "/api/account/entitlements", {
+          cache: "no-store",
+        });
         const body = (await res.json().catch(() => null)) as EntitlementsInfo | null;
         if (cancelled) return;
         if (res.ok && body) {
@@ -44,7 +52,14 @@ export default function AccountCreditsSection() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isEn]);
+
+  // English site: show what can actually be spent here (English-site + both-site
+  // credits). Korean site: unchanged (account total, as before).
+  const shownRemaining = (c: CreditSummary): number =>
+    isEn && typeof c.breakdown?.usableHere?.remaining === "number" ? c.breakdown.usableHere.remaining : c.remaining;
+  const personalShown = entitlements ? shownRemaining(entitlements.personal) : 0;
+  const relationshipShown = entitlements ? shownRemaining(entitlements.relationship) : 0;
 
   const availableGiftsCount =
     entitlements?.personalGifts.filter((g) => g.status === "available").length ?? 0;
@@ -84,8 +99,8 @@ export default function AccountCreditsSection() {
               <span>{copy.myAccessPersonalLabel}</span>
             </div>
             <p className="mt-2 text-xl font-bold text-emerald-950 dark:text-emerald-100">
-              {entitlements.personal.remaining > 0
-                ? copy.myAccessRemainingCount(entitlements.personal.remaining)
+              {personalShown > 0
+                ? copy.myAccessRemainingCount(personalShown)
                 : copy.myAccessNoneRemaining}
             </p>
           </div>
@@ -96,8 +111,8 @@ export default function AccountCreditsSection() {
               <span>{copy.myAccessRelationshipLabel}</span>
             </div>
             <p className="mt-2 text-xl font-bold text-sky-950 dark:text-sky-100">
-              {entitlements.relationship.remaining > 0
-                ? copy.myAccessRemainingCount(entitlements.relationship.remaining)
+              {relationshipShown > 0
+                ? copy.myAccessRemainingCount(relationshipShown)
                 : copy.myAccessNoneRemaining}
             </p>
           </div>

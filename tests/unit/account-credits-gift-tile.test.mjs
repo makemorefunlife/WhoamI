@@ -48,17 +48,18 @@ const modalSrc = readSrc("components/account/GiftShareModal.tsx");
 // ---------------------------------------------------------------------------
 section("A. Personal/Relationship tiles unchanged; gift count is a separate value");
 {
+  // 2026-10-21: tiles read the per-site value (English site: usable here;
+  // Korean site: the same entitlements.*.remaining as before) -- see
+  // tests/unit/account-credits-site-view.test.mjs.
   assert.ok(
-    creditsSrc.includes(
-      "entitlements.personal.remaining > 0\n                ? copy.myAccessRemainingCount(entitlements.personal.remaining)",
-    ),
-    "Personal tile must still read entitlements.personal.remaining directly, unchanged",
+    creditsSrc.includes("personalShown > 0\n                ? copy.myAccessRemainingCount(personalShown)") &&
+      creditsSrc.includes("entitlements ? shownRemaining(entitlements.personal) : 0"),
+    "Personal tile reads the personal credit summary (per-site view), nothing else",
   );
   assert.ok(
-    creditsSrc.includes(
-      "entitlements.relationship.remaining > 0\n                ? copy.myAccessRemainingCount(entitlements.relationship.remaining)",
-    ),
-    "Relationship tile must still read entitlements.relationship.remaining directly, unchanged",
+    creditsSrc.includes("relationshipShown > 0\n                ? copy.myAccessRemainingCount(relationshipShown)") &&
+      creditsSrc.includes("entitlements ? shownRemaining(entitlements.relationship) : 0"),
+    "Relationship tile reads the relationship credit summary (per-site view), nothing else",
   );
   ok("(1) Personal and Relationship credit tiles are untouched");
 
