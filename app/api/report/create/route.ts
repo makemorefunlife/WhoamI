@@ -62,6 +62,22 @@ export async function POST(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
+    // An account whose self reports are grouped (lib/account/profileGroup.ts)
+    // keeps using its main report: no new self report that would split the
+    // person's info again. Accounts never grouped: unchanged below.
+    const { data: groupedRows, error: groupedErr } = await supabase
+      .from("reports")
+      .select("merged_into_report_id")
+      .eq("clerk_user_id", userId)
+      .not("merged_into_report_id", "is", null)
+      .limit(1);
+    const groupedMain = !groupedErr
+      ? ((groupedRows ?? [])[0] as { merged_into_report_id?: string } | undefined)?.merged_into_report_id
+      : undefined;
+    if (groupedMain) {
+      return NextResponse.json({ id: groupedMain, reused: true });
+    }
+
     // Idempotency: prefer newest owned report without completed survey.
     const { data: ownedRows } = await supabase
       .from("reports")

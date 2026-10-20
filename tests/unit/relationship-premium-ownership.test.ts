@@ -113,7 +113,7 @@ ok("wiring: every route uses the same server rule; no legacy writes from new gen
     const src = readFileSync(`app/api/relationship/share/${f}/route.ts`, "utf8");
     assert.match(src, /assertPremiumReportOwner\(/, `${f} must check the creator`);
   }
-  for (const f of ["app/api/relationship/list/route.ts", "app/api/relationship/status/route.ts", "lib/relationship/hubRelationshipSummary.ts", "lib/relationship/map/fetchRelationshipMapConnections.ts"]) {
+  for (const f of ["lib/relationship/hubList.ts", "app/api/relationship/status/route.ts", "lib/relationship/hubRelationshipSummary.ts", "lib/relationship/map/fetchRelationshipMapConnections.ts"]) {
     assert.match(readFileSync(f, "utf8"), /fetchAccessiblePremiumKinds\(/, `${f} readiness by access`);
   }
   const persist = readFileSync("lib/relationship/persistRomanticPremiumResult.ts", "utf8");

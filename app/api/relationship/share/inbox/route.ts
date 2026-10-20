@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { viewerGroupReportIds } from "@/lib/account/profileGroup";
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
     const { data: shares, error } = await supabase
       .from("relationship_report_shares")
       .select("id, relationship_report_id, kind, owner_report_id, created_at")
-      .eq("recipient_report_id", viewerReportId)
+      .in("recipient_report_id", await viewerGroupReportIds(supabase, viewerReportId))
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(INBOX_LIMIT);

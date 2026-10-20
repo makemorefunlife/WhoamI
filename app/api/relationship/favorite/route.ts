@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { effectiveViewerReportId } from "@/lib/account/profileGroup";
 import { auth } from "@clerk/nextjs/server";
 import {
   createRouteSupabaseClient,
@@ -28,7 +29,7 @@ export async function GET(req: Request) {
   try {
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim();
-    const viewerReportId = sp.get("viewerReportId")?.trim();
+    let viewerReportId = sp.get("viewerReportId")?.trim();
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
@@ -54,6 +55,9 @@ export async function GET(req: Request) {
     }
 
     const { userId } = await auth();
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
     const accessGuard = await assertOwnedViewerParticipantAccess(
       supabase,
       userId,
@@ -86,7 +90,7 @@ export async function POST(req: Request) {
       typeof body.relationship_report_id === "string"
         ? body.relationship_report_id.trim()
         : "";
-    const viewerReportId =
+    let viewerReportId =
       typeof body.viewer_report_id === "string"
         ? body.viewer_report_id.trim()
         : "";
@@ -116,6 +120,9 @@ export async function POST(req: Request) {
     }
 
     const { userId } = await auth();
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
     const accessGuard = await assertOwnedViewerParticipantAccess(
       supabase,
       userId,

@@ -117,5 +117,15 @@ export async function restoreBirthFromOwnedReports(
   }
   if (!Array.isArray(updated) || updated.length === 0) return { kind: "already_has_birth" };
   logServerEvent("restoreBirth", "restored", { reportId: maskId(reportId), source: maskId(src.id) });
+  // Same audit row the grouping step writes (no birth values). Best effort:
+  // the table may not exist before migration 20261020090000.
+  const { error: evErr } = await supabase.from("account_profile_events").insert({
+    clerk_user_id: clerkUserId,
+    event: "birth_filled",
+    report_id: reportId,
+    source_report_id: src.id,
+    actor: "system",
+  });
+  if (evErr) logServerEvent("restoreBirth", "event_not_logged", { reportId: maskId(reportId) });
   return { kind: "restored", sourceReportId: src.id };
 }

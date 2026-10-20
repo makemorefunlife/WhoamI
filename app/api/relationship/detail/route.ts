@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { effectiveViewerReportId, withProfileBirth } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
@@ -67,7 +68,7 @@ export async function GET(req: Request) {
   try {
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim();
-    const viewerReportId = sp.get("viewerReportId")?.trim();
+    let viewerReportId = sp.get("viewerReportId")?.trim();
 
     const kindParam = sp.get("relationshipKind")?.trim();
     // "mine" | "shared" | "legacy" -- which readable copy to show (falls back
@@ -103,6 +104,9 @@ export async function GET(req: Request) {
     }
 
     const { userId } = await auth();
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
     const accessGuard = await assertOwnedViewerParticipantAccess(
       supabase,
       userId,
@@ -116,7 +120,7 @@ export async function GET(req: Request) {
     const partnerId =
       rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
 
-    const [{ data: repA }, { data: repB }] = await Promise.all([
+    const [{ data: rawRepA }, { data: rawRepB }] = await Promise.all([
       supabase
         .from("reports")
         .select("id,name,birth_date,birth_time,birth_place,clerk_user_id,report_type,survey_answers")
@@ -128,6 +132,9 @@ export async function GET(req: Request) {
         .eq("id", rr.report_id_b)
         .maybeSingle(),
     ]);
+    // Grouped self report -> the main report's saved birth details.
+    const repA = rawRepA ? await withProfileBirth(supabase, rawRepA) : rawRepA;
+    const repB = rawRepB ? await withProfileBirth(supabase, rawRepB) : rawRepB;
 
     const viewer =
       viewerReportId === rr.report_id_a ? repA : repB;

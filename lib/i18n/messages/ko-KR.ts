@@ -586,6 +586,16 @@ export const messagesKoKR: MessageCatalog = {
     birthLoadingInfo: "출생 정보를 불러오는 중…",
     birthSessionCorrectedNotice:
       "브라우저에 남아 있던 출생 정보와 서버(DB) 값이 달라서, 서버 기준으로 맞춰 두었어요.",
+    profileChoiceTitle: "어떤 저장된 정보를 쓸까요?",
+    profileChoiceBirthLead:
+      "계정에 저장된 출생 정보가 두 가지 이상이에요. 본인 정보를 골라 주세요. 다른 정보도 그대로 보관되고, 이미 받은 결과는 바뀌지 않아요.",
+    profileChoiceSurveyLead: "계정에 완료된 설문이 두 개 이상이에요. 새 결과에 쓸 설문을 골라 주세요.",
+    profileChoiceCurrent: "지금 사용 중",
+    profileChoiceNone: "아직 저장되지 않음",
+    profileChoiceUse: "이 정보 사용",
+    profileChoiceSurveyAnswered: (date: string) => `${date}에 응답한 설문`,
+    profileChoiceDone: "저장했어요. 이미 받은 결과는 만들 때 그대로 유지돼요.",
+    profileChoiceFailed: "선택을 저장하지 못했어요. 다시 시도해 주세요.",
     birthSaveFailed: "저장에 실패했어요. 다시 시도해 주세요.",
     birthDateCorrectionUsedNotice:
       "생년월일은 이미 1회 수정했어요. 추가 변경은 고객센터로 문의해 주세요.",

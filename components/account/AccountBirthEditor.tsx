@@ -11,6 +11,7 @@ import {
   formatBirthTime,
 } from "@/lib/account/formatBirthDisplay";
 import LocaleLink from "@/lib/i18n/LocaleLink";
+import AccountProfileChoices from "@/components/account/AccountProfileChoices";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useClientReportId } from "@/lib/hooks/useClientReportId";
 import {
@@ -201,20 +202,23 @@ export default function AccountBirthEditor() {
 
   if (!birth?.birthDate) {
     return (
-      <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
-        <h2 className="stitch-headline text-xl text-primary">
-          {messages.account.birthTitle}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-          {messages.account.birthNoDateSubtitle}
-        </p>
-        <LocaleLink
-          href={withReportId(ROUTES.onboardingBirth, reportId)}
-          className="stitch-cta-primary mt-5 inline-flex"
-        >
-          {messages.account.birthEnterInfo}
-        </LocaleLink>
-      </section>
+      <div className="space-y-5">
+        <AccountProfileChoices reportId={reportId} onChanged={() => void loadBirth(reportId)} />
+        <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
+          <h2 className="stitch-headline text-xl text-primary">
+            {messages.account.birthTitle}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+            {messages.account.birthNoDateSubtitle}
+          </p>
+          <LocaleLink
+            href={withReportId(ROUTES.onboardingBirth, reportId)}
+            className="stitch-cta-primary mt-5 inline-flex"
+          >
+            {messages.account.birthEnterInfo}
+          </LocaleLink>
+        </section>
+      </div>
     );
   }
 
@@ -230,6 +234,8 @@ export default function AccountBirthEditor() {
           {messages.account.birthEditableHintTrail}
         </p>
       </div>
+
+      <AccountProfileChoices reportId={reportId} onChanged={() => void loadBirth(reportId)} />
 
       <div className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
         <h3 className="text-sm font-semibold text-primary">

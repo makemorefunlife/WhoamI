@@ -26,7 +26,8 @@ const ok = (m: string) => {
   assert.equal(isInviteExpired("2026-09-09T00:00:00Z", now), true, "exactly 30 days: expired");
   assert.equal(isInviteExpired(null, now), false);
   assert.equal(inviteExpiryCutoffIso(now), "2026-09-09T00:00:00.000Z");
-  const list = readFileSync("app/api/relationship/list/route.ts", "utf8");
+  // route + the list logic it calls (lib/relationship/hubList.ts)
+  const list = readFileSync("app/api/relationship/list/route.ts", "utf8") + readFileSync("lib/relationship/hubList.ts", "utf8");
   assert.doesNotMatch(list, /cleanupStaleOpenInvites\s*\(/, "list route no longer deletes invites");
   assert.doesNotMatch(list, /\.delete\(/, "list route performs no deletes");
   const complete = readFileSync("app/api/invite/complete/route.ts", "utf8");

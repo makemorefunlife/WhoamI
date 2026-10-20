@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchRelationshipReportRowsForHub } from "@/lib/relationship/fetchReportsWhereParticipant";
+import { viewerGroupReportIds } from "@/lib/account/profileGroup";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import { fetchAccessiblePremiumKinds } from "@/lib/relationship/premiumAccess";
 import { partnerNameFromLogSnapshot } from "@/lib/relationship/resolvePartnerDisplayName";
@@ -44,6 +45,22 @@ export async function fetchRelationshipMapConnections(
   supabase: SupabaseClient,
   viewerReportId: string,
 ): Promise<RelationshipMapConnection[]> {
+  // A main report shows its grouped reports' connections too
+  // (lib/account/profileGroup.ts); one id = unchanged behavior.
+  const viewerIds = await viewerGroupReportIds(supabase, viewerReportId);
+  if (viewerIds.length === 1) return fetchConnectionsForOneViewer(supabase, viewerReportId);
+  const all = (await Promise.all(viewerIds.map((v) => fetchConnectionsForOneViewer(supabase, v)))).flat();
+  return sortByIsoTimestampDesc(
+    dedupeConnectionsByPartner(all),
+    (c) => c.addedAt,
+    (a, b) => compareStringTieBreakDesc(a.relationshipReportId, b.relationshipReportId),
+  );
+}
+
+async function fetchConnectionsForOneViewer(
+  supabase: SupabaseClient,
+  viewerReportId: string,
+): Promise<(RelationshipMapConnection & { isManual: boolean })[]> {
   const rows = await fetchRelationshipReportRowsForHub(supabase, viewerReportId);
   if (rows.length === 0) return [];
 

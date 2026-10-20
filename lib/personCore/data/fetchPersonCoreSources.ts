@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logServerError } from "@/lib/security/safeLog";
 import { PersonCoreError } from "../errors";
+import { profileSourceReportId } from "@/lib/account/profileGroup";
 
 export type ReportRowForPersonCore = {
   id: string;
@@ -37,7 +38,22 @@ export async function fetchReportForPersonCore(
       `report를 찾을 수 없습니다: ${reportId}`,
     );
   }
-  return data as ReportRowForPersonCore;
+  const row = data as ReportRowForPersonCore;
+  // A grouped self report describes the person with the main report's saved
+  // birth details (lib/account/profileGroup.ts). id/name/owner stay its own.
+  const sourceId = await profileSourceReportId(supabase, reportId);
+  if (sourceId !== row.id) {
+    const { data: src, error: srcErr } = await supabase
+      .from("reports")
+      .select("birth_date, birth_time")
+      .eq("id", sourceId)
+      .maybeSingle();
+    if (!srcErr && src) {
+      const b = src as { birth_date: string | null; birth_time: string | null };
+      return { ...row, birth_date: b.birth_date, birth_time: b.birth_time };
+    }
+  }
+  return row;
 }
 
 function parseSurveyAnswers(raw: unknown): Record<string, unknown> | null {
@@ -60,10 +76,11 @@ export async function fetchLatestSurveyForPersonCore(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<SurveyRowForPersonCore | null> {
+  const sourceId = await profileSourceReportId(supabase, reportId);
   const { data, error } = await supabase
     .from("survey_responses")
     .select("id, answers")
-    .eq("report_id", reportId)
+    .eq("report_id", sourceId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1);
@@ -85,10 +102,11 @@ export async function fetchLatestSurveyResponseId(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<string | null> {
+  const sourceId = await profileSourceReportId(supabase, reportId);
   const { data, error } = await supabase
     .from("survey_responses")
     .select("id")
-    .eq("report_id", reportId)
+    .eq("report_id", sourceId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1)

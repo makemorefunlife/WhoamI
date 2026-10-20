@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { effectiveViewerReportId } from "@/lib/account/profileGroup";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import {
   createRouteSupabaseClient,
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
 
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim() ?? "";
-    const viewerReportId = sp.get("viewerReportId")?.trim() ?? "";
+    let viewerReportId = sp.get("viewerReportId")?.trim() ?? "";
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json({ error: messages.errors.invalidRequest }, { status: 400 });
     }
@@ -60,6 +61,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: messages.errors.notFound }, { status: 404 });
     }
 
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
     const accessGuard = await assertOwnedViewerParticipantAccess(
       supabase,
       userId,

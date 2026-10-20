@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { effectiveViewerReportId } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import {
   createRouteSupabaseClient,
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
       viewerReportId?: string;
     };
     const relationshipReportId = body.relationshipReportId?.trim();
-    const viewerReportId = body.viewerReportId?.trim();
+    let viewerReportId = body.viewerReportId?.trim();
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
@@ -61,6 +62,20 @@ export async function POST(req: Request) {
       userId,
     );
     if (access.error) return access.error;
+
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    {
+      const { data: pair } = await supabase
+        .from("relationship_reports")
+        .select("report_id_a, report_id_b")
+        .eq("id", relationshipReportId)
+        .maybeSingle();
+      if (pair) {
+        const p = pair as { report_id_a: string; report_id_b: string };
+        viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, p.report_id_a, p.report_id_b);
+      }
+    }
 
     const { error: rpcErr } = await supabase.rpc(
       "delete_owned_partner_manual_relationship",

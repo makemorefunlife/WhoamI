@@ -613,6 +613,17 @@ export const messagesEnUS = {
     birthLoadingInfo: "Loading birth info…",
     birthSessionCorrectedNotice:
       "Your saved birth info didn't match our records, so we've updated it to match the server.",
+    profileChoiceTitle: "Which saved details should we use?",
+    profileChoiceBirthLead:
+      "Your account has more than one saved set of birth details. Pick yours — the other stays saved and nothing you already have changes.",
+    profileChoiceSurveyLead:
+      "Your account has more than one completed survey. Pick the one to use for new results.",
+    profileChoiceCurrent: "In use now",
+    profileChoiceNone: "Not saved yet",
+    profileChoiceUse: "Use this",
+    profileChoiceSurveyAnswered: (date: string) => `Survey answered ${date}`,
+    profileChoiceDone: "Saved. Results you already have stay as they were made.",
+    profileChoiceFailed: "We couldn't save your choice. Please try again.",
     birthSaveFailed: "We couldn't save that. Please try again.",
     birthDateCorrectionUsedNotice:
       "Birth date can only be corrected once. Please contact support for further changes.",
@@ -2976,6 +2987,15 @@ export type MessageCatalog = {
     birthLoadingAccount: string;
     birthLoadingInfo: string;
     birthSessionCorrectedNotice: string;
+    profileChoiceTitle: string;
+    profileChoiceBirthLead: string;
+    profileChoiceSurveyLead: string;
+    profileChoiceCurrent: string;
+    profileChoiceNone: string;
+    profileChoiceUse: string;
+    profileChoiceSurveyAnswered: (date: string) => string;
+    profileChoiceDone: string;
+    profileChoiceFailed: string;
     birthSaveFailed: string;
     birthDateCorrectionUsedNotice: string;
     birthDateSavedNotice: string;

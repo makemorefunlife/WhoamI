@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { viewerGroupReportIds } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
@@ -62,10 +63,14 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
     }
 
-    const rows = await fetchRelationshipReportRowsForReportId(
-      supabase,
-      viewerReportId,
-    );
+    // The main report and its grouped reports (lib/account/profileGroup.ts).
+    const rows = (
+      await Promise.all(
+        (await viewerGroupReportIds(supabase, viewerReportId)).map((v) =>
+          fetchRelationshipReportRowsForReportId(supabase, v),
+        ),
+      )
+    ).flat();
     const linked = rows.some(
       (r) =>
         r.report_id_a === partnerReportId || r.report_id_b === partnerReportId,

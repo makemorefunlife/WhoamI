@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { effectiveViewerReportId } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
       typeof body.relationship_report_id === "string"
         ? body.relationship_report_id.trim()
         : "";
-    const viewerReportId =
+    let viewerReportId =
       typeof body.viewer_report_id === "string"
         ? body.viewer_report_id.trim()
         : "";
@@ -106,6 +107,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
     const accessGuard = await assertOwnedViewerParticipantAccess(
       supabase,
       userId,

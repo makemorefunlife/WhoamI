@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { mainReportIdFor } from "@/lib/account/profileGroup";
 import { NextResponse } from "next/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
@@ -32,10 +33,13 @@ export async function GET(req: Request) {
     if (!supabase) return supabaseConfigErrorResponse();
     const access = await assertOwnedReportAccess(supabase, reportIdParam, userId, locale);
     if (!access.error) {
-      const { data } = await supabase.from("reports").select("birth_date").eq("id", reportIdParam).maybeSingle();
-      facts.reportId = reportIdParam;
+      // Always the account's main report: a grouped report is described by
+      // (and filled in through) its main report (lib/account/profileGroup.ts).
+      const mainId = await mainReportIdFor(supabase, reportIdParam);
+      const { data } = await supabase.from("reports").select("birth_date").eq("id", mainId).maybeSingle();
+      facts.reportId = mainId;
       facts.hasBirthDate = Boolean((data as { birth_date: string | null } | null)?.birth_date);
-      facts.surveyComplete = await isV2SurveyCompleteForReport(supabase, reportIdParam);
+      facts.surveyComplete = await isV2SurveyCompleteForReport(supabase, mainId);
     } else if (access.error.status !== 404 && access.error.status !== 403) {
       return access.error;
     }

@@ -16,6 +16,7 @@ type Row = Record<string, unknown> & { id: string };
 /** Tiny in-memory stand-in for the query shapes used. */
 function fakeDb(rows: Row[], opts: { noCoords?: boolean } = {}) {
   const updates: { id: string; patch: Record<string, unknown> }[] = [];
+  const events: Record<string, unknown>[] = [];
   const from = () => {
     const f: ((r: Row) => boolean)[] = [];
     let patch: Record<string, unknown> | null = null;
@@ -27,6 +28,7 @@ function fakeDb(rows: Row[], opts: { noCoords?: boolean } = {}) {
       is(k: string, v: null) { f.push((r) => (r[k] ?? null) === v); return q; },
       not(k: string, _op: string, _v: null) { f.push((r) => r[k] != null); return q; },
       update(p: Record<string, unknown>) { patch = p; return q; },
+      insert(row: Record<string, unknown>) { events.push(row); return Promise.resolve({ data: null, error: null }); },
       async maybeSingle() { return { data: rows.find((r) => f.every((g) => g(r))) ?? null, error: null }; },
       then(res: (v: { data: unknown; error: unknown }) => unknown) {
         if (!patch && opts.noCoords && cols.includes("birth_latitude")) return res({ data: null, error: { message: "column birth_latitude does not exist" } });
@@ -40,7 +42,7 @@ function fakeDb(rows: Row[], opts: { noCoords?: boolean } = {}) {
     };
     return q;
   };
-  return { db: { from } as unknown as SupabaseClient, updates, rows };
+  return { db: { from } as unknown as SupabaseClient, updates, rows, events };
 }
 
 const U = "user_owner";
@@ -52,7 +54,7 @@ const B = "bbbbbbbb-0000-0000-0000-000000000000";
 async function main() {
   // the production shape: A (survey, no birth) + B (birth saved), same account
   {
-    const { db, updates, rows } = fakeDb([
+    const { db, updates, rows, events } = fakeDb([
       { id: A, clerk_user_id: U, report_type: "self", ...empty },
       { id: B, clerk_user_id: U, report_type: "self", ...birth },
       { id: "c", clerk_user_id: U, report_type: "partner_manual", birth_date: "1970-01-01", birth_time: null, birth_place: "X" },
@@ -62,6 +64,7 @@ async function main() {
     assert.equal(updates.length, 1);
     assert.deepEqual(updates[0], { id: A, patch: birth });
     assert.equal(rows[1].birth_date, "1990-05-17", "source report unchanged");
+    assert.deepEqual(events, [{ clerk_user_id: U, event: "birth_filled", report_id: A, source_report_id: B, actor: "system" }], "audit row, no birth values");
     assert.deepEqual(await restoreBirthFromOwnedReports(db, { clerkUserId: U, reportId: A }), { kind: "already_has_birth" }, "second call changes nothing");
     assert.equal(updates.length, 1);
   }

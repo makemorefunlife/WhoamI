@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { viewerGroupReportIds } from "@/lib/account/profileGroup";
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { readJsonBodyLimited, isUuid } from "@/lib/security/requestValidation";
@@ -57,11 +58,14 @@ export async function POST(req: Request) {
     // Only relationships the viewer actually participates in — never trust
     // client-submitted ids alone, same guarantee assertOwnedViewerParticipantAccess
     // gives the single-relationship route, just batched into one query here.
+    // The account's main report plus its grouped reports
+    // (lib/account/profileGroup.ts); just [viewerReportId] when ungrouped.
+    const viewerIds = await viewerGroupReportIds(supabase, viewerReportId);
     const validIds = (rrRows ?? [])
-      .filter((rr) => rr.report_id_a === viewerReportId || rr.report_id_b === viewerReportId)
+      .filter((rr) => viewerIds.includes(rr.report_id_a) || viewerIds.includes(rr.report_id_b))
       .map((rr) => rr.id as string);
 
-    const logs = await listRelationshipAnalysisLogsBatch(supabase, validIds, viewerReportId, limit);
+    const logs = await listRelationshipAnalysisLogsBatch(supabase, validIds, viewerIds, limit);
 
     return NextResponse.json({ logs });
   } catch (e) {

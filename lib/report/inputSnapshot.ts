@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logServerError } from "@/lib/security/safeLog";
+import { profileSourceReportId } from "@/lib/account/profileGroup";
 
 /**
  * "Which info was this report made from?" (2026-10-11)
@@ -33,12 +34,15 @@ export async function loadReportInputFacts(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<ReportInputFacts | null> {
+  // A grouped self report is described by its main report's saved info
+  // (lib/account/profileGroup.ts); the fingerprint keeps this report's id.
+  const sourceId = await profileSourceReportId(supabase, reportId);
   const [rep, survey] = await Promise.all([
-    supabase.from("reports").select("birth_date, birth_time, birth_place").eq("id", reportId).maybeSingle(),
+    supabase.from("reports").select("birth_date, birth_time, birth_place").eq("id", sourceId).maybeSingle(),
     supabase
       .from("survey_responses")
       .select("id")
-      .eq("report_id", reportId)
+      .eq("report_id", sourceId)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(1),

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { effectiveViewerReportId } from "@/lib/account/profileGroup";
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { listRelationshipAnalysisLogs } from "@/lib/relationship/analysisLog";
@@ -11,7 +12,7 @@ export async function GET(req: Request) {
   try {
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim();
-    const viewerReportId = sp.get("viewerReportId")?.trim();
+    let viewerReportId = sp.get("viewerReportId")?.trim();
     const limitRaw = Number(sp.get("limit") ?? "30");
     const offsetRaw = Number(sp.get("offset") ?? "0");
     const limit = Number.isFinite(limitRaw)
@@ -45,6 +46,9 @@ export async function GET(req: Request) {
     }
 
     const { userId } = await auth();
+    // Main report passed by the screen -> the grouped report that is the
+    // participant (lib/account/profileGroup.ts); unchanged otherwise.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
     const accessGuard = await assertOwnedViewerParticipantAccess(
       supabase,
       userId,

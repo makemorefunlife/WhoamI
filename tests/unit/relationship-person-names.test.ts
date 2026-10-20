@@ -217,7 +217,7 @@ async function main() {
   ok("19: Colleague header + prose: canonical prompt names; role/compare name fields use current names");
 
   // ------------------------------------------------------------ history / shell
-  const list = src("app/api/relationship/list/route.ts");
+  const list = src("lib/relationship/hubList.ts"); // list logic (moved from app/api/relationship/list/route.ts)
   const mapFetch = src("lib/relationship/map/fetchRelationshipMapConnections.ts");
   const mapRoute = src("app/api/relationship/map/route.ts");
   const preview = src("app/api/relationship/map/free-preview/route.ts");

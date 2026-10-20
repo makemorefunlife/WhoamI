@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
+import { effectiveViewerReportId, withProfileBirth } from "@/lib/account/profileGroup";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getCurrentSelfProfileForReport } from "@/lib/relationship/surveyPatterns";
@@ -218,7 +219,7 @@ export async function handleRelationshipPremium(req: Request, requester: Premium
       typeof body.relationship_report_id === "string"
         ? body.relationship_report_id.trim()
         : "";
-    const viewerReportId =
+    let viewerReportId =
       typeof body.viewer_report_id === "string"
         ? body.viewer_report_id.trim()
         : "";
@@ -250,6 +251,10 @@ export async function handleRelationshipPremium(req: Request, requester: Premium
         { status: 404 },
       );
     }
+
+    // The screen passes the account's main report; a relationship that sits
+    // on a grouped report of the same account is opened as that report.
+    viewerReportId = await effectiveViewerReportId(supabase, viewerReportId, rr.report_id_a, rr.report_id_b);
 
     const accessGuard = await requester.assertViewer(
       supabase,
@@ -383,8 +388,10 @@ export async function handleRelationshipPremium(req: Request, requester: Premium
       requester.loadClerkUser(),
     ]);
 
-    const repA = fetchA.report;
-    const repB = fetchB.report;
+    // Grouped self report -> the main report's saved birth details
+    // (decision 3: new analyses use the account's current own info).
+    const repA = fetchA.report ? await withProfileBirth(supabase, fetchA.report) : null;
+    const repB = fetchB.report ? await withProfileBirth(supabase, fetchB.report) : null;
 
     if (fetchA.error || fetchB.error || !repA || !repB) {
       return NextResponse.json(

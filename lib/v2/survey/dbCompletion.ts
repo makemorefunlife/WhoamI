@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { profileSourceReportId } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 
@@ -34,10 +35,12 @@ export async function isV2SurveyCompleteForReport(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<boolean> {
+  // Grouped self report -> the main report's survey (lib/account/profileGroup.ts).
+  const sourceId = await profileSourceReportId(supabase, reportId);
   const { data, error } = await supabase
     .from("survey_responses")
     .select("answers")
-    .eq("report_id", reportId)
+    .eq("report_id", sourceId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false }) // uuid ids are random: newest = created_at
     .limit(1);

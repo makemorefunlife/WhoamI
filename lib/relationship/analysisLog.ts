@@ -244,9 +244,11 @@ function mapAnalysisLogRow(
 export async function listRelationshipAnalysisLogsBatch(
   supabase: SupabaseClient,
   relationshipReportIds: string[],
-  viewerReportId: string,
+  /** One report, or the main report plus its grouped reports. */
+  viewerReportId: string | string[],
   limit = 5,
 ): Promise<(AnalysisLogRow & { summary_title: string; summary_subtitle: string })[]> {
+  const viewerIds = Array.isArray(viewerReportId) ? viewerReportId : [viewerReportId];
   if (relationshipReportIds.length === 0) return [];
   const safeLimit = Math.max(1, Math.min(100, limit));
 
@@ -255,7 +257,7 @@ export async function listRelationshipAnalysisLogsBatch(
     .select(
       "id, relationship_report_id, viewer_report_id, relationship_kind, analysis_level, result_format, result_snapshot, created_at",
     )
-    .eq("viewer_report_id", viewerReportId)
+    .in("viewer_report_id", viewerIds)
     .in("relationship_report_id", relationshipReportIds)
     .order("created_at", { ascending: false })
     .limit(safeLimit);

@@ -98,6 +98,22 @@ async function fetchReportById(
   return (data as CanonicalReportRow | null) ?? null;
 }
 
+/** Grouped self report id -> its main report id, for one account. Empty on any error. */
+async function fetchGroupedInto(
+  supabase: SupabaseClient,
+  clerkUserId: string,
+): Promise<Map<string, string>> {
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, merged_into_report_id")
+    .eq("clerk_user_id", clerkUserId)
+    .not("merged_into_report_id", "is", null);
+  if (error || !data) return new Map();
+  return new Map(
+    (data as { id: string; merged_into_report_id: string }[]).map((r) => [r.id, r.merged_into_report_id]),
+  );
+}
+
 /**
  * 로그인 사용자의 대표 report — 본인 소유 행만 후보.
  * orphan/guest claim 없음.
@@ -108,7 +124,16 @@ export async function resolveCanonicalReport(
   reportIdHint?: string,
 ): Promise<{ report: CanonicalReportRow | null; invalidHint: boolean }> {
   let invalidHint = false;
-  const owned = await fetchOwnedReports(supabase, clerkUserId);
+  const ownedAll = await fetchOwnedReports(supabase, clerkUserId);
+  // Grouped self reports (lib/account/profileGroup.ts) are never the main
+  // report: they are shown through the report they are grouped into, and a
+  // hint pointing at one means its main report. Accounts without grouping:
+  // empty map, unchanged behavior.
+  const groupedInto = await fetchGroupedInto(supabase, clerkUserId);
+  const owned = ownedAll.filter((r) => !groupedInto.has(r.id));
+  if (reportIdHint && groupedInto.has(reportIdHint)) {
+    reportIdHint = groupedInto.get(reportIdHint);
+  }
 
   let hintReport: CanonicalReportRow | null = null;
   if (reportIdHint) {

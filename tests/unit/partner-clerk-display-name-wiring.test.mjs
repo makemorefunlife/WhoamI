@@ -83,7 +83,7 @@ section("C. resolveClerkDisplayNamesByUserId — pure fast-path, no Clerk call n
 section("D. every affected aggregation point selects clerk_user_id and resolves it");
 {
   const checks = [
-    ["app/api/relationship/list/route.ts", "hub friend list"],
+    ["lib/relationship/hubList.ts", "hub friend list"],
     ["app/api/relationship/detail/route.ts", "relationship detail page"],
     ["lib/relationship/map/fetchRelationshipMapConnections.ts", "relationship map"],
     ["app/api/relationship/share/inbox/route.ts", "shared-analysis inbox"],
@@ -118,7 +118,7 @@ section("F. a partner_manual contact's clerk_user_id (the OWNER's own id, not th
   // manual contact's own identity and looking up ITS Clerk displayName —
   // which resolves to the owner's own name, since it's the owner's own id.
   const checks = [
-    ["app/api/relationship/list/route.ts", "hub friend list"],
+    ["lib/relationship/hubList.ts", "hub friend list"],
     ["app/api/relationship/detail/route.ts", "relationship detail page"],
     ["lib/relationship/map/fetchRelationshipMapConnections.ts", "relationship map"],
     ["app/api/relationship/map/free-preview/route.ts", "free relationship preview"],
@@ -140,7 +140,7 @@ section("G. Friend avatars (Google/Clerk profile photo) reuse the same batched c
   assert.deepEqual(await resolveClerkProfilesByUserId([null, undefined]), {});
   ok("resolveClerkProfilesByUserId has the same empty-input fast path as resolveClerkDisplayNamesByUserId");
 
-  const listSrc = readSrc("app/api/relationship/list/route.ts");
+  const listSrc = readSrc("lib/relationship/hubList.ts");
   assert.ok(
     listSrc.includes("resolveClerkProfilesByUserId"),
     "hub friend list must fetch name + avatar together via resolveClerkProfilesByUserId, not a second separate Clerk call",
