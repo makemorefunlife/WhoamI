@@ -503,10 +503,11 @@ export async function handleRelationshipPremium(req: Request, requester: Premium
         generationLockId,
         generationRequestId,
       );
-      // Never spends the other site's credit; only says where it can be used.
-      const availableOn = await otherMarketWithCredit(supabase, requester.ownerKey, "relationship", locale);
       return NextResponse.json(
-        { error: getMessages(locale).errors.insufficientCredit, available_on: availableOn },
+        {
+          error: getMessages(locale).errors.insufficientCredit,
+          available_on: await otherMarketWithCredit(supabase, requester.ownerKey, "relationship", locale),
+        },
         { status: 402 },
       );
     }
