@@ -128,7 +128,7 @@ assert.equal(facts?.reportId, B, "fingerprint keeps B's id");
 assert.equal(facts?.birth_date, "1990-05-17");
 assert.ok(facts?.survey_id, "B's new analyses see A's survey");
 assert.deepEqual(await viewerGroupReportIds(sb(), A), [A, B]);
-assert.deepEqual(await viewerGroupReportIds(sb(), B), [B], "a grouped report has no members of its own");
+assert.deepEqual(await viewerGroupReportIds(sb(), B), [B, A], "a grouped report opened directly sees its main report's group");
 console.log("ok - My Account / readiness / generation read A's birth + survey for both A and B");
 
 // ---- relationships together, duplicates once --------------------------------
@@ -141,6 +141,9 @@ assert.equal(after.find((i) => i.partner === X2)?.viewer, B, "B's relationship o
 assert.equal(after.find((i) => i.partner === X2)?.fav, true, "B's favorites kept");
 assert.ok(after.some((i) => i.rr === rBM1) && after.some((i) => i.rr === rAM2), "hand-added look-alikes both kept (no automatic merge)");
 assert.deepEqual(await countHubRelationshipSummary(sb(), A), { pending: 0, completed: 4 }, "self relationship not counted");
+const viaB = await list(B);
+assert.deepEqual(viaB.map((i) => i.partner).sort(), [C1, M1, M2, X2].sort(), "opened with grouped B: same friends, A-B self row not listed");
+assert.deepEqual(await countHubRelationshipSummary(sb(), B), { pending: 0, completed: 4 }, "opened with grouped B: same count");
 assert.deepEqual((await fetchRelationshipMapConnections(sb(), A)).map((c) => c.partnerReportId).sort(), [C1, M1, M2, X2].sort(), "map: same set, no self");
 assert.equal(await effectiveViewerReportId(sb(), A, B, X2), B);
 assert.equal(await effectiveViewerReportId(sb(), A, C1, K), A, "not a participant -> unchanged (access check refuses)");

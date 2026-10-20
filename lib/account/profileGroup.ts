@@ -92,8 +92,13 @@ export async function groupMemberReportIds(supabase: SupabaseClient, mainReportI
 }
 
 /** Main report first, then its grouped reports. */
-export async function viewerGroupReportIds(supabase: SupabaseClient, mainReportId: string): Promise<string[]> {
-  return [mainReportId, ...(await groupMemberReportIds(supabase, mainReportId))];
+export async function viewerGroupReportIds(supabase: SupabaseClient, reportId: string): Promise<string[]> {
+  // A grouped self report opened directly (old link, bookmark) sees the same
+  // group as its main report: the given id first, then the main report and
+  // the main report's other members. Ungrouped reports: [reportId, ...members].
+  const main = await mainReportIdFor(supabase, reportId);
+  const group = [main, ...(await groupMemberReportIds(supabase, main))];
+  return [reportId, ...group.filter((id) => id !== reportId)];
 }
 
 /**
