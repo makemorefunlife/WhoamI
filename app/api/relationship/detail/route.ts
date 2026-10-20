@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { pickBasicForLocale, readBasicResultForLocale } from "@/lib/relationship/basicResultByLocale";
 import { effectiveViewerReportId, withProfileBirth } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
@@ -141,7 +142,15 @@ export async function GET(req: Request) {
     const partner =
       viewerReportId === rr.report_id_a ? repB : repA;
 
-    const basic = rr.result_basic as {
+    // Free result in this screen's language (lib/relationship/basicResultByLocale.ts):
+    // a result made in the other language is not shown here; the screen
+    // offers to create one in this language instead.
+    const basicPick = pickBasicForLocale({
+      original: rr.result_basic,
+      localeRow: await readBasicResultForLocale(supabase, relationshipReportId, locale),
+      locale,
+    });
+    const basic = (basicPick.kind === "locale_row" || basicPick.kind === "original" ? basicPick.result : null) as {
       perspectives?: Record<string, Record<string, unknown>>;
     } | null;
 
@@ -523,7 +532,9 @@ export async function GET(req: Request) {
             : null,
       locale,
       /** Locale the stored result_basic was generated in; null = unknown/legacy row. */
-      basic_locale: getResultBasicLocale(rr.result_basic),
+      basic_locale: getResultBasicLocale(basic),
+      /** The free result exists only in this other language (offer "Create in this language"). */
+      basic_other_locale: basicPick.kind === "other_locale_only" ? basicPick.otherLocale : null,
       is_favorite: favorited,
     };
 

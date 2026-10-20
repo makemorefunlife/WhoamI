@@ -1,4 +1,11 @@
 import { NextResponse } from "next/server";
+import {
+  hasPerspectives,
+  pickBasicForLocale,
+  readBasicResultForLocale,
+  saveBasicResultForLocale,
+} from "@/lib/relationship/basicResultByLocale";
+import { getResultBasicLocale } from "@/lib/relationship/resultBasicLocale";
 import { effectiveViewerReportId } from "@/lib/account/profileGroup";
 import { logServerError } from "@/lib/security/safeLog";
 import { auth, currentUser } from "@clerk/nextjs/server";
@@ -149,24 +156,38 @@ export async function POST(req: Request) {
       locale,
     });
 
+    // Free result per language (lib/relationship/basicResultByLocale.ts):
+    // the original (result_basic) is never rewritten here; a result in
+    // another language is made from scratch only when asked for.
+    const localeRow = await readBasicResultForLocale(supabase, relationshipReportId, locale);
+    const pick = pickBasicForLocale({ original: rr.result_basic, localeRow, locale });
+    if (pick.kind === "other_locale_only" && body.create_in_locale !== true) {
+      return NextResponse.json(
+        { error: messages.errors.analysisFailed, code: "basic_other_locale", basic_locale: pick.otherLocale },
+        { status: 409 },
+      );
+    }
+    const current = pick.kind === "locale_row" || pick.kind === "original" ? pick.result : null;
+    const currentLocale = current ? getResultBasicLocale(current) : null;
+
     const basicComplete = hasCompletePerspectives(
-      rr.result_basic,
+      current,
       rr.report_id_a,
       rr.report_id_b,
     );
     /** 구조상 완전해도 축 텍스트가 비어 통합 리포트에 넣을 수 없는 경우 재생성 */
     const integratesForLlm =
       formatResultBasicForIntegratedContext(
-        rr.result_basic,
+        current,
         rr.report_id_a,
       ) != null ||
       formatResultBasicForIntegratedContext(
-        rr.result_basic,
+        current,
         rr.report_id_b,
       ) != null;
-    if (basicComplete && integratesForLlm) {
+    if (current && basicComplete && integratesForLlm) {
       const perspectives = (
-        rr.result_basic as { perspectives: Record<string, unknown> }
+        current as { perspectives: Record<string, unknown> }
       ).perspectives;
       const sliceA = perspectives[rr.report_id_a];
       const sliceB = perspectives[rr.report_id_b];
@@ -175,59 +196,43 @@ export async function POST(req: Request) {
         perspectiveHasLegacyAxes(sliceB);
 
       if (needsLegacyUpgrade) {
+        // Older axis format: converted for display only (not saved). The
+        // stored language label is kept as it was.
         const migrated = normalizeRelationshipPerspectives(
           { perspectives },
           rr.report_id_a,
           rr.report_id_b,
           labelA,
           labelB,
-          locale,
+          currentLocale ?? locale,
         );
         if (migrated) {
-          const migratedWithLocale = { ...migrated, locale };
-          const { error: migErr } = await supabase
-            .from("relationship_reports")
-            .update({
-              result_basic: migratedWithLocale as unknown as Record<string, unknown>,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", relationshipReportId);
-          if (!migErr) {
-            return NextResponse.json({ result_basic: migratedWithLocale });
-          }
+          return NextResponse.json({
+            result_basic: currentLocale ? { ...migrated, locale: currentLocale } : migrated,
+          });
         }
       }
 
-      return NextResponse.json({ result_basic: rr.result_basic });
+      return NextResponse.json({ result_basic: current });
     }
 
-    if (
-      rr.result_basic &&
-      (rr.result_basic as { perspectives?: unknown }).perspectives
-    ) {
+    if (current && hasPerspectives(current)) {
+      // Repairable shape: repaired for display only (not saved).
       const patched = normalizeRelationshipPerspectives(
         {
-          perspectives: (rr.result_basic as { perspectives: Record<string, unknown> })
+          perspectives: (current as { perspectives: Record<string, unknown> })
             .perspectives,
         },
         rr.report_id_a,
         rr.report_id_b,
         labelA,
         labelB,
-        locale,
+        currentLocale ?? locale,
       );
       if (patched) {
-        const patchedWithLocale = { ...patched, locale };
-        const { error: fixErr } = await supabase
-          .from("relationship_reports")
-          .update({
-            result_basic: patchedWithLocale as unknown as Record<string, unknown>,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", relationshipReportId);
-        if (!fixErr) {
-          return NextResponse.json({ result_basic: patchedWithLocale });
-        }
+        return NextResponse.json({
+          result_basic: currentLocale ? { ...patched, locale: currentLocale } : patched,
+        });
       }
     }
 
@@ -357,13 +362,33 @@ export async function POST(req: Request) {
         : polishEnStringTree(normalized);
     const payload = { ...toned, locale };
 
-    const { error: upErr } = await supabase
-      .from("relationship_reports")
-      .update({
-        result_basic: payload as unknown as Record<string, unknown>,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", relationshipReportId);
+    // First result of this relationship -> it becomes the original
+    // (result_basic, as before). An original already exists -> this result
+    // is kept per language and the original is left as it is.
+    const originalExists = hasPerspectives(rr.result_basic);
+    let upErr: unknown = null;
+    if (originalExists) {
+      const saved = await saveBasicResultForLocale(
+        supabase,
+        relationshipReportId,
+        locale,
+        payload as unknown as Record<string, unknown>,
+        localeRow ? "regenerated" : "created_in_locale",
+      );
+      if (!saved) upErr = new Error("save_failed");
+    } else {
+      // No usable original yet (none, or one without any result content).
+      let q = supabase
+        .from("relationship_reports")
+        .update({
+          result_basic: payload as unknown as Record<string, unknown>,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", relationshipReportId);
+      if (rr.result_basic == null) q = q.is("result_basic", null);
+      const { error } = await q;
+      upErr = error;
+    }
 
     if (upErr) {
       await releaseRateLimitSlot("relationship_basic", userId);

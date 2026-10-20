@@ -29,7 +29,7 @@ assert.equal(await otherMarketWithCredit(sb, "k3", "personal", "en-US"), null, "
 assert.equal(await otherMarketWithCredit(sb, "k4", "personal", "en-US"), null, "both-sites lots are not 'the other site'");
 assert.equal(await otherMarketWithCredit(sb, "k5", "relationship", "ko-KR"), "en-US");
 assert.equal(await otherMarketWithCredit(sb, "k5", "personal", "ko-KR"), null, "other credit type");
-const lots = (await db.query(`select clerk_user_id, remaining from credit_lots order by clerk_user_id`)).rows;
+const lots = (await db.query(`select clerk_user_id, remaining from credit_lots where clerk_user_id in ('k1','k2','k3','k4','k5') order by clerk_user_id`)).rows;
 assert.deepEqual(lots.map((l) => l.remaining), [1, 0, 1, 1, 1], "read only: nothing spent");
 console.log("ok - other-site credit hint: unused, unexpired, that market only; nothing spent");
 await db.end();

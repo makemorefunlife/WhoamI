@@ -55,6 +55,9 @@ function buildRelationshipDetailPath(
 }
 
 export type UseRelationshipDetailReturn = {
+  /** The free result exists only in this other language ("Create in this language" offered). */
+  basicOtherLocale: string | null;
+  createBasicInLocale: () => void;
   router: ReturnType<typeof useRouter>;
   viewerReportId: string;
   canonicalResolving: boolean;
@@ -253,6 +256,8 @@ export function useRelationshipDetail({
   const [partnerBirthPlaceUnknown, setPartnerBirthPlaceUnknown] =
     useState(false);
   const [basic, setBasic] = useState<RelationshipPerspective | null>(null);
+  /** The free result exists only in the other language (detail: basic_other_locale). */
+  const [basicOtherLocale, setBasicOtherLocale] = useState<string | null>(null);
   const [premium, setPremium] = useState<RelationshipPerspective | null>(null);
   const [romanticDeep, setRomanticDeep] = useState<RomanticDeepViewModel | null>(
     null,
@@ -439,6 +444,7 @@ export function useRelationshipDetail({
           );
         }
         setBasic((data.perspective_basic ?? null) as RelationshipPerspective);
+        setBasicOtherLocale(typeof data.basic_other_locale === "string" ? data.basic_other_locale : null);
         setPremium(
           (data.perspective_premium ?? null) as RelationshipPerspective,
         );
@@ -529,7 +535,7 @@ export function useRelationshipDetail({
     autostartTriggered.current = false;
   }, [resolvedRelationshipId, effectiveViewerReportId, urlAutostart]);
 
-  const ensureBasic = useCallback(async () => {
+  const ensureBasic = useCallback(async (options?: { createInLocale?: boolean }) => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
     if (basicInFlight.current) return;
     basicInFlight.current = true;
@@ -548,10 +554,17 @@ export function useRelationshipDetail({
           relationship_kind: premiumKindRef.current,
           language: locale,
           locale,
+          ...(options?.createInLocale ? { create_in_locale: true } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        // Only in the other language: nothing is generated until the person
+        // presses "Create in <language>" (no error banner).
+        if (data?.code === "basic_other_locale") {
+          if (typeof data.basic_locale === "string") setBasicOtherLocale(data.basic_locale);
+          return;
+        }
         // "survey_incomplete" is not a failure to surface as a blocking
         // error banner -- it just means there is nothing (yet) for this
         // auto-generation attempt to produce, most commonly a birth-data-
@@ -622,12 +635,15 @@ export function useRelationshipDetail({
     if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
       return;
     const hasBasicContent = Boolean(basic && Object.keys(basic).length > 0);
-    if (hasBasicContent || basicAttempted.current) return;
+    // A result that exists only in the other language is never re-made
+    // automatically (decision 5): the person chooses.
+    if (hasBasicContent || basicOtherLocale || basicAttempted.current) return;
     basicAttempted.current = true;
     void ensureBasic();
   }, [
     loading,
     basic,
+    basicOtherLocale,
     detailOk,
     effectiveViewerReportId,
     resolvedRelationshipId,
@@ -654,6 +670,12 @@ export function useRelationshipDetail({
   useEffect(() => {
     void refreshRelationshipCredits();
   }, [refreshRelationshipCredits]);
+
+  const createBasicInLocale = useCallback(() => {
+    if (basicInFlight.current) return;
+    setErr(null);
+    void ensureBasic({ createInLocale: true });
+  }, [ensureBasic]);
 
   const retryAnalysis = useCallback(() => {
     if (basicInFlight.current) return;
@@ -1059,6 +1081,8 @@ export function useRelationshipDetail({
 
   return {
     router,
+    basicOtherLocale,
+    createBasicInLocale,
     viewerReportId: effectiveViewerReportId,
     canonicalResolving,
     autostartActive,

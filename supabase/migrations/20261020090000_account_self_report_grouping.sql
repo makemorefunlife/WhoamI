@@ -189,7 +189,12 @@ declare
   v_main reports;
   r record;
 begin
-  select * into v_main from reports where id = p_main_report_id for update;
+  -- Row locks only when applying (the dry run also works in a read-only transaction).
+  if p_apply then
+    select * into v_main from reports where id = p_main_report_id for update;
+  else
+    select * into v_main from reports where id = p_main_report_id;
+  end if;
   if not found or v_main.clerk_user_id is distinct from p_clerk_user_id
      or v_main.report_type is distinct from 'self' then
     return query select p_main_report_id, 'main_not_owned_self'::text;
@@ -205,7 +210,6 @@ begin
        and x.id <> p_main_report_id and x.merged_into_report_id is null
        and not exists (select 1 from reports y where y.merged_into_report_id = x.id)
      order by x.created_at
-     for update
   loop
     if p_apply then
       update reports set merged_into_report_id = p_main_report_id where id = r.id and merged_into_report_id is null;
@@ -264,7 +268,11 @@ declare
   v_new_survey uuid;
   v_updated integer;
 begin
-  select * into v_main from reports where id = p_main_report_id for update;
+  if p_apply then
+    select * into v_main from reports where id = p_main_report_id for update;
+  else
+    select * into v_main from reports where id = p_main_report_id;
+  end if;
   if not found or v_main.report_type is distinct from 'self' or v_main.merged_into_report_id is not null then
     return query select 'all'::text, 'not_main'::text, null::uuid;
     return;

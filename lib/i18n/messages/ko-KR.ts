@@ -438,6 +438,8 @@ export const messagesKoKR: MessageCatalog = {
     viewerQueryRequired: "viewer 쿼리(내 리포트 id)가 필요합니다.",
     relationshipUrlInvalid: "관계 분석 주소가 올바르지 않아요.",
     basicAnalysisFailed: "기본 분석 실패",
+    basicOtherLocaleNotice: "이 무료 결과는 영어로 만들어졌어요. 한국어로 새로 만들 수 있어요. 영어 결과는 그대로 남아요.",
+    basicCreateInLocaleCta: "한국어로 만들기",
     premiumAnalysisFailedGeneric: "심화 분석 실패",
     premiumAnalysisFailedRomantic: "연인 심화 분석 결과를 받지 못했어요.",
     premiumAnalysisFailedWork: "동료 심화 분석 결과를 받지 못했어요.",

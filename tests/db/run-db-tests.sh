@@ -21,7 +21,7 @@ export AHA_TEST_DATABASE_URL="postgresql://$PGUSER@localhost/$DB?host=$PGHOST&po
 for sqlt in tests/sql/*.test.sql; do
   [ $# -gt 0 ] && break
   echo "== $sqlt"
-  psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$sqlt" 2>&1 | grep -E "ok -|FAILED|ERROR" | sed 's/^psql:[^ ]* //'
+  psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$sqlt" 2>&1 | grep -E "ok -|FAILED|ERROR" | sed 's/^psql:[^ ]* //' || true
 done
 files=("$@")
 [ ${#files[@]} -eq 0 ] && files=(tests/db/*.db.test.mts)

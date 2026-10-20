@@ -1,8 +1,10 @@
 /**
  * result_basic (free relationship analysis) locale metadata
- * Policy: a report's language is fixed at generation time. Existing
- * result_basic is always served as-is regardless of the viewer's current
- * site locale — no auto-regeneration or overwrite on locale mismatch.
+ * Policy (updated 2026-10-20, decision 5): a result's language is fixed at
+ * generation time and the stored original is never overwritten. A screen in
+ * the OTHER language does not show it and never regenerates automatically;
+ * the person can create one in that language (stored separately). The
+ * detailed per-language rules are in relationship-basic-by-locale.test.ts.
  * Run: npx tsx tests/unit/result-basic-locale-cache.test.mjs
  */
 import assert from "node:assert/strict";
@@ -44,81 +46,19 @@ assert.equal(resultBasicLocaleMatches(legacyResult, "en-US"), false);
 assert.equal(resultBasicLocaleMatches(legacyResult, "ko-KR"), false);
 ok("resultBasicLocaleMatches remains a correct pure comparison helper");
 
-section("app/api/relationship/analyze/basic/route.ts — existing result_basic is reused regardless of locale");
-const src = fs.readFileSync(
-  "app/api/relationship/analyze/basic/route.ts",
-  "utf8",
-);
-assert.doesNotMatch(
-  src,
-  /resultBasicLocaleMatches/,
-  "route must not gate result_basic reuse on locale match",
-);
-assert.doesNotMatch(
-  src,
-  /localeMatches/,
-  "no locale-mismatch gating variable should remain in the route",
-);
-assert.match(
-  src,
-  /if \(basicComplete && integratesForLlm\) \{/,
-  "a complete result_basic must be reused unconditionally (no locale check)",
-);
-assert.match(
-  src,
-  /if \(\s*\n\s*rr\.result_basic &&\s*\n\s*\(rr\.result_basic as \{ perspectives\?: unknown \}\)\.perspectives\s*\n\s*\)/,
-  "legacy-perspectives patch path must also reuse unconditionally (no locale check)",
-);
-assert.match(
-  src,
-  /const payload = \{ \.\.\.normalized, locale \}/,
-  "freshly generated result_basic must still be tagged with the generation locale",
-);
-ok("route reuses any existing result_basic regardless of locale, and still stamps fresh generations with locale metadata");
-
-section("app/api/relationship/detail/route.ts — still exposes stored basic locale (metadata)");
-const detailSrc = fs.readFileSync(
-  "app/api/relationship/detail/route.ts",
-  "utf8",
-);
-assert.match(detailSrc, /getResultBasicLocale/);
-assert.match(
-  detailSrc,
-  /basic_locale:\s*getResultBasicLocale\(rr\.result_basic\)/,
-  "detail response keeps exposing the locale the stored result_basic was generated in",
-);
-ok("detail route still exposes basic_locale as metadata");
-
-section("useRelationshipDetail.ts — no locale-driven auto-regeneration");
-const hookSrc = fs.readFileSync(
-  "app/relationship/[id]/useRelationshipDetail.ts",
-  "utf8",
-);
-assert.doesNotMatch(
-  hookSrc,
-  /shouldRegenerateBasic/,
-  "hook must not import or call shouldRegenerateBasic",
-);
-assert.doesNotMatch(
-  hookSrc,
-  /basicLocale/,
-  "hook must not track a separate basicLocale state used to gate display or regeneration",
-);
+section("routes and screen -- original kept, other language only on request");
+const src = fs.readFileSync("app/api/relationship/analyze/basic/route.ts", "utf8");
+assert.match(src, /const payload = \{ \.\.\.toned, locale \}/, "fresh results are tagged with the generation locale");
+assert.doesNotMatch(src, /patchedWithLocale|migratedWithLocale/, "no locale re-stamping of an existing result");
+const detailSrc = fs.readFileSync("app/api/relationship/detail/route.ts", "utf8");
+assert.match(detailSrc, /basic_locale:\s*getResultBasicLocale\(basic\)/, "detail exposes the shown result's locale");
+const hookSrc = fs.readFileSync("app/relationship/[id]/useRelationshipDetail.ts", "utf8");
+assert.doesNotMatch(hookSrc, /shouldRegenerateBasic/);
 assert.match(
   hookSrc,
-  /const hasBasicContent = Boolean\(basic && Object\.keys\(basic\)\.length > 0\);\s*\n\s*if \(hasBasicContent \|\| basicAttempted\.current\) return;/,
-  "auto-trigger effect must only fire when there is no basic content yet, regardless of locale",
+  /retryAnalysis = useCallback\(\(\) => \{\s*\n\s*if \(basicInFlight\.current\) return;\s*\n\s*basicAttempted\.current = false;/,
+  "manual retry still resets the attempted guard",
 );
-assert.match(
-  hookSrc,
-  /const displayBasic =\s*\n\s*snapshotView\?\.basic !== undefined \? snapshotView\.basic : basic;/,
-  "displayBasic must always show the existing result_basic as final, never hide it for a locale mismatch",
-);
-assert.match(
-  hookSrc,
-  /retryAnalysis = useCallback\(\(\) => \{\s*\n\s*basicAttempted\.current = false;/,
-  "manual retry must still reset the attempted guard so it can try again",
-);
-ok("hook reuses existing result_basic regardless of locale and never auto-regenerates on locale mismatch");
+ok("existing result kept; other language only from the button (see relationship-basic-by-locale.test.ts)");
 
 console.log("\nOK: result_basic locale metadata tests passed");

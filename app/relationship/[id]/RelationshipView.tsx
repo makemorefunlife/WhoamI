@@ -92,6 +92,8 @@ export default function RelationshipView({
     premiumKindLoaded,
     refreshRelationshipCredits,
     retryAnalysis,
+    basicOtherLocale,
+    createBasicInLocale,
     onAnalysisSurfaceChange,
     viewAnalysisLog,
     clearSnapshotView,
@@ -364,6 +366,27 @@ export default function RelationshipView({
                 })}
               />
             </>
+          ) : null}
+
+          {viewingBasicSurface &&
+          (!displayBasic || Object.keys(displayBasic).length === 0) &&
+          basicOtherLocale &&
+          !err &&
+          !snapshotView &&
+          !showGeneratingPanel ? (
+            <div className="mt-4 stitch-hero-panel rounded-extra-large px-6 py-5 text-center space-y-3">
+              <p className="text-sm leading-relaxed text-on-surface-variant">
+                {messages.report.basicOtherLocaleNotice}
+              </p>
+              <button
+                type="button"
+                className="stitch-cta-primary w-full disabled:opacity-50"
+                disabled={generating}
+                onClick={() => createBasicInLocale()}
+              >
+                {messages.report.basicCreateInLocaleCta}
+              </button>
+            </div>
           ) : null}
 
           {viewingBasicSurface &&

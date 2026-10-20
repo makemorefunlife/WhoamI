@@ -456,6 +456,8 @@ export const messagesEnUS = {
     viewerQueryRequired: "A viewer query (my report id) is required.",
     relationshipUrlInvalid: "This relationship analysis address isn't valid.",
     basicAnalysisFailed: "Basic analysis failed",
+    basicOtherLocaleNotice: "This free result was made in Korean. You can create it in English — it is written fresh in English, and the Korean one stays as it is.",
+    basicCreateInLocaleCta: "Create in English",
     premiumAnalysisFailedGeneric: "Deep analysis failed",
     premiumAnalysisFailedRomantic:
       "We didn't receive the romantic deep analysis result.",
@@ -2859,6 +2861,8 @@ export type MessageCatalog = {
     viewerQueryRequired: string;
     relationshipUrlInvalid: string;
     basicAnalysisFailed: string;
+    basicOtherLocaleNotice: string;
+    basicCreateInLocaleCta: string;
     premiumAnalysisFailedGeneric: string;
     premiumAnalysisFailedRomantic: string;
     premiumAnalysisFailedWork: string;
