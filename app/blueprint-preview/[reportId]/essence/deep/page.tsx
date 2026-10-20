@@ -1,6 +1,7 @@
 "use client";
 
 import { blueprintMissingStepPath } from "@/lib/v2/blueprint/blueprintMissingStep";
+import OtherSiteCreditNote from "@/components/account/OtherSiteCreditNote";
 import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -206,6 +207,7 @@ function EssenceDeepContent() {
             <p className="text-sm text-on-surface-variant leading-relaxed">
               {messages.errors.insufficientCredit}
             </p>
+            <OtherSiteCreditNote creditType="personal" />
             <button
               type="button"
               className="stitch-cta-primary w-full"

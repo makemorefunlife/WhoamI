@@ -18,6 +18,11 @@ for f in $(ls supabase/migrations/*.sql | awk '$0 >= "supabase/migrations/202607
   psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$f" >/dev/null 2>&1 || { echo "migration failed: $f"; psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$f"; exit 1; }
 done
 export AHA_TEST_DATABASE_URL="postgresql://$PGUSER@localhost/$DB?host=$PGHOST&port=$PGPORT"
+for sqlt in tests/sql/*.test.sql; do
+  [ $# -gt 0 ] && break
+  echo "== $sqlt"
+  psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$sqlt" 2>&1 | grep -E "ok -|FAILED|ERROR" | sed 's/^psql:[^ ]* //'
+done
 files=("$@")
 [ ${#files[@]} -eq 0 ] && files=(tests/db/*.db.test.mts)
 for t in "${files[@]}"; do

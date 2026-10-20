@@ -1,4 +1,5 @@
 import { useMemo, useState, type RefObject } from "react";
+import OtherSiteCreditNote from "@/components/account/OtherSiteCreditNote";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
@@ -281,6 +282,11 @@ export default function RelationshipPremiumSection({
         <p className="mb-3 rounded-xl border border-red-300/50 bg-red-50/80 px-3 py-2 text-center text-sm text-red-800">
           {localError}
         </p>
+      ) : null}
+      {entryState === "purchase" ? (
+        <div className="mb-3 text-center">
+          <OtherSiteCreditNote creditType="relationship" />
+        </div>
       ) : null}
       {!showAutostartPreparing && (
       premiumKind === "romantic" && romanticRenderMode === "v4" && displayRomanticDeepV4 ? (

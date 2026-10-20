@@ -596,6 +596,8 @@ export const messagesKoKR: MessageCatalog = {
     profileChoiceSurveyAnswered: (date: string) => `${date}에 응답한 설문`,
     profileChoiceDone: "저장했어요. 이미 받은 결과는 만들 때 그대로 유지돼요.",
     profileChoiceFailed: "선택을 저장하지 못했어요. 다시 시도해 주세요.",
+    otherSiteCreditNote: (n: number) => `영어 사이트에서 구매한 이용권 ${n}개는 영어 사이트에서 사용할 수 있어요.`,
+    otherSiteCreditLink: "영어 사이트 열기",
     birthSaveFailed: "저장에 실패했어요. 다시 시도해 주세요.",
     birthDateCorrectionUsedNotice:
       "생년월일은 이미 1회 수정했어요. 추가 변경은 고객센터로 문의해 주세요.",

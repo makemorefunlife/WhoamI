@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { otherMarketWithCredit } from "@/lib/credits/otherMarket";
 import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
@@ -273,8 +274,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, locale, state: "ready", generated: true, slim_v1: outcome.slim_v1 });
       }
       if (outcome.kind === "insufficient_credit") {
+        // Never spends the other site's credit; only says where it can be used.
+        const availableOn = userId ? await otherMarketWithCredit(supabase, userId, "personal", locale) : null;
         return NextResponse.json(
-          { error: messages.errors.insufficientCredit },
+          { error: messages.errors.insufficientCredit, available_on: availableOn },
           { status: 402 },
         );
       }

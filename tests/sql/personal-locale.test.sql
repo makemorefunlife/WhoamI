@@ -35,8 +35,10 @@ begin
   raise notice 'ok - ko-KR generation consumes 1, then insufficient balance is refused';
 
   -- 4) Legacy NULL lot (pre-existing credit) keeps full scope: both languages
-  insert into credit_lots (clerk_user_id, credit_type, amount, remaining, source, reference_id, expires_at)
-    values ('u_legacy', 'personal', 2, 2, 'admin', null, null) returning id into v_old_lot;
+  -- (scope_basis 'legacy' = a row that existed before 20261020100000; new
+  --  admin grants must name a scope, see credit-lot-market-scope.test.sql)
+  insert into credit_lots (clerk_user_id, credit_type, amount, remaining, source, reference_id, expires_at, scope_basis)
+    values ('u_legacy', 'personal', 2, 2, 'admin', null, null, 'legacy') returning id into v_old_lot;
   assert (select locale from credit_lots where id = v_old_lot) is null, 'lot without a purchase grant stays NULL';
   insert into credit_accounts (clerk_user_id, credit_type, balance) values ('u_legacy', 'personal', 2);
   select * into r from reserve_credit('u_legacy', 'personal', null, null, 'en-US', null, 'bbbbbbbb-0000-0000-0000-000000000004', true);
@@ -49,8 +51,8 @@ begin
   raise notice 'ok - existing language-less credit keeps its scope (both languages)';
 
   -- 5) Exact-language lot is preferred over a universal lot with the same expiry
-  insert into credit_lots (clerk_user_id, credit_type, amount, remaining, source, reference_id, expires_at)
-    values ('u_mix', 'personal', 1, 1, 'admin', null, null);
+  insert into credit_lots (clerk_user_id, credit_type, amount, remaining, source, reference_id, expires_at, scope_basis)
+    values ('u_mix', 'personal', 1, 1, 'admin', null, null, 'legacy');
   perform process_kr_purchase('u_mix', 'kr_personal_premium', 'toss:kr_p_mix', 'toss:kr_personal_premium', 'KRW', 'toss');
   -- KR single now has a 1-year expiry, so it is spent first anyway (soonest expiry rule kept).
   select * into r from reserve_credit('u_mix', 'personal', null, null, 'ko-KR', null, 'bbbbbbbb-0000-0000-0000-000000000006', true);

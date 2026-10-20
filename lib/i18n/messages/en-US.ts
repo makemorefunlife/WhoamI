@@ -624,6 +624,11 @@ export const messagesEnUS = {
     profileChoiceSurveyAnswered: (date: string) => `Survey answered ${date}`,
     profileChoiceDone: "Saved. Results you already have stay as they were made.",
     profileChoiceFailed: "We couldn't save your choice. Please try again.",
+    otherSiteCreditNote: (n: number) =>
+      n === 1
+        ? "You have 1 credit bought on the Korean site. It can be used there, not here."
+        : `You have ${n} credits bought on the Korean site. They can be used there, not here.`,
+    otherSiteCreditLink: "Open the Korean site",
     birthSaveFailed: "We couldn't save that. Please try again.",
     birthDateCorrectionUsedNotice:
       "Birth date can only be corrected once. Please contact support for further changes.",
@@ -2996,6 +3001,8 @@ export type MessageCatalog = {
     profileChoiceSurveyAnswered: (date: string) => string;
     profileChoiceDone: string;
     profileChoiceFailed: string;
+    otherSiteCreditNote: (n: number) => string;
+    otherSiteCreditLink: string;
     birthSaveFailed: string;
     birthDateCorrectionUsedNotice: string;
     birthDateSavedNotice: string;

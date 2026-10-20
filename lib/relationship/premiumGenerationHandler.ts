@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { otherMarketWithCredit } from "@/lib/credits/otherMarket";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
@@ -502,8 +503,10 @@ export async function handleRelationshipPremium(req: Request, requester: Premium
         generationLockId,
         generationRequestId,
       );
+      // Never spends the other site's credit; only says where it can be used.
+      const availableOn = await otherMarketWithCredit(supabase, requester.ownerKey, "relationship", locale);
       return NextResponse.json(
-        { error: getMessages(locale).errors.insufficientCredit },
+        { error: getMessages(locale).errors.insufficientCredit, available_on: availableOn },
         { status: 402 },
       );
     }

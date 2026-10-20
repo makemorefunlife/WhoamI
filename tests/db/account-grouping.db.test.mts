@@ -180,7 +180,7 @@ assert.deepEqual(hist, [{ birth_date: "1980-01-01", birth_time: "10:00", reason:
 assert.equal(await chooseSurveyFromGrouped(sb(), { clerkUserId: "u3", mainReportId: D1, sourceReportId: D2 }), "chosen");
 const d1Surveys = (await db.query(`select answers from survey_responses where report_id=$1 order by created_at`, [D1])).rows;
 assert.equal(d1Surveys.length, 2, "survey added as a new row; the old one stays");
-assert.equal(d1Surveys[1].answers.q1, "D");
+assert.equal((d1Surveys[1].answers as Record<string, string>).q1, "D");
 assert.equal(await chooseSurveyFromGrouped(sb(), { clerkUserId: "u3", mainReportId: D1, sourceReportId: D2 }), "same");
 const ev = (await db.query(`select event, actor from account_profile_events where clerk_user_id='u3' order by created_at`)).rows.map((r) => `${r.event}:${r.actor}`);
 assert.deepEqual(ev, ["grouped:ops", "birth_chosen:user", "survey_chosen:user"]);
