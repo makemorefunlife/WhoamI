@@ -99,6 +99,10 @@ export async function buildRelationshipHubList(
   rowsByViewer.forEach((list, i) => {
     for (const r of list) {
       if (viewerOfRow.has(r.id)) continue;
+      // A relationship between two of the account's own grouped reports (the
+      // person with themself) is kept as it is in the database but is not a
+      // friend: never listed. Only possible when the account is grouped.
+      if (viewerIds.length > 1 && viewerIds.includes(r.report_id_a) && viewerIds.includes(r.report_id_b)) continue;
       viewerOfRow.set(r.id, viewerIds[i]);
       rows.push(r);
     }

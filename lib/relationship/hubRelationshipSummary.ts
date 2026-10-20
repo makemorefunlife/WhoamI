@@ -38,6 +38,8 @@ export async function countHubRelationshipSummary(
     if (!part) continue;
     pending += part.openInvites;
     for (const r of part.rows) {
+      // The account's own grouped report is not a friend (self-relationship kept in the DB, not counted).
+      if (ids.includes(r.partnerId)) continue;
       doneByPartner.set(r.partnerId, (doneByPartner.get(r.partnerId) ?? false) || r.done);
     }
   }

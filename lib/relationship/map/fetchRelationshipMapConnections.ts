@@ -49,7 +49,10 @@ export async function fetchRelationshipMapConnections(
   // (lib/account/profileGroup.ts); one id = unchanged behavior.
   const viewerIds = await viewerGroupReportIds(supabase, viewerReportId);
   if (viewerIds.length === 1) return fetchConnectionsForOneViewer(supabase, viewerReportId);
-  const all = (await Promise.all(viewerIds.map((v) => fetchConnectionsForOneViewer(supabase, v)))).flat();
+  // The account's own grouped report is not a connection (self-relationship kept in the DB, not shown).
+  const all = (await Promise.all(viewerIds.map((v) => fetchConnectionsForOneViewer(supabase, v))))
+    .flat()
+    .filter((c) => !viewerIds.includes(c.partnerReportId));
   return sortByIsoTimestampDesc(
     dedupeConnectionsByPartner(all),
     (c) => c.addedAt,

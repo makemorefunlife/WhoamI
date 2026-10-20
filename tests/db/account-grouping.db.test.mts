@@ -27,6 +27,7 @@ const { loadProfileChoices, chooseBirthFromGrouped, chooseSurveyFromGrouped } = 
 const { resolveCanonicalReport } = await import("../../lib/home/resolveCanonicalReport");
 const { buildRelationshipHubList } = await import("../../lib/relationship/hubList");
 const { countHubRelationshipSummary } = await import("../../lib/relationship/hubRelationshipSummary");
+const { fetchRelationshipMapConnections } = await import("../../lib/relationship/map/fetchRelationshipMapConnections");
 const { isV2SurveyCompleteForReport } = await import("../../lib/v2/survey/dbCompletion");
 const { fetchReportForPersonCore, fetchLatestSurveyForPersonCore } = await import("../../lib/personCore/data/fetchPersonCoreSources");
 const { loadReportInputFacts } = await import("../../lib/report/inputSnapshot");
@@ -69,6 +70,7 @@ const rBM1 = await rel(B, M1, "3 day");
 const rAM2 = await rel(A, M2, "2 hour");
 const rBX2 = await rel(B, X2, "4 day");
 const rKC1 = await rel(K, C1, "5 day");
+const rAB = await rel(A, B, "6 day"); // the person with themself (A and B are both u1's own reports)
 await db.query(`insert into relationship_favorites (relationship_report_id, viewer_report_id) values ($1, $2)`, [rBX2, B]);
 
 const listOpts = { locale: "en-US" as const, limit: undefined, formatSimple: false, scope: "all", favoritesOnly: false, includeWaiting: false };
@@ -88,7 +90,7 @@ const beforeU2 = norm({
   src: await profileSourceReportId(sb(), K),
 });
 assert.equal((await resolveCanonicalReport(sb(), "u1")).report?.id, A, "main = the survey report (unchanged rule)");
-assert.deepEqual((await list(A)).map((i) => i.partner).sort(), [C1, M2].sort(), "before: only A's relationships");
+assert.deepEqual((await list(A)).map((i) => i.partner).sort(), [B, C1, M2].sort(), "before: A's relationships (incl. B, shown as before)");
 assert.equal(await profileSourceReportId(sb(), B), B);
 assert.equal(await isV2SurveyCompleteForReport(sb(), B), false);
 assert.equal((await fetchReportForPersonCore(sb(), A)).birth_date, null);
@@ -131,12 +133,15 @@ console.log("ok - My Account / readiness / generation read A's birth + survey fo
 
 // ---- relationships together, duplicates once --------------------------------
 const after = await list(A);
-assert.deepEqual(after.map((i) => i.partner).sort(), [C1, M1, M2, X2].sort(), "A + B relationships, C1 once");
+assert.deepEqual(after.map((i) => i.partner).sort(), [C1, M1, M2, X2].sort(), "A + B relationships, C1 once, A-B self row not listed");
+assert.ok(!after.some((i) => i.rr === rAB), "self relationship not shown as a friend");
+assert.equal((await db.query(`select count(*)::int n from relationship_reports where id=$1`, [rAB])).rows[0].n, 1, "self relationship kept in the DB");
 assert.equal(after.find((i) => i.partner === C1)?.rr, rAC1, "same person on A and B: the main report's row");
 assert.equal(after.find((i) => i.partner === X2)?.viewer, B, "B's relationship opens as B");
 assert.equal(after.find((i) => i.partner === X2)?.fav, true, "B's favorites kept");
 assert.ok(after.some((i) => i.rr === rBM1) && after.some((i) => i.rr === rAM2), "hand-added look-alikes both kept (no automatic merge)");
-assert.deepEqual(await countHubRelationshipSummary(sb(), A), { pending: 0, completed: 4 });
+assert.deepEqual(await countHubRelationshipSummary(sb(), A), { pending: 0, completed: 4 }, "self relationship not counted");
+assert.deepEqual((await fetchRelationshipMapConnections(sb(), A)).map((c) => c.partnerReportId).sort(), [C1, M1, M2, X2].sort(), "map: same set, no self");
 assert.equal(await effectiveViewerReportId(sb(), A, B, X2), B);
 assert.equal(await effectiveViewerReportId(sb(), A, C1, K), A, "not a participant -> unchanged (access check refuses)");
 assert.equal(await effectiveViewerReportId(sb(), K, B, X2), K, "another account's main never maps to B");
@@ -192,7 +197,7 @@ assert.deepEqual((un.data as { result: string }[]).map((r) => r.result), ["unfil
 await sb().rpc("ungroup_account_self_reports", { p_clerk_user_id: "u1" });
 assert.equal((await db.query(`select birth_date from reports where id=$1`, [A])).rows[0].birth_date, null);
 assert.equal(await profileSourceReportId(sb(), B), B);
-assert.deepEqual((await list(A)).map((i) => i.partner).sort(), [C1, M2].sort(), "back to the state before");
+assert.deepEqual((await list(A)).map((i) => i.partner).sort(), [B, C1, M2].sort(), "back to the state before");
 console.log("ok - unfill + ungroup restore the previous state exactly");
 
 await db.end();

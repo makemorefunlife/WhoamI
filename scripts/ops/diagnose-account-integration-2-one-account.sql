@@ -72,6 +72,9 @@ select
                    where (r2.report_id_a = p.id and r2.report_id_b = case when rr.report_id_a = k.id then rr.report_id_b else rr.report_id_a end)
                       or (r2.report_id_b = p.id and r2.report_id_a = case when rr.report_id_a = k.id then rr.report_id_b else rr.report_id_a end)))
     as relationships_also_on_main,
+  (select count(*) from public.relationship_reports rr
+     where (rr.report_id_a = k.id and rr.report_id_b in (select id from self_r))
+        or (rr.report_id_b = k.id and rr.report_id_a in (select id from self_r))) as self_relationships,
   (select count(*) from public.invites i where i.from_report_id = k.id) as invites_sent,
   (select string_agg(ra.analysis_type, ', ' order by ra.analysis_type) from public.report_analyses ra
      where ra.report_id = k.id and ra.analysis_type like 'deep_essence_structured%') as personal_deep_reports
