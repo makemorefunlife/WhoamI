@@ -65,7 +65,10 @@ export default function AccountBirthEditor() {
       syncBirthSessionFromDb(id),
       fetchReportBirthFromApi(id),
     ]);
-    setBirth(synced.birth);
+    // en-US: show birth details as on file only when they are saved on the
+    // report (a copy kept only in this browser is not account data; the
+    // "Enter birth info" step fills it from the account where it is saved).
+    setBirth(locale === "en-US" && synced.source === "session" ? null : synced.birth);
     setCorrectionUsed(
       isBirthDateCorrectionUsed(dbRow?.birth_date_correction_used_at) ||
         readLocalBirthDateCorrectionUsed(id),
@@ -75,7 +78,7 @@ export default function AccountBirthEditor() {
       setNoticeKind("success");
     }
     setLoadingBirth(false);
-  }, [messages]);
+  }, [messages, locale]);
 
   useEffect(() => {
     if (!ready) return;

@@ -16,9 +16,15 @@ import {
 import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
 import { resetReportBirthOnServer } from "@/lib/v2/onboarding/fetchReportBirthClient";
 import {
-  ensureBirthSession,
   hasMinimalBirth,
+  syncBirthSessionFromDb,
 } from "@/lib/v2/onboarding/hydrateBirthSession";
+import {
+  BIRTH_CONFIRM_NOTICE_EN,
+  hasBrowserBirthToConfirm,
+  missingBirthStep,
+  restoreBirthFromAccount,
+} from "@/lib/v2/onboarding/sessionBirthToServer";
 import {
   hasSurveyV2Session,
 } from "@/lib/v2/survey/session";
@@ -44,6 +50,8 @@ function BirthOnboardingContent() {
   const [formKey, setFormKey] = useState(0);
   const [birthForm, setBirthForm] = useState<StitchBirthFormState | null>(null);
   const resetStarted = useRef(false);
+  // en-US: form prefilled for confirmation -> the save never replaces saved details.
+  const fromBrowserCopy = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,7 +84,31 @@ function BirthOnboardingContent() {
       }
 
       if (!wantReset && !wantEdit) {
-        const birth = await ensureBirthSession(canonicalId);
+        let synced = await syncBirthSessionFromDb(canonicalId);
+        let birth = synced.birth;
+        // en-US: the report has no saved birth details. Fill them only from
+        // the same account's other report where they are saved (server side).
+        // A copy held only by this browser is never treated as saved: the
+        // form shows it for the person to confirm, so the friend-add check
+        // and this page can't send each other back and forth.
+        if (missingBirthStep({ locale, dbRow: synced.dbRow }) === "restore_from_account") {
+          const restored = await restoreBirthFromAccount(canonicalId);
+          if (restored === "restored" || restored === "already_has_birth") {
+            invalidateReportSession(canonicalId);
+            synced = await syncBirthSessionFromDb(canonicalId);
+            birth = synced.birth;
+          } else {
+            if (!cancelled) {
+              if (hasBrowserBirthToConfirm(birth)) {
+                fromBrowserCopy.current = true;
+                setResetNotice(BIRTH_CONFIRM_NOTICE_EN);
+              }
+              setReportId(canonicalId);
+              setReady(true);
+            }
+            return;
+          }
+        }
         if (hasMinimalBirth(birth)) {
           // Came here to add a friend: details are already in -> straight back.
           const back = consumeSelfProfileReturn(canonicalId);
@@ -97,7 +129,7 @@ function BirthOnboardingContent() {
     return () => {
       cancelled = true;
     };
-  }, [reportIdParam, router, wantReset, wantEdit, localize]);
+  }, [reportIdParam, router, wantReset, wantEdit, localize, locale]);
 
   const runReset = useCallback(async (id: string) => {
     setResetBusy(true);
@@ -153,6 +185,7 @@ function BirthOnboardingContent() {
             birthPlaceUnknown: payload.birthPlaceUnknown,
             birthLatitude: payload.birthPlaceUnknown ? unknownFallback.latitude : undefined,
             birthLongitude: payload.birthPlaceUnknown ? unknownFallback.longitude : undefined,
+            ...(fromBrowserCopy.current ? { onlyIfEmpty: true } : {}),
           }),
         });
         const data = (await res.json()) as {

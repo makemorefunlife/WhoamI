@@ -32,7 +32,13 @@ import {
 
 } from "@/lib/v2/onboarding/birthSession";
 
-import { ensureBirthSession, hasMinimalBirth } from "@/lib/v2/onboarding/hydrateBirthSession";
+import { hasMinimalBirth, syncBirthSessionFromDb } from "@/lib/v2/onboarding/hydrateBirthSession";
+import {
+  BIRTH_CONFIRM_NOTICE_EN,
+  hasBrowserBirthToConfirm,
+  missingBirthStep,
+  restoreBirthFromAccount,
+} from "@/lib/v2/onboarding/sessionBirthToServer";
 import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
 
 import { hasSurveyV2Session } from "@/lib/v2/survey/session";
@@ -69,6 +75,9 @@ function SurveyCompleteContent() {
 
   const [birthForm, setBirthForm] = useState<StitchBirthFormState | null>(null);
 
+  // en-US only: why the form is shown prefilled from this browser.
+  const [birthNotice, setBirthNotice] = useState<string | null>(null);
+
 
 
   useEffect(() => {
@@ -103,8 +112,38 @@ function SurveyCompleteContent() {
 
 
 
-      await ensureBirthSession(id);
-      const existing = readBirthV2Session(id);
+      let synced = await syncBirthSessionFromDb(id);
+      let existing = readBirthV2Session(id);
+
+      // en-US: the report has no saved birth details. Fill them only from the
+      // same account's other report where they are saved (server side). A
+      // copy held only by this browser is never treated as saved: the form
+      // shows it for the person to confirm (no back-and-forth with the hub).
+      if (missingBirthStep({ locale, dbRow: synced.dbRow }) === "restore_from_account") {
+        const restored = await restoreBirthFromAccount(id);
+        if (restored === "restored" || restored === "already_has_birth") {
+          synced = await syncBirthSessionFromDb(id);
+          existing = readBirthV2Session(id);
+        } else {
+          if (!cancelled) {
+            setReportId(id);
+            if (hasBrowserBirthToConfirm(existing)) {
+              setBirthNotice(BIRTH_CONFIRM_NOTICE_EN);
+              setBirthForm({
+                birthDate: existing!.birthDate,
+                birthTime: existing!.birthTime,
+                birthTimeUnknown: existing!.birthTimeUnknown,
+                birthPlace: existing!.birthPlace,
+                birthPlaceUnknown: existing!.birthPlaceUnknown === true,
+              });
+              setPhase("birth");
+            } else {
+              setPhase("analyzing");
+            }
+          }
+          return;
+        }
+      }
 
       if (hasMinimalBirth(existing)) {
         const back = consumeSelfProfileReturn(id);
@@ -148,7 +187,7 @@ function SurveyCompleteContent() {
 
     };
 
-  }, [router, searchParams, localize]);
+  }, [router, searchParams, localize, locale]);
 
 
 
@@ -232,6 +271,9 @@ function SurveyCompleteContent() {
             ? unknownFallback.longitude
             : undefined,
 
+          // Shown from this browser's copy: never replace a saved birth.
+          ...(birthNotice ? { onlyIfEmpty: true } : {}),
+
         }),
 
       });
@@ -276,7 +318,7 @@ function SurveyCompleteContent() {
     const back = consumeSelfProfileReturn(reportId);
     router.push(localize(back ?? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`));
 
-  }, [birthForm, busy, canViewResults, reportId, router, messages, localize, locale]);
+  }, [birthForm, busy, canViewResults, reportId, router, messages, localize, locale, birthNotice]);
 
 
 
@@ -379,6 +421,12 @@ function SurveyCompleteContent() {
             className="mx-auto flex min-h-dvh max-w-lg flex-col px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-12"
 
           >
+
+            {birthNotice ? (
+              <p role="status" data-testid="session-birth-notice" className="mb-4 w-full max-w-[420px] self-center rounded-xl border border-accent-emerald/25 bg-accent-emerald-soft px-4 py-3 text-center text-sm text-primary">
+                {birthNotice}
+              </p>
+            ) : null}
 
             <StitchBirthInputForm
 
