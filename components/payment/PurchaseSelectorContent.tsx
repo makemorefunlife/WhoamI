@@ -11,6 +11,7 @@ import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
 import { isCheckoutEnabled, isGuestPersonalPlan, isGuestRelationshipPlan, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
+import { isUsFreeBetaPlanId, usFreeBetaEnabled } from "@/lib/payment/usFreeBeta";
 import { accountLinkGroup } from "@/lib/payment/accountLinkCopy";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
@@ -113,9 +114,18 @@ export default function PurchaseSelectorContent({
   // this UI. KR plans are on sale (KRW); US plans stay disabled until US
   // payments are ready (NEXT_PUBLIC_US_CHECKOUT_ENABLED + a contract-confirmed
   // TOSS_USD_PAYMENT_METHOD) -- see lib/payment/tossCatalog.ts.
-  const { busy, startTossCheckout } = useTossCheckout();
+  const { busy: tossBusy, startTossCheckout } = useTossCheckout();
   const usCheckoutEnabled = process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true";
-  const canBuy = (planId: string) => isCheckoutEnabled(planId, usCheckoutEnabled);
+  // 2026-10-21: while US checkout stays disabled, Personal/Relationship
+  // Premium (the two plans that gate the "Analyze" -> paywall -> unlock
+  // flow) can be unlocked with a free beta grant instead -- see
+  // lib/payment/usFreeBeta.ts and handleCheckout below. Every other US plan
+  // is unaffected; KR plans never read this flag.
+  const usFreeBeta = usFreeBetaEnabled();
+  const [freeBetaBusy, setFreeBetaBusy] = useState(false);
+  const busy = tossBusy || freeBetaBusy;
+  const canBuy = (planId: string) =>
+    isCheckoutEnabled(planId, usCheckoutEnabled) || (usFreeBeta && isUsFreeBetaPlanId(planId));
   const [planNotice, setPlanNotice] = useState<Record<string, string>>({});
   // Signed-out Toss purchase (KR plans): email + consent, then pay; the
   // purchase is claimed into an account after the email is verified.
@@ -137,7 +147,7 @@ export default function PurchaseSelectorContent({
     window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
     // Deferred like the other effects here (no synchronous setState in an effect).
     const timer = setTimeout(() => {
-      if (isCheckoutEnabled(planId, process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true")) setResumePlan(planId);
+      if (canBuy(planId)) setResumePlan(planId);
     }, 0);
     return () => clearTimeout(timer);
   }, [authLoaded, isSignedIn]);
@@ -247,6 +257,35 @@ export default function PurchaseSelectorContent({
     primaryPlanId !== "us_additional_relationship" &&
     canBuy("us_additional_relationship");
 
+  /**
+   * Instant free-beta grant for the two US plans in
+   * lib/payment/usFreeBeta.ts -- no payment window. See
+   * app/api/payments/us-free-beta/grant/route.ts and
+   * process_us_free_beta_grant for the actual trust boundary and the
+   * per-click idempotency key (requestId).
+   */
+  async function requestUsFreeBetaGrant(planId: string): Promise<"granted" | "error"> {
+    setFreeBetaBusy(true);
+    try {
+      const requestId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const res = await fetch("/api/payments/us-free-beta/grant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-aha-locale": locale },
+        body: JSON.stringify({ planId, requestId }),
+      });
+      if (!res.ok) return "error";
+      const body = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      return body.ok ? "granted" : "error";
+    } catch {
+      return "error";
+    } finally {
+      setFreeBetaBusy(false);
+    }
+  }
+
   async function handleCheckout(planId: string) {
     if (!authLoaded) return;
     setPlanNotice((prev) => ({ ...prev, [planId]: "" }));
@@ -264,6 +303,21 @@ export default function PurchaseSelectorContent({
         return;
       }
       setResumePlan(null);
+      // Free-beta plan and the real checkout is still off: grant directly
+      // instead of opening Toss -- same Purchase button, same success path
+      // (onSuccess), no payment screen. Swapping back to a real payment step
+      // once US checkout is ready is just restoring the startTossCheckout
+      // call below for this plan; nothing else here changes.
+      if (usFreeBeta && isUsFreeBetaPlanId(planId) && !isCheckoutEnabled(planId, usCheckoutEnabled)) {
+        const outcome = await requestUsFreeBetaGrant(planId);
+        if (outcome === "granted") {
+          setGuestFormPlan(null);
+          onSuccess?.(planId);
+        } else {
+          setPlanNotice((prev) => ({ ...prev, [planId]: messages.payments.tossStartError }));
+        }
+        return;
+      }
       // Leaves the page on success (Toss redirects to /checkout/toss/success,
       // which confirms server-side and then returns the buyer here).
       const tossOutcome = await startTossCheckout(planId, locale, {
