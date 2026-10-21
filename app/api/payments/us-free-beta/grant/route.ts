@@ -8,7 +8,7 @@ import { readJsonBodyLimited } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
-import { isUsFreeBetaPlanId, usFreeBetaEnabled } from "@/lib/payment/usFreeBeta";
+import { isUsFreeBetaPlanId, US_FREE_BETA_LIVE } from "@/lib/payment/usFreeBeta";
 
 export const runtime = "nodejs";
 
@@ -27,7 +27,7 @@ export const runtime = "nodejs";
  * and validates the plan id before calling it.
  */
 export async function POST(req: Request) {
-  if (!usFreeBetaEnabled()) {
+  if (!US_FREE_BETA_LIVE) {
     return NextResponse.json({ error: "checkout_unavailable", code: "us_free_beta_disabled" }, { status: 410 });
   }
   const locale = resolveRequestLocale({

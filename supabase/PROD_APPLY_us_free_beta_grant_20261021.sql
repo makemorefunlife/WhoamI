@@ -7,8 +7,9 @@
 -- row, or function. Nothing here grants anything by itself -- the grant
 -- only happens when the app calls process_us_free_beta_grant, which only
 -- happens when:
---   1. NEXT_PUBLIC_US_FREE_BETA_ENABLED=true is set in Vercel (code also
---      deployed; leave this env var UNSET until you want the feature live),
+--   1. US_FREE_BETA_LIVE in lib/payment/usFreeBeta.ts is `true` in the
+--      deployed code (a code switch, not an env var -- see that file's
+--      comment for why),
 --   AND
 --   2. a signed-in en-US (English site) buyer clicks the existing Purchase
 --      button for Personal or Relationship Premium while real checkout for

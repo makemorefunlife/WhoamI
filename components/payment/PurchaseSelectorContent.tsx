@@ -11,7 +11,7 @@ import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 import type { RegionalPlanCopy } from "@/lib/i18n/messages/en-US";
 import PlanIllustration, { planArtKindFor } from "@/components/payment/PlanIllustration";
 import { isCheckoutEnabled, isGuestPersonalPlan, isGuestRelationshipPlan, isGuestTossPlan, isGuestUsePlan } from "@/lib/payment/tossCatalog";
-import { isUsFreeBetaPlanId, usFreeBetaEnabled } from "@/lib/payment/usFreeBeta";
+import { isUsFreeBetaPlanId, US_FREE_BETA_LIVE } from "@/lib/payment/usFreeBeta";
 import { accountLinkGroup } from "@/lib/payment/accountLinkCopy";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useTossCheckout } from "@/lib/payment/useTossCheckout";
@@ -120,8 +120,8 @@ export default function PurchaseSelectorContent({
   // Premium (the two plans that gate the "Analyze" -> paywall -> unlock
   // flow) can be unlocked with a free beta grant instead -- see
   // lib/payment/usFreeBeta.ts and handleCheckout below. Every other US plan
-  // is unaffected; KR plans never read this flag.
-  const usFreeBeta = usFreeBetaEnabled();
+  // is unaffected; KR plans never read this switch.
+  const usFreeBeta = US_FREE_BETA_LIVE;
   const [freeBetaBusy, setFreeBetaBusy] = useState(false);
   const busy = tossBusy || freeBetaBusy;
   const canBuy = (planId: string) =>
