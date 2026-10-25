@@ -52,7 +52,7 @@ import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 import { MarriageChapterNav, MarriageChapterSection } from "@/components/relationship/marriage/chapters/MarriageChapterShell";
 import type { ActionPlanItem, CoupleActionPlanSection } from "@/lib/relationship/enrichment/marriageCoupleActionPlan";
-import { VersusStrip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { VersusStrip, NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
 import type { MarriageCanonicalBundle } from "@/lib/relationship/marriage/marriageCanonicalTypes";
 
@@ -838,7 +838,7 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
       <RelationshipReportBody className="grid gap-4 sm:grid-cols-2">
         {people.map(({ label, person }) => (
           <RelationshipReportInset key={label}>
-            <p className="flex items-center gap-1.5 text-sm font-bold text-rel-ink"><PersonBadge /> {person.nickname}</p>
+            <NameChip name={person.nickname} side={label === "me" ? "a" : "b"} />
             <p className="mt-2 text-base font-semibold" style={{ color: ACCENT }}>
               {person.lifestyle_title}
             </p>
@@ -893,16 +893,16 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
         <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
           <div className="grid gap-3 text-xs sm:grid-cols-2">
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
-              <span className="font-bold text-rel-deep block">
-                {ch06.coupleBoundary.profileA.personName} | <span className="text-v4-good">{ch06.coupleBoundary.profileA.editorialLabel}</span>
+              <span className="font-bold block">
+                <span className="text-v4-a">{ch06.coupleBoundary.profileA.personName}</span> | <span className="text-v4-good">{ch06.coupleBoundary.profileA.editorialLabel}</span>
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {ch06.coupleBoundary.profileA.narrative}
               </p>
             </div>
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
-              <span className="font-bold text-rel-deep block">
-                {ch06.coupleBoundary.profileB.personName} | <span className="text-v4-good">{ch06.coupleBoundary.profileB.editorialLabel}</span>
+              <span className="font-bold block">
+                <span className="text-v4-b">{ch06.coupleBoundary.profileB.personName}</span> | <span className="text-v4-good">{ch06.coupleBoundary.profileB.editorialLabel}</span>
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {ch06.coupleBoundary.profileB.narrative}
@@ -945,8 +945,8 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
         <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-4 p-4 rounded-xl text-xs">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-2">
-              <span className="font-bold text-rel-deep block text-sm">
-                {ch06.parentingDna.profileA.personName} | <span className="text-v4-good">{ch06.parentingDna.profileA.editorialIdentity}</span>
+              <span className="font-bold block text-sm">
+                <span className="text-v4-a">{ch06.parentingDna.profileA.personName}</span> | <span className="text-v4-good">{ch06.parentingDna.profileA.editorialIdentity}</span>
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {ch06.parentingDna.profileA.narrative}
@@ -961,8 +961,8 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
               </div>
             </div>
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-2">
-              <span className="font-bold text-rel-deep block text-sm">
-                {ch06.parentingDna.profileB.personName} | <span className="text-v4-good">{ch06.parentingDna.profileB.editorialIdentity}</span>
+              <span className="font-bold block text-sm">
+                <span className="text-v4-b">{ch06.parentingDna.profileB.personName}</span> | <span className="text-v4-good">{ch06.parentingDna.profileB.editorialIdentity}</span>
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {ch06.parentingDna.profileB.narrative}
@@ -988,8 +988,8 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
             <div key={idx} className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
               <span className="font-extrabold text-rel-deep block">{sit.situationTitle}</span>
               <div className="grid gap-1 sm:grid-cols-2 text-[11px]">
-                <p className="text-rel-ink font-medium"><b className="text-v4-good">{nameA}:</b> {sit.reactionA}</p>
-                <p className="text-rel-ink font-medium"><b className="text-v4-good">{nameB}:</b> {sit.reactionB}</p>
+                <p className="text-rel-ink font-medium"><b className="text-v4-a">{nameA}:</b> {sit.reactionA}</p>
+                <p className="text-rel-ink font-medium"><b className="text-v4-b">{nameB}:</b> {sit.reactionB}</p>
               </div>
             </div>
           ))}

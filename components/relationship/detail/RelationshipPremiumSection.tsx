@@ -382,7 +382,7 @@ export default function RelationshipPremiumSection({
         </div>
       ) : premiumKind === "family" && displayFamilyDeep ? (
         <div className="w-full">
-          <FamilyParentReportView report={named.family ?? displayFamilyDeep} />
+          <FamilyParentReportView report={named.family ?? displayFamilyDeep} viewerIsReportA={viewerIsReportA} />
         </div>
       ) : premiumKind === "family" ? (
         familyNeedsSetup ? (

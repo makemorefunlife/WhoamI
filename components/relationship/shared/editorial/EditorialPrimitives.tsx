@@ -18,6 +18,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "@/lib/relationship/friend/friendCopy";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 /**
  * Fades a block in once as it enters the viewport. Subtle, one-shot.
@@ -72,6 +73,19 @@ export function Reveal({
   );
 }
 
+/**
+ * Shared fallback when a caller passes an empty name — matches the same
+ * vocabulary the server-side canonical resolver uses
+ * (lib/relationship/relationshipPersonNames.ts: meFallbackLabel/
+ * partnerFallbackLabel), so an empty slot never shows a Korean literal in an
+ * en-US report. In practice callers should always pass a real, already
+ * locale-resolved name; this only guards the edge case.
+ */
+function usePersonFallbackLabel(side: "a" | "b"): string {
+  const messages = useMessages();
+  return side === "a" ? messages.report.meFallbackLabel : messages.report.partnerFallbackLabel;
+}
+
 export function NameChip({
   name,
   side,
@@ -81,17 +95,18 @@ export function NameChip({
   side: "a" | "b";
   icon?: string;
 }) {
-  const label = name?.trim() || (side === "a" ? "나" : "상대");
+  const fallback = usePersonFallbackLabel(side);
+  const label = name?.trim() || fallback;
   const cls =
     side === "a"
       ? "border-v4-a/35 bg-v4-a-soft text-v4-a"
       : "border-v4-b/40 bg-v4-b-soft text-v4-b";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-rel-sans text-[11px] font-semibold tracking-[0.06em] ${cls}`}
+      className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 font-rel-sans text-[11px] font-semibold tracking-[0.06em] ${cls}`}
     >
       {icon && <span aria-hidden>{icon}</span>}
-      {label}
+      <span className="break-words">{label}</span>
     </span>
   );
 }
@@ -106,18 +121,19 @@ export function PersonTag({
   side: "a" | "b";
   invert?: boolean;
 }) {
-  const label = name?.trim() ? name.trim() : (side === "a" ? "나" : "상대");
+  const fallback = usePersonFallbackLabel(side);
+  const label = name?.trim() ? name.trim() : fallback;
   const cls =
     side === "a"
       ? "border-v4-a/40 text-v4-a bg-v4-a-soft"
       : "border-v4-b/50 text-v4-b bg-v4-b-soft";
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 font-rel-sans text-[10.5px] font-semibold tracking-[0.14em] ${
+      className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 font-rel-sans text-[10.5px] font-semibold tracking-[0.14em] ${
         invert ? "border-white/25 bg-white/10 text-white" : cls
       }`}
     >
-      {label}
+      <span className="break-words">{label}</span>
     </span>
   );
 }

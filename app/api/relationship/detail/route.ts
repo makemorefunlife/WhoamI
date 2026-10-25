@@ -32,7 +32,9 @@ import {
   resolveMeDisplayName,
   resolveOtherDisplayName,
   slotDisplayNames,
+  isStoredPlaceholderName,
 } from "@/lib/relationship/relationshipPersonNames";
+import { applyCurrentReportNames } from "@/lib/relationship/applyCurrentReportNames";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import { omitWorkContextOutputFromReport } from "@/lib/relationship/workColleague/stripWorkContextOutputForClient";
@@ -239,8 +241,23 @@ export async function GET(req: Request) {
       meDisplayName: viewerName,
       otherDisplayName: partnerName,
     });
-    const personAName = repA?.name?.trim() || (viewerIsReportA ? viewerName : partnerName) || "Person A";
-    const personBName = repB?.name?.trim() || (!viewerIsReportA ? viewerName : partnerName) || "Person B";
+    // repA/repB.name is the raw DB `reports.name` column, which can hold a
+    // legacy-stored placeholder literal ("상대", "Partner", "Person A", ...)
+    // from before isStoredPlaceholderName existed -- using it as-is here
+    // bypassed the canonical resolver entirely, so a viewer with a perfectly
+    // real, resolvable nickname (viewerName/partnerName above) could still
+    // see the literal placeholder word rendered as their name. Guard it the
+    // same way the canonical resolver already treats a stored/snapshot name.
+    const repAName = repA?.name?.trim();
+    const repBName = repB?.name?.trim();
+    const personAName =
+      (repAName && !isStoredPlaceholderName(repAName) ? repAName : "") ||
+      (viewerIsReportA ? viewerName : partnerName) ||
+      "Person A";
+    const personBName =
+      (repBName && !isStoredPlaceholderName(repBName) ? repBName : "") ||
+      (!viewerIsReportA ? viewerName : partnerName) ||
+      "Person B";
 
     const romanticDeepRaw =
       activeKind === "romantic"
@@ -333,8 +350,19 @@ export async function GET(req: Request) {
       }
     }
 
+    // A saved report's structured name fields (meta.nickname_a/b,
+    // section_dna.person_a/b.nickname, ...) are frozen at generation time --
+    // if the viewer or partner's account nickname changed since, or the
+    // partner's account wasn't resolvable yet at generation time (baking in
+    // the locale placeholder "Partner"/"상대" as their literal "nickname"),
+    // this report would otherwise keep showing that stale/placeholder name
+    // forever. applyCurrentReportNames swaps ONLY those exact name-field
+    // values to the canonical current names computed above (displayNames) --
+    // it never touches free-text prose, so a generic "partner" used as a
+    // relationship noun in the narrative is left exactly as written, and the
+    // underlying analysis content is not regenerated or altered.
     const workColleagueDeepReport = workColleagueDeepRaw
-      ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
+      ? applyCurrentReportNames(omitWorkContextOutputFromReport(workColleagueDeepRaw), displayNames)
       : null;
 
     const cohabitationDeepRaw =
@@ -342,7 +370,7 @@ export async function GET(req: Request) {
         ? getCohabitationDeepReport(byKind, locale)
         : null;
     const cohabitationDeepReport = cohabitationDeepRaw
-      ? omitMarriageContextOutputFromReport(cohabitationDeepRaw)
+      ? applyCurrentReportNames(omitMarriageContextOutputFromReport(cohabitationDeepRaw), displayNames)
       : null;
 
     const familyDeepRaw =
@@ -350,7 +378,7 @@ export async function GET(req: Request) {
         ? getFamilyParentDeepReport(byKind, locale)
         : null;
     const familyDeepReport = familyDeepRaw
-      ? omitFamilyContextOutputFromReport(familyDeepRaw)
+      ? applyCurrentReportNames(omitFamilyContextOutputFromReport(familyDeepRaw), displayNames)
       : null;
 
     let friendshipDeepRaw =
@@ -422,7 +450,7 @@ export async function GET(req: Request) {
     }
 
     const friendshipDeepReport = friendshipDeepRaw
-      ? omitFriendContextOutputFromReport(friendshipDeepRaw)
+      ? applyCurrentReportNames(omitFriendContextOutputFromReport(friendshipDeepRaw), displayNames)
       : null;
 
     const activeKindReportReady =

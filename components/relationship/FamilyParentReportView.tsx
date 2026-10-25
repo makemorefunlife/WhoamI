@@ -31,8 +31,10 @@ const DE_VARIANT: Record<string, "warning" | "success" | "default"> = {
 
 export default function FamilyParentReportView({
   report,
+  viewerIsReportA = true,
 }: {
   report: FamilyParentReportBody;
+  viewerIsReportA?: boolean;
 }) {
   const t = useMessages().relationshipDrilldown.family;
   const theme = getTabTheme("family");
@@ -73,8 +75,8 @@ export default function FamilyParentReportView({
   // (marriage/friend에서 겪은 Hooks 순서 위반 버그를 여기서 처음부터 피함).
   const { locale } = useLocale();
   const partRendererViewModel = useMemo(
-    () => buildFamilyReportViewModel(report, { locale }),
-    [report, locale],
+    () => buildFamilyReportViewModel(report, { locale, viewerIsReportA }),
+    [report, locale, viewerIsReportA],
   );
   if (
     partRendererViewModel.editorialChapters.length > 0 ||
@@ -127,9 +129,9 @@ export default function FamilyParentReportView({
         <RelationshipPsychMatchSection
           psychMatch={psychDisplay.psych_match}
           psychLens={psychDisplay.psych_lens}
-          personALabel={labelA}
-          personBLabel={labelB}
-          viewerIsReportA
+          personALabel={viewerIsReportA ? labelA : labelB}
+          personBLabel={viewerIsReportA ? labelB : labelA}
+          viewerIsReportA={viewerIsReportA}
           accentColor={theme.accent}
         />
       ) : null}

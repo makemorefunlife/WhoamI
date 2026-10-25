@@ -44,7 +44,35 @@ import { pick } from "@/lib/relationship/familyParent/familyParentCopy";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
+  /**
+   * True when the CURRENT viewer is report_id_a (same meaning as every
+   * other domain's viewerIsReportA). Family content itself stays in fixed
+   * parent/child order (role text never changes by who's looking), but
+   * color coding must still track the real viewer -- "나" is always sky
+   * blue and "상대" always cream, whether the viewer is the parent or the
+   * child. Omit only for callers that genuinely don't know (tests,
+   * fixtures) -- defaults to true, matching the old hardcoded behavior.
+   */
+  viewerIsReportA?: boolean;
 };
+
+/**
+ * Whether the viewer (per viewerIsReportA, a report-slot fact) is the
+ * CHILD in this family report. report_id_a/b assignment is independent of
+ * the child/parent role -- either slot can be either role -- so this
+ * compares the current (post-applyCurrentReportNames) slot names against
+ * the role names to find out which slot the child occupies, then combines
+ * that with viewerIsReportA. Falls back to "child is report A" (the old
+ * assumed-fixed behavior) when the names don't match for any reason, so a
+ * stale/legacy report never crashes or silently miscolors worse than before.
+ */
+function resolveViewerIsChild(
+  report: FamilyParentReportBody,
+  viewerIsReportA: boolean,
+): boolean {
+  const childIsReportA = report.meta?.nickname_a === report.meta?.child_nickname;
+  return childIsReportA ? viewerIsReportA : !viewerIsReportA;
+}
 
 /** Part2 UI — 핵심 4행만 표시. affection/recovery는 report body에 유지, 렌더만 제외. */
 const PART2_COMPARE_TABLE_DISPLAY_IDS: readonly FamilyCompareRowId[] = [
@@ -58,18 +86,27 @@ function catalog(locale: Locale) {
   return (locale === "en-US" ? messagesEnUS : messagesKoKR).relationshipDrilldown.family;
 }
 
-function buildOpening(report: FamilyParentReportBody): OpeningBlock {
+function buildOpening(
+  report: FamilyParentReportBody,
+  t: ReturnType<typeof catalog>,
+  viewerIsChild: boolean,
+): OpeningBlock {
   const roles = report.family?.section_roles;
   const names: [string, string] = [
-    roles?.child_nickname ?? report.meta?.nickname_a ?? "",
-    roles?.parent_nickname ?? report.meta?.nickname_b ?? "",
+    roles?.child_nickname || report.meta?.nickname_a || t.childFallback,
+    roles?.parent_nickname || report.meta?.nickname_b || t.parentFallback,
   ];
+  const viewerFirstNames: [string, string] = viewerIsChild
+    ? [names[0], names[1]]
+    : [names[1], names[0]];
   return {
     headline: report.headline || report.one_line_family,
     subtitle: report.one_line_family ?? "",
     grade: report.meta?.grade ?? "",
     gradeReason: report.meta?.grade_reason ?? "",
     names,
+    viewerFirstNames,
+    viewerIsChild,
   };
 }
 
@@ -248,6 +285,8 @@ function buildPsychRadarSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
   locale: Locale,
+  viewerIsReportA: boolean,
+  viewerFirstNames: [string, string],
 ): FamilyReportSection | null {
   const psychDisplay = resolveReportPsychDisplay(report.meta, buildFamilyPsychMatchBundle);
   if (!psychDisplay) return null;
@@ -256,8 +295,12 @@ function buildPsychRadarSection(
     type: "psych_radar",
     partNumber: 2,
     title: t.psychRadarCardTitle,
-    // family는 viewer 토글이 없는 고정 parent/child 순서라 swap을 항상 false로 둔다.
-    axisResults: swapPsychAxisForViewer(psychDisplay.psych_match.axis_results, true),
+    // score_a must be the actual viewer's score (axis_results is slot-A/B
+    // keyed, same contract every other domain uses) -- this used to pass a
+    // hardcoded `true` ("never swap"), which silently showed the partner's
+    // scores under the viewer's own label whenever the viewer happened to
+    // be report slot B.
+    axisResults: swapPsychAxisForViewer(psychDisplay.psych_match.axis_results, viewerIsReportA),
     chartNote: psychDisplay.psych_lens.chart_note,
     highlights: nameExplicitHighlights(
       psychDisplay.psych_lens.highlights,
@@ -266,6 +309,7 @@ function buildPsychRadarSection(
       report.meta.nickname_b,
       locale
     ),
+    viewerFirstNames,
   };
 }
 
@@ -593,12 +637,19 @@ export function buildFamilyReportViewModel(
   const locale = params.locale ?? "ko-KR";
   const isEn = locale === "en-US";
   const t = catalog(locale);
+  const viewerIsReportA = params.viewerIsReportA ?? true;
+  const viewerIsChild = resolveViewerIsChild(report, viewerIsReportA);
+  // nickname_a/b are report-slot (A/B) names, independent of child/parent
+  // role -- viewerIsReportA alone picks which slot is "me" here.
+  const viewerFirstNames: [string, string] = viewerIsReportA
+    ? [report.meta?.nickname_a || t.childFallback, report.meta?.nickname_b || t.parentFallback]
+    : [report.meta?.nickname_b || t.parentFallback, report.meta?.nickname_a || t.childFallback];
 
   const snapshotSec = buildSnapshotSection(report);
   const relationshipIndexSec = buildRelationshipIndexSection(report, t);
   const compareTableSec = buildCompareTableSection(report, locale, t);
   const householdRolesSec = buildHouseholdRolesSection(report, t, locale);
-  const psychRadarSec = buildPsychRadarSection(report, t, locale);
+  const psychRadarSec = buildPsychRadarSection(report, t, locale, viewerIsReportA, viewerFirstNames);
   const childDnaSec = buildChildDnaSection(report, t);
   const parentDnaSec = buildParentDnaSection(report, locale);
   const parentChildBridgeSec = buildParentChildBridgeSection(report, locale);
@@ -780,7 +831,7 @@ export function buildFamilyReportViewModel(
 
   return {
     kind: "family",
-    opening: buildOpening(report),
+    opening: buildOpening(report, t, viewerIsChild),
     snapshot: snapshotSec as Extract<FamilyReportSection, { type: "snapshot" }> | null,
     relationshipIndex: relationshipIndexSec as Extract<FamilyReportSection, { type: "relationship_index" }> | null,
     psychRadar: psychRadarSec as Extract<FamilyReportSection, { type: "psych_radar" }> | null,

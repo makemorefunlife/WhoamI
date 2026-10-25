@@ -32,7 +32,12 @@ export type OpeningBlock = {
   subtitle: string;
   grade: string;
   gradeReason: string;
+  /** Fixed [child, parent] order -- for role text (labels, headings) that must read the same regardless of who's viewing. */
   names: [string, string];
+  /** [me, partner] -- for color-coded UI (capsules, radar legend): "나" is always index 0 / sky blue. */
+  viewerFirstNames: [string, string];
+  /** True when the current viewer is the child in this family report. */
+  viewerIsChild: boolean;
 };
 
 type BaseSection = {
@@ -95,6 +100,8 @@ export type PsychRadarSection = BaseSection & {
   axisResults: PsychMatchAxisResult[];
   chartNote: string;
   highlights: DomainPsychHighlight[];
+  /** [me, partner] -- axisResults.score_a is already swapped to match (viewer = index 0 = sky blue). */
+  viewerFirstNames: [string, string];
 };
 
 // ---- Part 3: 자녀 DNA + 성장 터널 --------------------------------------------

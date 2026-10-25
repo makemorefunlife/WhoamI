@@ -55,8 +55,8 @@ const buildFinalOutputRules = (
 
 ## Names & speaker binding
 - Write **${nicknameA}** / **${nicknameB}** exactly. Never invent an honorific or an awkward possessive form.
-- A 1st-person: "I" = **${nicknameA}**; other = **${nicknameB}** (or "your friend" if needed).
-- B 1st-person: "I" = **${nicknameB}**; other = **${nicknameA}** (or "your friend" if A's name is literally "I").
+- A 1st-person: "I" = **${nicknameA}**; other = **${nicknameB}** — always the real name, never "your friend"/"the other person".
+- B 1st-person: "I" = **${nicknameB}**; other = **${nicknameA}** (or "your friend" only in the narrow case where A's name is literally "I" and using it as the other party's name would be ambiguous).
 - Forbid using one's own display name as the other party.
 - Both-readers dignity (V9): no "problem friend" framing or ranking jokes.
 
@@ -98,8 +98,8 @@ ${ENGLISH_TONE_REMINDER}
 
 ## Names & speaker binding
 - Write **${nicknameA}** / **${nicknameB}** exactly. Ban **나님**, **저님**, inventing \`님\`, awkward \`이의\`.
-- A 1st-person: "나" = **${nicknameA}**; other = **${nicknameB}** (or "친구" if needed).
-- B 1st-person: "나" = **${nicknameB}**; other = **${nicknameA}** (or "친구" if A name is literally \`나\`).
+- A 1st-person: "나" = **${nicknameA}**; other = **${nicknameB}** — 반드시 실제 닉네임으로 쓰고 "친구"/"상대방" 같은 일반 단어로 대체하지 않는다.
+- B 1st-person: "나" = **${nicknameB}**; other = **${nicknameA}** (단, A의 닉네임이 글자 그대로 \`나\`라서 그대로 쓰면 혼동될 때만 예외적으로 "친구").
 - Forbid using own display name as the other party (\`${nicknameB}와의 관계\` inside B voice, etc.).
 - Both-readers dignity (V9): no "문제 친구"/ranking jokes.
 

@@ -485,12 +485,20 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   --rel-line: #e6e2dc;
   --rel-deep: #1b3b2b;
   --rel-deep-soft: rgba(27, 59, 43, 0.08);
+  --rel-accent: var(--rel-deep);
   --rel-taupe: #5e5b56;
   --rel-taupe-soft: #f9f8f6;
-  --v4-a: #3b6c93;
-  --v4-a-soft: rgba(59, 108, 147, 0.12);
-  --v4-b: #8e7561;
-  --v4-b-soft: rgba(142, 117, 97, 0.14);
+  /* Person A = sky blue ("나"), Person B = warm cream/gold ("상대") — the
+     single pair every relationship report renders participants in (radar
+     chart, name chips, compare tables). Both text/border tones are tuned to
+     clear AA contrast (~4.6:1) against the white/cream report background;
+     a literal pale cream would all but vanish as text on --rel-bg, so the
+     "cream" identity lives in the richer -soft fill while the solid tone
+     carries a deeper gold so labels stay readable. */
+  --v4-a: #2e7db8;
+  --v4-a-soft: rgba(46, 125, 184, 0.14);
+  --v4-b: #96722a;
+  --v4-b-soft: rgba(201, 160, 74, 0.2);
   --v4-good: #2f6b4f;
   --v4-good-soft: rgba(47, 107, 79, 0.12);
   --v4-bad: #c1443a;
@@ -508,6 +516,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   --color-rel-line: var(--rel-line);
   --color-rel-deep: var(--rel-deep);
   --color-rel-deep-soft: var(--rel-deep-soft);
+  --color-rel-accent: var(--rel-accent);
   --color-rel-taupe: var(--rel-taupe);
   --color-rel-taupe-soft: var(--rel-taupe-soft);
   --color-v4-a: var(--v4-a);

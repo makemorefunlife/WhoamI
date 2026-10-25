@@ -19,6 +19,7 @@ import {
   ChoiceSection,
 } from "./ChaptersB";
 import { OverviewSection } from "../../shared/overview/OverviewSection";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 import React from "react";
 
 type Props = {
@@ -173,19 +174,36 @@ export function CanonicalReportView({
   const chapterNumbers = computeChapterNumbers(visible);
   const dailyLifeSection = report.sections.find((s) => s.chapterId === "c9_daily_life");
 
+  const messages = useMessages();
+  const meFallback = messages.report.meFallbackLabel;
+  const partnerFallback = messages.report.partnerFallbackLabel;
+
+  // report.names.a/b are the names actually baked into this report's
+  // generated narrative text (chapter prose references them verbatim), so
+  // when they're real — not the "나"/"상대" placeholder — they must win over
+  // myName/partnerName: those are live, viewer-relative display names that
+  // can drift from what a previously-generated report's body text says
+  // (e.g. the viewer renamed themself after the report was generated), and
+  // overriding the header/capsule with them desynced the header from the
+  // body prose underneath it. myName/partnerName only fill in a slot whose
+  // report.names value is missing or still the placeholder.
+  const hasRealA = Boolean(report.names?.a && report.names.a !== "나");
+  const hasRealB = Boolean(report.names?.b && report.names.b !== "상대");
+
   let a = report.names?.a || "나";
   let b = report.names?.b || "상대";
 
-  if (a === "나" && myName?.trim()) a = myName.trim();
-  if (b === "상대" && partnerName?.trim()) b = partnerName.trim();
-  if (myName?.trim() && myName !== "나") {
-    if (viewerIsReportA === false) b = myName.trim();
-    else a = myName.trim();
+  if (!hasRealA) {
+    if (viewerIsReportA === false && partnerName?.trim()) a = partnerName.trim();
+    else if (viewerIsReportA !== false && myName?.trim()) a = myName.trim();
   }
-  if (partnerName?.trim() && partnerName !== "상대") {
-    if (viewerIsReportA === false) a = partnerName.trim();
-    else b = partnerName.trim();
+  if (!hasRealB) {
+    if (viewerIsReportA === false && myName?.trim()) b = myName.trim();
+    else if (viewerIsReportA !== false && partnerName?.trim()) b = partnerName.trim();
   }
+
+  if (a === "나") a = meFallback;
+  if (b === "상대") b = partnerFallback;
 
   const sectionProps = (s: CanonicalSection) => ({
     section: s,

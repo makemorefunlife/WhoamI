@@ -159,7 +159,7 @@ export function WorkEditorialHero({
           </span>
           <NameChip name={nameB} side="b" />
         </div>
-        <h1 className="mt-6 max-w-[24ch] font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
+        <h1 className="mt-6 max-w-[24ch] break-keep font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
           {cleanHeadline}
         </h1>
         {subtitle ? (

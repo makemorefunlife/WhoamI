@@ -538,6 +538,7 @@ export function Chapter04Tempo({ vm, viewerIsReportA, locale }: Ctx) {
 /** Friend VNext Ch4-8 — generic renderer for evidence-backed ◤ sub-blocks. */
 function VNextBlocksSection({
   blocks,
+  viewerIsReportA,
 }: {
   blocks:
     | {
@@ -547,6 +548,16 @@ function VNextBlocksSection({
         compare?: { name: string; label?: string; body: string }[];
       }[]
     | undefined;
+  /**
+   * `compare[0]` is always the report-A-slot person (it's built from
+   * personA/B-keyed data, e.g. intel.personA.support in
+   * friendChapter05Support.ts), not "whoever is viewing". Coloring it "a"
+   * (sky blue = "me") unconditionally made the viewer's own card render in
+   * the partner's color whenever they happened to be report B. Flip the
+   * side mapping when the viewer is report B so "me" stays blue regardless
+   * of which report slot they occupy.
+   */
+  viewerIsReportA: boolean;
 }) {
   if (!blocks || blocks.length === 0) return null;
   return (
@@ -576,18 +587,22 @@ function VNextBlocksSection({
               )}
               {b.compare && b.compare.length > 1 ? (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {b.compare.map((c, ci) => (
+                  {b.compare.map((c, ci) => {
+                    const isSlotA = ci === 0;
+                    const side = isSlotA === viewerIsReportA ? "a" : "b";
+                    return (
                     <div
                       key={ci}
                       className="rounded-xl border border-rel-line/70 bg-rel-bg/50 p-4"
                     >
-                      <NameChip name={c.name} side={ci === 0 ? "a" : "b"} />
+                      <NameChip name={c.name} side={side} />
                       {c.label ? (
                         <dd className="mt-2 font-rel-sans text-[13px] font-bold leading-[1.4] text-rel-ink">{c.label}</dd>
                       ) : null}
                       <dd className="mt-1 font-rel-sans text-[12.5px] leading-[1.65] text-rel-ink-mute">{c.body}</dd>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <>
@@ -603,7 +618,7 @@ function VNextBlocksSection({
   );
 }
 
-export function Chapter05Teamwork({ vm, locale }: Ctx) {
+export function Chapter05Teamwork({ vm, locale, viewerIsReportA }: Ctx) {
   const ch04Vm = vm.chapters?.find((c) => c.chapterKey === "ch04_play_travel");
 
   return (
@@ -617,14 +632,14 @@ export function Chapter05Teamwork({ vm, locale }: Ctx) {
         "함께 약속을 잡거나 여행을 갈 때 우리의 역할 분담과 팀워크는 어떠한가?",
       )}
     >
-      <VNextBlocksSection blocks={ch04Vm?.vNextBlocks} />
+      <VNextBlocksSection blocks={ch04Vm?.vNextBlocks} viewerIsReportA={viewerIsReportA} />
     </ChapterSection>
   );
 }
 
 /* ------------------- CHAPTER 5: 고민 상담과 제3자 관계 다이내믹 ------------------- */
 
-export function Chapter06CounselingGroup({ vm, locale }: Ctx) {
+export function Chapter06CounselingGroup({ vm, locale, viewerIsReportA }: Ctx) {
   const ch05Vm = vm.chapters?.find((c) => c.chapterKey === "ch05_communication_third_person");
 
   return (
@@ -638,14 +653,14 @@ export function Chapter06CounselingGroup({ vm, locale }: Ctx) {
         "힘든 순간 서로에게 어떤 도움을 주고받는지 봅니다.",
       )}
     >
-      <VNextBlocksSection blocks={ch05Vm?.vNextBlocks} />
+      <VNextBlocksSection blocks={ch05Vm?.vNextBlocks} viewerIsReportA={viewerIsReportA} />
     </ChapterSection>
   );
 }
 
 /* ------------------- CHAPTER 6: 서운함과 관계 회복의 기술 ------------------- */
 
-export function Chapter07ConflictRepair({ vm, locale }: Ctx) {
+export function Chapter07ConflictRepair({ vm, locale, viewerIsReportA }: Ctx) {
   const ch06Vm = vm.chapters?.find((c) => c.chapterKey === "ch06_conflict_repair");
 
   return (
@@ -659,14 +674,14 @@ export function Chapter07ConflictRepair({ vm, locale }: Ctx) {
         "서운함이 생기면 각자는 어떻게 반응하고, 그 차이가 어떻게 갈등과 회복으로 이어지는가?",
       )}
     >
-      <VNextBlocksSection blocks={ch06Vm?.vNextBlocks} />
+      <VNextBlocksSection blocks={ch06Vm?.vNextBlocks} viewerIsReportA={viewerIsReportA} />
     </ChapterSection>
   );
 }
 
 /* ------------------- CHAPTER 7: 이 우정에서 기대하지 말아야 할 것 ------------------- */
 
-export function Chapter08Boundaries({ vm, locale }: Ctx) {
+export function Chapter08Boundaries({ vm, locale, viewerIsReportA }: Ctx) {
   const ch07Vm = vm.chapters?.find((c) => c.chapterKey === "ch07_expectation_boundaries");
 
   return (
@@ -680,14 +695,14 @@ export function Chapter08Boundaries({ vm, locale }: Ctx) {
         "친한 친구라도 무엇은 지켜줘야 하고, 무엇까지 기대하면 서로 힘들어지는가?",
       )}
     >
-      <VNextBlocksSection blocks={ch07Vm?.vNextBlocks} />
+      <VNextBlocksSection blocks={ch07Vm?.vNextBlocks} viewerIsReportA={viewerIsReportA} />
     </ChapterSection>
   );
 }
 
 /* ------------------- CHAPTER 8: 오래가는 우정의 거리감 ------------------- */
 
-export function Chapter09Distance({ vm, locale }: Ctx) {
+export function Chapter09Distance({ vm, locale, viewerIsReportA }: Ctx) {
   const ch08Vm = vm.chapters?.find((c) => c.chapterKey === "ch08_distance_durability");
 
   return (
@@ -701,7 +716,7 @@ export function Chapter09Distance({ vm, locale }: Ctx) {
         "우리는 얼마나 자주 연결되어야 편하며, 무엇이 있어야 오래 이어지는가?",
       )}
     >
-      <VNextBlocksSection blocks={ch08Vm?.vNextBlocks} />
+      <VNextBlocksSection blocks={ch08Vm?.vNextBlocks} viewerIsReportA={viewerIsReportA} />
     </ChapterSection>
   );
 }
@@ -838,7 +853,7 @@ export function FriendHero({ vm, locale }: Ctx) {
       <div className="inline-flex items-center gap-2 rounded-full border border-rel-line bg-rel-surface px-4 py-1.5 font-rel-sans text-[11.5px] tracking-[0.1em] text-rel-ink-mute">
         <span>{pick(locale, "Friendship Report", "우정 심화 리포트")}</span>
       </div>
-      <h1 className="mt-6 font-rel-serif text-[28px] font-normal leading-[1.3] tracking-[-0.01em] text-rel-ink sm:text-[36px]">
+      <h1 className="mx-auto mt-6 max-w-[24ch] break-keep font-rel-serif text-[28px] font-normal leading-[1.3] tracking-[-0.01em] text-rel-ink sm:text-[36px]">
         {vm.opening.names[0]} <span className="text-rel-ink-mute">×</span> {vm.opening.names[1]}
       </h1>
       {vm.opening.oneLineSummary ? (

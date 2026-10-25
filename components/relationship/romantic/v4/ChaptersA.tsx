@@ -58,13 +58,13 @@ export const HeroSection = ({ section, payload, personA, personB, debug }: Secti
             <span className="rounded-full border border-rel-line bg-rel-surface px-3.5 py-1 font-rel-sans text-[11.5px] font-semibold tracking-wide text-rel-ink">
               {isEn ? "Romance · Partnership" : "연애 · 파트너십"}
             </span>
-            <div className="flex items-center gap-2 font-rel-sans text-[13px] font-medium text-rel-ink-soft">
-              <span className="rounded-full bg-v4-a-soft px-3 py-0.5 font-semibold text-v4-a">{personA}</span>
+            <div className="flex max-w-full flex-wrap items-center gap-2 font-rel-sans text-[13px] font-medium text-rel-ink-soft">
+              <span className="max-w-full break-words rounded-full bg-v4-a-soft px-3 py-0.5 font-semibold text-v4-a">{personA}</span>
               <span className="text-rel-ink-mute">×</span>
-              <span className="rounded-full bg-v4-b-soft px-3 py-0.5 font-semibold text-v4-b">{personB}</span>
+              <span className="max-w-full break-words rounded-full bg-v4-b-soft px-3 py-0.5 font-semibold text-v4-b">{personB}</span>
             </div>
           </div>
-          <h1 className="mt-6 font-rel-serif text-[42px] leading-[1.05] tracking-[-0.025em] text-rel-ink sm:text-[62px]">
+          <h1 className="mt-6 break-keep font-rel-serif text-[42px] leading-[1.05] tracking-[-0.025em] text-rel-ink sm:text-[62px]">
             {personA} <span className="text-rel-taupe">&</span> {personB}
           </h1>
         </Reveal>

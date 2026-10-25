@@ -46,7 +46,6 @@ import RelationshipReportCard, {
   RelationshipReportInset,
   FamilyEditorialHero,
 } from "@/components/relationship/familyParent/editorial/familyEditorialAdapter";
-import { PsychMatchRadarChart } from "@/components/relationship/reportLayout";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
 import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
@@ -199,13 +198,27 @@ export function SectionHeader({ title }: { title: string; tag?: string }) {
 function CompareTableCard({
   section,
   names,
+  viewerIsChild,
 }: {
   section: CompareTableSection;
   names: [string, string];
+  viewerIsChild: boolean;
 }) {
   const t = useMessages().relationshipDrilldown.family;
   const { locale } = useLocale();
   const sectionTitle = ec(locale, "◤ Comparing with Innate Tendencies", "◤ 본래의 성향과 비교");
+
+  // Role text (child/parent) never changes, but which side is sky blue
+  // ("나") must track the actual viewer, not a fixed role.
+  const childEntry = {
+    name: `${t.compareTableColChild} · ${names[0]}`,
+    value: (row: CompareTableSection["rows"][number]) => row.personChild.shortLabel,
+  };
+  const parentEntry = {
+    name: `${t.compareTableColParent} · ${names[1]}`,
+    value: (row: CompareTableSection["rows"][number]) => row.personParent.shortLabel,
+  };
+  const [meEntry, partnerEntry] = viewerIsChild ? [childEntry, parentEntry] : [parentEntry, childEntry];
 
   return (
     <div className="mt-10">
@@ -217,10 +230,10 @@ function CompareTableCard({
               <Reveal delay={i * 50}>
                 <VersusStrip
                   label={row.label}
-                  aName={`${t.compareTableColParent} · ${names[1]}`}
-                  bName={`${t.compareTableColChild} · ${names[0]}`}
-                  a={row.personParent.shortLabel}
-                  b={row.personChild.shortLabel}
+                  aName={meEntry.name}
+                  bName={partnerEntry.name}
+                  a={meEntry.value(row)}
+                  b={partnerEntry.value(row)}
                 />
                 <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
                   {row.meaning}
@@ -385,7 +398,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
   );
 }
 
-function PsychRadarCard({ section, names }: { section: PsychRadarSection; names: [string, string] }) {
+function PsychRadarCard({ section }: { section: PsychRadarSection }) {
   const { locale } = useLocale();
   const chartNote = ec(locale, "We compared how you both show up right now across the 11 axes.", "두 분의 현재 모습을 11축으로 비교했어요.");
 
@@ -395,7 +408,7 @@ function PsychRadarCard({ section, names }: { section: PsychRadarSection; names:
         axisResults={section.axisResults}
         highlights={section.highlights}
         chartNote={chartNote}
-        names={names}
+        names={section.viewerFirstNames}
         locale={locale}
       />
     </div>
@@ -851,19 +864,21 @@ type NonSnapshotSection = Exclude<FamilyReportSection, { type: "snapshot" }>;
 export function FamilyReportSectionCard({
   section,
   names,
+  viewerIsChild,
 }: {
   section: NonSnapshotSection;
   names: [string, string];
+  viewerIsChild: boolean;
 }): ReactNode {
   switch (section.type) {
     case "relationship_index":
       return <RelationshipIndexCard section={section} />;
     case "compare_table":
-      return <CompareTableCard section={section} names={names} />;
+      return <CompareTableCard section={section} names={names} viewerIsChild={viewerIsChild} />;
     case "household_roles":
       return <HouseholdRolesCard section={section} />;
     case "psych_radar":
-      return <PsychRadarCard section={section} names={names} />;
+      return <PsychRadarCard section={section} />;
     case "child_dna":
       return <ChildDnaCard section={section} />;
     case "parent_dna":
@@ -931,7 +946,7 @@ export function FamilyReportViewModelView({
       <FamilyEditorialHero
         eyebrow={kindLabel ?? t.defaultKindLabel}
         headline={vm.opening.headline}
-        names={vm.opening.names}
+        names={vm.opening.viewerFirstNames}
       />
       {snapshot ? (() => {
         // Defensive: a cached/DB-persisted snapshot may have a missing
@@ -1246,7 +1261,7 @@ export function FamilyReportViewModelView({
                         <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-rel-line/60">
                           <div className="rounded-xl bg-rel-taupe-soft/25 p-4 border border-rel-line/60">
                             <p className="text-xs font-bold text-rel-ink mb-1">
-                              ▫ {parentName}{ec(locale, " to parent", "에게는")}
+                              {ec(locale, `▫ For ${parentName}`, `▫ ${parentName}에게는`)}
                             </p>
                             <p className="text-xs text-rel-ink-soft leading-relaxed">
                               {card.parentLogic}
@@ -1254,7 +1269,7 @@ export function FamilyReportViewModelView({
                           </div>
                           <div className="rounded-xl bg-rel-taupe-soft/25 p-4 border border-rel-line/60">
                             <p className="text-xs font-bold text-rel-ink mb-1">
-                              {childName}{ec(locale, " to child", "에게는")}
+                              {ec(locale, `For ${childName}`, `${childName}에게는`)}
                             </p>
                             <p className="text-xs text-rel-ink-soft leading-relaxed">
                               {card.childLogic}
@@ -1310,7 +1325,7 @@ export function FamilyReportViewModelView({
                     <div className="mt-4 pt-4 border-t border-v4-bad/20 grid gap-3 sm:grid-cols-2">
                       <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line">
                         <p className="text-[11px] font-bold text-rel-deep uppercase tracking-wider">
-                          {parentName}{ec(locale, " residual feeling", "에게 남는 느낌")}
+                          {ec(locale, `${parentName}'s residual feeling`, `${parentName}에게 남는 느낌`)}
                         </p>
                         <p className="mt-1 text-xs text-rel-ink-soft italic leading-relaxed">
                           {loop?.parentResidualFeeling}
@@ -1318,7 +1333,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line">
                         <p className="text-[11px] font-bold text-rel-deep uppercase tracking-wider">
-                          {childName}{ec(locale, " residual feeling", "에게 남는 느낌")}
+                          {ec(locale, `${childName}'s residual feeling`, `${childName}에게 남는 느낌`)}
                         </p>
                         <p className="mt-1 text-xs text-rel-ink-soft italic leading-relaxed">
                           {loop?.childResidualFeeling}
@@ -1650,7 +1665,7 @@ export function FamilyReportViewModelView({
 
           {/* Mapped Legacy Reusable Content Sections */}
           {chapter.legacySections.map((section) => (
-            <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
+            <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} viewerIsChild={vm.opening.viewerIsChild} />
           ))}
 
           {/* Chapter 04 Bottom: ◤ 사랑을 주고받는 방식 (Rendered AFTER legacy sections: 심리 축 매칭, 인사이트, 본래 성향 비교) */}
@@ -2103,7 +2118,7 @@ export function FamilyReportViewModelView({
       {/* Legacy flat fallback when no editorial chapters */}
       {editorialChapters.length === 0 ? (
         vm.sections.map((section) => (
-          <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
+          <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} viewerIsChild={vm.opening.viewerIsChild} />
         ))
       ) : null}
     </div>
