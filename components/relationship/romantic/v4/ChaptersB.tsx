@@ -54,6 +54,15 @@ export type SectionProps = {
   /** Only used by RepairSection — Repair + Daily Life are merged into one
    * visual chapter, so Repair needs the Daily Life section's data too. */
   dailyLifeSection?: CanonicalSection;
+  /**
+   * Maps a content slot ("a" = personA, "b" = personB) to the NameChip/
+   * PersonTag side that should actually render for it, so "나" always reads
+   * sky blue regardless of which slot the current viewer happens to occupy.
+   * personA/personB text and position never change -- only this color.
+   */
+  colorSide: (s: "a" | "b") => "a" | "b";
+  /** True when personA is the current viewer (viewerIsReportA !== false). */
+  personAIsViewer: boolean;
 };
 
 const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
@@ -64,7 +73,7 @@ const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
 );
 
 /* ── Chapter 6 · Hidden Hearts ────────────────────────────────── */
-export const HiddenHeartsSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
+export const HiddenHeartsSection = ({ section, payload, personA, personB, n, colorSide, debug }: SectionProps) => {
   const hearts = adaptHiddenHearts(section);
   const panels = adaptTranslatorPanels(payload);
   const names = { a: personA, b: personB };
@@ -87,7 +96,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
               <Reveal key={`${p.observer}-${i}`} delay={i * 70}>
                 <div className="overflow-hidden rounded-2xl border border-rel-line bg-rel-surface shadow-sm">
                   <div className="flex flex-wrap items-center gap-2 border-b border-rel-line bg-rel-taupe-soft/50 px-5 py-3">
-                    <PersonTag name={names[p.observer]} side={p.observer} />
+                    <PersonTag name={names[p.observer]} side={colorSide(p.observer)} />
                     <span className="font-rel-sans text-[11.5px] tracking-[0.08em] text-rel-ink-mute">
                       {isEn ? "'s behavior in the moment" : "가 마주하는 행동"}
                     </span>
@@ -135,7 +144,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
             <Reveal key={h.person}>
               <article className="space-y-5">
                 <div>
-                  <PersonTag name={names[h.person]} side={h.person} />
+                  <PersonTag name={names[h.person]} side={colorSide(h.person)} />
                 </div>
 
                 <div className="min-w-0 space-y-7">
@@ -188,7 +197,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
           <SubHeading title={isEn ? "The specific moments you need each other most" : "서로를 가장 절실히 필요로 하는 구체적 순간들"} tag="When Needed Most" tone="deep" />
           <div className="grid gap-6 md:grid-cols-2 text-xs">
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
-              <PersonTag name={personA} side="a" />
+              <PersonTag name={personA} side={colorSide("a")} />
               <p className="font-semibold text-rel-ink mt-1">💡 {isEn ? `When ${personA} needs ${personB}:` : `${josaIGa(personA)} ${josaEulReul(personB)} 필요로 할 때:`}</p>
               {payload.storyPlan.romanticGapBatch.whenWeNeedEachOtherMost.whenANeedsB.map((item, i) => (
                 <div key={i} className="space-y-1">
@@ -198,7 +207,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
               ))}
             </div>
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
-              <PersonTag name={personB} side="b" />
+              <PersonTag name={personB} side={colorSide("b")} />
               <p className="font-semibold text-rel-ink mt-1">💡 {isEn ? `When ${personB} needs ${personA}:` : `${josaIGa(personB)} ${josaEulReul(personA)} 필요로 할 때:`}</p>
               {payload.storyPlan.romanticGapBatch.whenWeNeedEachOtherMost.whenBNeedsA.map((item, i) => (
                 <div key={i} className="space-y-1">
@@ -217,7 +226,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
 };
 
 /* ── Chapter 6 · Repair Guide ─────────────────────────────────── */
-export const RepairSection = ({ section, payload, personA, personB, n, dailyLifeSection, debug }: SectionProps) => {
+export const RepairSection = ({ section, payload, personA, personB, n, dailyLifeSection, colorSide, debug }: SectionProps) => {
   const { steps, helps } = adaptRepair(section);
   const dailyCards = dailyLifeSection ? adaptDailyLife(dailyLifeSection) : [];
   const names = { a: personA, b: personB };
@@ -241,13 +250,13 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
             {helps.map((h, i) => (
               <Reveal key={h.person} delay={i * 70}>
                 <article className="h-full rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm">
-                  <PersonTag name={names[h.person]} side={h.person} />
+                  <PersonTag name={names[h.person]} side={colorSide(h.person)} />
                   <ul className="mt-5 space-y-4">
                     {h.tips.map((tip) => (
                       <li key={tip} className="flex items-start gap-3">
                         <span
                           className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                            h.person === "a" ? "bg-v4-a" : "bg-v4-b"
+                            colorSide(h.person) === "a" ? "bg-v4-a" : "bg-v4-b"
                           }`}
                           aria-hidden
                         />
@@ -271,7 +280,7 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
               <div className="flex items-center gap-2">
-                <PersonTag name={personA} side="a" />
+                <PersonTag name={personA} side={colorSide("a")} />
                 <span className="text-xs text-rel-ink-mute">→ {personB}</span>
               </div>
               <p className="text-xs text-v4-bad font-medium">{isEn ? "Trigger: " : "트리거: "}{payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.trigger}</p>
@@ -284,7 +293,7 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
             </div>
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
               <div className="flex items-center gap-2">
-                <PersonTag name={personB} side="b" />
+                <PersonTag name={personB} side={colorSide("b")} />
                 <span className="text-xs text-rel-ink-mute">→ {personA}</span>
               </div>
               <p className="text-xs text-v4-bad font-medium">{isEn ? "Trigger: " : "트리거: "}{payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.trigger}</p>
@@ -363,7 +372,7 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
 };
 
 /* ── Chapter 7 · What Not to Expect (Former 8.3) ───────────── */
-export const ExpectationsSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
+export const ExpectationsSection = ({ section, payload, personA, personB, n, colorSide, debug }: SectionProps) => {
   const data = payload.storyPlan?.romanticGapBatch?.whatNotToExpect;
   const isEn = payload.locale === "en-US";
 
@@ -394,7 +403,7 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
         <div className={listA.length > 0 && listB.length > 0 ? "grid gap-6 md:grid-cols-2" : "grid gap-6"}>
           {listA.length > 0 ? (
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
-              <PersonTag name={personA} side="a" />
+              <PersonTag name={personA} side={colorSide("a")} />
               <p className="text-xs font-semibold text-rel-ink mt-1">{isEn ? `Expectations for ${personA} to let go of toward ${personB}:` : `${josaIGa(personA)} ${josaEge(personB)} 내려놓아야 할 기대:`}</p>
               <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
                 {listA.map((item, i) => (
@@ -405,7 +414,7 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
           ) : null}
           {listB.length > 0 ? (
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
-              <PersonTag name={personB} side="b" />
+              <PersonTag name={personB} side={colorSide("b")} />
               <p className="text-xs font-semibold text-rel-ink mt-1">{isEn ? `Expectations for ${personB} to let go of toward ${personA}:` : `${josaIGa(personB)} ${josaEge(personA)} 내려놓아야 할 기대:`}</p>
               <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
                 {listB.map((item, i) => (
@@ -422,7 +431,7 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
 };
 
 /* ── Chapter 8 · Strength & Vulnerability ─────────────────────── */
-export const StrengthVulnerabilitySection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
+export const StrengthVulnerabilitySection = ({ section, payload, personA, personB, n, colorSide, debug }: SectionProps) => {
   const { gives, sharedStrength, sharedVulnerability } = adaptStrength(section, payload);
   const names = { a: personA, b: personB };
   const isEn = payload.locale === "en-US";
@@ -461,9 +470,9 @@ export const StrengthVulnerabilitySection = ({ section, payload, personA, person
             <Reveal key={`${g.from}-${g.to}`} delay={i * 80}>
               <article className="h-full rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm sm:p-7">
                 <div className="flex flex-wrap items-center gap-2">
-                  <PersonTag name={names[g.from]} side={g.from} />
+                  <PersonTag name={names[g.from]} side={colorSide(g.from)} />
                   <ArrowRight className="h-3.5 w-3.5 text-rel-ink-mute" strokeWidth={1.5} />
-                  <PersonTag name={names[g.to]} side={g.to} />
+                  <PersonTag name={names[g.to]} side={colorSide(g.to)} />
                 </div>
                 <p className="mt-4 font-rel-sans text-[14.5px] leading-[1.85] text-rel-ink-soft">
                   {g.body}
@@ -578,7 +587,7 @@ export const FutureTimingSection = ({ section, payload, n, debug }: SectionProps
 };
 
 /* ── Chapter 09 · Choice ──────────────────────────────────────── */
-export const ChoiceSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
+export const ChoiceSection = ({ section, payload, personA, personB, n, colorSide, debug }: SectionProps) => {
   const { possibility, remember, watchSignals, improvingSignals, cautionSignals } = adaptChoice(
     section,
     payload,
@@ -613,7 +622,7 @@ export const ChoiceSection = ({ section, payload, personA, personB, n, debug }: 
                 key={r.person}
                 className="rounded-2xl border-l-2 border-l-rel-taupe bg-rel-surface px-6 py-5 shadow-sm"
               >
-                <PersonTag name={names[r.person]} side={r.person} />
+                <PersonTag name={names[r.person]} side={colorSide(r.person)} />
                 <p className="mt-3 font-rel-serif text-[17.5px] leading-[1.75] text-rel-ink sm:text-[19px]">
                   {r.line}
                 </p>

@@ -433,6 +433,7 @@ export function VersusStrip({
   bName,
   a,
   b,
+  colorSwap = false,
 }: {
   icon?: string;
   label: string;
@@ -440,7 +441,17 @@ export function VersusStrip({
   bName: string;
   a: string;
   b: string;
+  /**
+   * aName/a stay on the left and bName/b on the right either way -- this
+   * only swaps which side's text renders v4-a (sky blue) vs v4-b (cream),
+   * for callers whose aName/bName are tied to a fixed content slot rather
+   * than the viewer (e.g. romantic v4, where the left/right position is the
+   * generation-time slot order but color must track the live viewer).
+   */
+  colorSwap?: boolean;
 }) {
+  const leftCls = colorSwap ? "text-v4-b" : "text-v4-a";
+  const rightCls = colorSwap ? "text-v4-a" : "text-v4-b";
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -455,7 +466,7 @@ export function VersusStrip({
       </div>
       <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <div className="min-w-0">
-          <span className="block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] text-v4-a">
+          <span className={`block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] ${leftCls}`}>
             {aName}
           </span>
           <p className="mt-1 font-rel-sans text-[13.5px] leading-[1.6] text-rel-ink">{a}</p>
@@ -464,7 +475,7 @@ export function VersusStrip({
           ↔
         </span>
         <div className="min-w-0 text-right">
-          <span className="block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] text-v4-b">
+          <span className={`block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] ${rightCls}`}>
             {bName}
           </span>
           <p className="mt-1 font-rel-sans text-[13.5px] leading-[1.6] text-rel-ink">{b}</p>

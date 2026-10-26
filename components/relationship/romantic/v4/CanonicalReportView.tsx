@@ -205,6 +205,18 @@ export function CanonicalReportView({
   if (a === "나") a = meFallback;
   if (b === "상대") b = partnerFallback;
 
+  // personA/personB (and every chapter's prose/evidence keyed off "a"/"b")
+  // stay tied to the generation-time slot -- that's what the baked narrative
+  // text actually describes, and swapping it would desync names from the
+  // sentences underneath them. Color is a separate, purely-visual concern:
+  // "나" must always read sky blue regardless of which slot the viewer
+  // happens to occupy. colorSide() is the one place that translates a
+  // content-slot ("a"/"b", i.e. "whichever is personA/personB") into the
+  // NameChip/PersonTag side that actually renders the viewer's color.
+  const personAIsViewer = viewerIsReportA !== false;
+  const colorSide = (s: "a" | "b"): "a" | "b" =>
+    personAIsViewer ? s : s === "a" ? "b" : "a";
+
   const sectionProps = (s: CanonicalSection) => ({
     section: s,
     payload,
@@ -212,6 +224,8 @@ export function CanonicalReportView({
     personB: b,
     n: chapterNumbers[s.chapterId],
     debug,
+    colorSide,
+    personAIsViewer,
     ...(s.chapterId === "c7_repair" ? { dailyLifeSection } : {}),
   });
 

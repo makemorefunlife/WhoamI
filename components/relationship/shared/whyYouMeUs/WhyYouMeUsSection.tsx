@@ -34,6 +34,15 @@ export type WhyYouMeUsSectionProps = {
   names: { a: string; b: string };
   locale: Locale;
   children?: React.ReactNode;
+  /**
+   * Maps a content slot ("a"/"b", i.e. which of `names` a block is about) to
+   * the side that should actually render blue/cream. Defaults to identity --
+   * correct for callers whose `names` is already viewer-first (friend:
+   * vm.opening.names = [myName, partnerName]). Romantic v4 passes its own
+   * viewer-aware mapping because its `names` stay tied to the generation
+   * slot instead (the body prose bakes those names in verbatim).
+   */
+  colorSide?: (s: "a" | "b") => "a" | "b";
 };
 
 export function WhyYouMeUsSection({
@@ -45,6 +54,7 @@ export function WhyYouMeUsSection({
   names,
   locale,
   children,
+  colorSide = (s) => s,
 }: WhyYouMeUsSectionProps) {
   const dirs = [data.whyYou, data.whyMe];
   const hasHeader = Boolean(n || (eyebrow && eyebrow.trim() !== "") || (title && title.trim() !== ""));
@@ -76,13 +86,13 @@ export function WhyYouMeUsSection({
           <Reveal key={`${d.from}-${d.to}`} delay={i * 80}>
             <article
               className={`h-full rounded-2xl border bg-rel-surface p-6 shadow-sm sm:p-7 ${
-                d.from === "a" ? "border-v4-a/25" : "border-v4-b/30"
+                colorSide(d.from) === "a" ? "border-v4-a/25" : "border-v4-b/30"
               }`}
             >
               <div className="flex flex-wrap items-center gap-2 font-rel-sans text-[11px] tracking-[0.1em] text-rel-ink-mute">
-                <PersonTag name={names[d.from]} side={d.from} />
+                <PersonTag name={names[d.from]} side={colorSide(d.from)} />
                 <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-                <PersonTag name={names[d.to]} side={d.to} />
+                <PersonTag name={names[d.to]} side={colorSide(d.to)} />
               </div>
               <h3 className="mt-4 font-rel-serif text-[20px] leading-[1.35] tracking-[-0.01em] text-rel-ink">
                 {getDisplayTitle(d.title, d.from)}
@@ -91,12 +101,12 @@ export function WhyYouMeUsSection({
               {d.scene && (
                 <div
                   className={`mt-4 rounded-xl px-4 py-3 ${
-                    d.from === "a" ? "bg-v4-a-soft" : "bg-v4-b-soft"
+                    colorSide(d.from) === "a" ? "bg-v4-a-soft" : "bg-v4-b-soft"
                   }`}
                 >
                   <div
                     className={`font-rel-sans text-[10px] uppercase tracking-[0.16em] ${
-                      d.from === "a" ? "text-v4-a" : "text-v4-b"
+                      colorSide(d.from) === "a" ? "text-v4-a" : "text-v4-b"
                     }`}
                   >
                     {ec(locale, "What this looks like", "이럴 때, 이런 모습")}
@@ -110,7 +120,7 @@ export function WhyYouMeUsSection({
                     <li key={s} className="flex items-start gap-2.5">
                       <span
                         className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                          d.from === "a" ? "bg-v4-a" : "bg-v4-b"
+                          colorSide(d.from) === "a" ? "bg-v4-a" : "bg-v4-b"
                         }`}
                         aria-hidden
                       />

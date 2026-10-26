@@ -37,6 +37,15 @@ export type SectionProps = {
   /** Sequential "01".."08" position among the core numbered chapters, computed once in CanonicalReportView.tsx — omit for chapters outside that sequence. */
   n?: string;
   debug?: boolean;
+  /**
+   * Maps a content slot ("a" = personA, "b" = personB) to the NameChip/
+   * PersonTag side that should actually render for it, so "나" always reads
+   * sky blue regardless of which slot the current viewer happens to occupy.
+   * personA/personB text and position never change -- only this color.
+   */
+  colorSide: (s: "a" | "b") => "a" | "b";
+  /** True when personA is the current viewer (viewerIsReportA !== false). */
+  personAIsViewer: boolean;
 };
 
 const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
@@ -47,9 +56,11 @@ const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
 );
 
 /* ── Chapter 1 · Hero / Essence ─────────────────────────────── */
-export const HeroSection = ({ section, payload, personA, personB, debug }: SectionProps) => {
+export const HeroSection = ({ section, payload, personA, personB, colorSide, debug }: SectionProps) => {
   const hero = adaptHero(section);
   const isEn = payload.locale === "en-US";
+  const aCls = colorSide("a") === "a" ? "bg-v4-a-soft text-v4-a" : "bg-v4-b-soft text-v4-b";
+  const bCls = colorSide("b") === "a" ? "bg-v4-a-soft text-v4-a" : "bg-v4-b-soft text-v4-b";
   return (
     <section id={section.chapterId} className="relative overflow-hidden scroll-mt-20 bg-rel-bg">
       <div className="relative mx-auto w-full max-w-[880px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20">
@@ -59,9 +70,9 @@ export const HeroSection = ({ section, payload, personA, personB, debug }: Secti
               {isEn ? "Romance · Partnership" : "연애 · 파트너십"}
             </span>
             <div className="flex max-w-full flex-wrap items-center gap-2 font-rel-sans text-[13px] font-medium text-rel-ink-soft">
-              <span className="max-w-full break-words rounded-full bg-v4-a-soft px-3 py-0.5 font-semibold text-v4-a">{personA}</span>
+              <span className={`max-w-full break-words rounded-full px-3 py-0.5 font-semibold ${aCls}`}>{personA}</span>
               <span className="text-rel-ink-mute">×</span>
-              <span className="max-w-full break-words rounded-full bg-v4-b-soft px-3 py-0.5 font-semibold text-v4-b">{personB}</span>
+              <span className={`max-w-full break-words rounded-full px-3 py-0.5 font-semibold ${bCls}`}>{personB}</span>
             </div>
           </div>
           <h1 className="mt-6 break-keep font-rel-serif text-[42px] leading-[1.05] tracking-[-0.025em] text-rel-ink sm:text-[62px]">
@@ -89,7 +100,7 @@ export const HeroSection = ({ section, payload, personA, personB, debug }: Secti
 };
 
 /* ── Chapter 2 · Attraction ─────────────────────────────────── */
-export const AttractionSection = ({ payload, section, personA, personB, n, debug }: SectionProps) => {
+export const AttractionSection = ({ payload, section, personA, personB, n, colorSide, debug }: SectionProps) => {
   const data = adaptAttraction(section, payload);
   const names = { a: personA, b: personB };
   const isEn = payload.locale === "en-US";
@@ -103,6 +114,7 @@ export const AttractionSection = ({ payload, section, personA, personB, n, debug
       data={{ ...data, moment: undefined }}
       names={names}
       locale={payload.locale}
+      colorSide={colorSide}
     >
       {/* Former 8.4 moved into Chapter 02: Long-Term Bond (KEEP DOING & RITUAL only) */}
       {payload.storyPlan?.romanticGapBatch?.longTermBond ? (
@@ -220,7 +232,7 @@ function FlowArrow({ loop = false }: { loop?: boolean }) {
   );
 }
 
-export const ConflictSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
+export const ConflictSection = ({ section, payload, personA, personB, n, colorSide, debug }: SectionProps) => {
   const data = adaptConflict(section, payload);
   const names = { a: personA, b: personB };
   const isEn = payload.locale === "en-US";
@@ -270,7 +282,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
       {payload.storyPlan?.romanticGapBatch?.conflictTransitions && !payload.storyPlan.romanticGapBatch.conflictTransitions.sharedBaseline ? (
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
-            <PersonTag name={personA} side="a" />
+            <PersonTag name={personA} side={colorSide("a")} />
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
               <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">{isEn ? "1. Day to day" : "1. 평소의 모습"}</span>
               <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
@@ -279,7 +291,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
             </div>
           </div>
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
-            <PersonTag name={personB} side="b" />
+            <PersonTag name={personB} side={colorSide("b")} />
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
               <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">{isEn ? "1. Day to day" : "1. 평소의 모습"}</span>
               <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
@@ -297,7 +309,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
             {data.pairs.map((p, i) => (
               <Reveal key={p.person} delay={i * 80}>
                 <div className="h-full rounded-2xl border border-rel-line bg-rel-surface p-5 shadow-sm">
-                  <PersonTag name={names[p.person]} side={p.person} />
+                  <PersonTag name={names[p.person]} side={colorSide(p.person)} />
                   <p className="mt-3 font-rel-sans text-[14px] leading-[1.75] text-rel-ink">
                     {p.does}
                   </p>
@@ -354,8 +366,16 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
 };
 
 /* ── Chapter 5 · Difference & Misunderstanding ────────────────── */
-export const MisunderstandingSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
-  const axes = adaptRadarAxes(payload) as any[]; // Cast to bypass TS excess property checking if strict
+export const MisunderstandingSection = ({ section, payload, personA, personB, n, colorSide, personAIsViewer, debug }: SectionProps) => {
+  const rawAxes = adaptRadarAxes(payload) as any[]; // Cast to bypass TS excess property checking if strict
+  // The radar polygon colors are hardcoded (PERSON_A_FILL = blue, PERSON_B_FILL
+  // = cream) inside PsychMatchRadarChart, keyed off score_a/score_b -- so to
+  // make the blue polygon always show the viewer's own scores, the scores
+  // (not just the label) must swap when the viewer isn't personA.
+  const axes = personAIsViewer
+    ? rawAxes
+    : rawAxes.map((ax) => ({ ...ax, a: ax.b, b: ax.a, score_a: ax.score_b, score_b: ax.score_a }));
+  const radarNames: [string, string] = personAIsViewer ? [personA, personB] : [personB, personA];
   const highlights = adaptRadarHighlights(payload, personA, personB);
   const compare = payload.comparisonTable;
   const isEn = payload.locale === "en-US";
@@ -375,7 +395,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
             axisResults={axes}
             highlights={highlights}
             chartNote=""
-            names={[personA, personB]}
+            names={radarNames}
             locale={payload.locale}
           />
         </div>
@@ -389,7 +409,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
             {compare.map((row, i) => (
               <li key={row.rowId}>
                 <Reveal delay={i * 50}>
-                  <VersusStrip label={row.relationshipQuestion} aName={personA} bName={personB} a={row.personA} b={row.personB} />
+                  <VersusStrip label={row.relationshipQuestion} aName={personA} bName={personB} a={row.personA} b={row.personB} colorSwap={!personAIsViewer} />
                   <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
                     {row.relationshipManifestation}
                   </p>
@@ -413,13 +433,13 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
           <p className="text-xs text-rel-ink-mute">{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.summary}</p>
           <div className="grid gap-6 md:grid-cols-2 text-xs">
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
-              <PersonTag name={personA} side="a" />
+              <PersonTag name={personA} side={colorSide("a")} />
               <p className="text-rel-ink font-medium mt-1">{isEn ? "Wants to receive: " : "받고 싶은 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>
               <p className="text-rel-ink-soft">{isEn ? "Actually gives: " : "실제 주는 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.givenLove}</p>
               <p className="text-rel-deep italic">· {isEn ? "How their partner receives it: " : "상대가 받아들이는 방식: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
             </div>
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
-              <PersonTag name={personB} side="b" />
+              <PersonTag name={personB} side={colorSide("b")} />
               <p className="text-rel-ink font-medium mt-1">{isEn ? "Wants to receive: " : "받고 싶은 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.wantedLove}</p>
               <p className="text-rel-ink-soft">{isEn ? "Actually gives: " : "실제 주는 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.givenLove}</p>
               <p className="text-rel-deep italic">· {isEn ? "How their partner receives it: " : "상대가 받아들이는 방식: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
