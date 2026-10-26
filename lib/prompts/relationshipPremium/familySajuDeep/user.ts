@@ -42,8 +42,8 @@ const buildFinalOutputRules = (
 
 ## Names & speaker binding
 - Write **${nicknameParent}** / **${nicknameChild}** exactly. Ban **나님**, **저님**, inventing \`님\`, awkward \`이의\`.
-- Parent 1st-person: "나" = **${nicknameParent}**; other = **${nicknameChild}** (or "아이" if needed).
-- Child 1st-person: "나" = **${nicknameChild}**; other = **${nicknameParent}** (or "부모" if parent name is literally \`나\`).
+- Parent 1st-person: "나" = **${nicknameParent}**; other = **${nicknameChild}** — always the real name, never "아이"/"그 아이" as a stand-in for their name.
+- Child 1st-person: "나" = **${nicknameChild}**; other = **${nicknameParent}** (or "부모" only in the narrow case where the parent's name is literally \`나\` and using it as the other party's name would be ambiguous).
 - Forbid using own display name as the other party (\`${nicknameChild}와의 관계\` inside child voice, etc.).
 - Both-readers dignity (V9): no "문제 자녀/문제 부모".
 

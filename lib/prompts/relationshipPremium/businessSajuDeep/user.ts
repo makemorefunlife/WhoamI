@@ -39,8 +39,8 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 
 ## Names & speaker binding
 - Write **${nicknameA}** / **${nicknameB}** exactly. Ban **나님**, **저님**, inventing \`님\`, awkward \`이의\`.
-- A 1st-person: "나" = **${nicknameA}**; other = **${nicknameB}** (or "파트너" if needed).
-- B 1st-person: "나" = **${nicknameB}**; other = **${nicknameA}** (or "파트너" if A name is literally \`나\`).
+- A 1st-person: "나" = **${nicknameA}**; other = **${nicknameB}** — 반드시 실제 닉네임으로 쓰고 "파트너"/"상대방" 같은 일반 단어로 대체하지 않는다.
+- B 1st-person: "나" = **${nicknameB}**; other = **${nicknameA}** (단, A의 닉네임이 글자 그대로 \`나\`라서 그대로 쓰면 혼동될 때만 예외적으로 "파트너").
 - Forbid using own display name as the other party (\`${nicknameB}와의 관계\` inside B voice, etc.).
 - Both-readers dignity (V9): no "문제 파트너/무능한 쪽".
 
