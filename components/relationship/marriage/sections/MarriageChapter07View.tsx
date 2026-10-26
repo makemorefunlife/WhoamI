@@ -9,6 +9,7 @@ interface Props {
   ch07?: MarriageChapter07Intelligence;
   canonicalNames: [string, string];
   isEn?: boolean;
+  viewerIsReportA: boolean;
 }
 
 /**
@@ -17,8 +18,16 @@ interface Props {
  * DESIGN UNIFICATION: Subtitles render OUTSIDE and ABOVE content blocks.
  * Content renders inside separate dedicated white blocks underneath.
  */
-export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
+export function MarriageChapter07View({ ch07, canonicalNames, isEn, viewerIsReportA }: Props) {
   if (!ch07) return null;
+
+  // canonicalNames is fixed report-slot A/B -- matching a name against
+  // canonicalNames[0] only tells you WHICH SLOT it is, not whether that
+  // slot is the viewer. The sky-blue "나" side must also account for
+  // viewerIsReportA, or slot A always rendered blue even when the viewer
+  // was actually slot B.
+  const sideFor = (name: string): "a" | "b" =>
+    (name === canonicalNames[0]) === viewerIsReportA ? "a" : "b";
 
   const {
     introNarrative,
@@ -51,7 +60,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[section01_journey.personA, section01_journey.personB].map((journey, idx) => {
-              const side = journey.personName === canonicalNames[0] ? "a" : "b";
+              const side = sideFor(journey.personName);
               return (
                 <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
                   <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/50 pb-2">
@@ -107,11 +116,11 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
               <div className="rounded bg-white p-3 border border-[#e6e2dc]/60 space-y-1">
-                <NameChip name={section02_conflictLoop.personAStep.name} side={section02_conflictLoop.personAStep.name === canonicalNames[0] ? "a" : "b"} />
+                <NameChip name={section02_conflictLoop.personAStep.name} side={sideFor(section02_conflictLoop.personAStep.name)} />
                 <p className="text-[#5e5b56] leading-relaxed pt-1">{section02_conflictLoop.personAStep.flow}</p>
               </div>
               <div className="rounded bg-white p-3 border border-[#e6e2dc]/60 space-y-1">
-                <NameChip name={section02_conflictLoop.personBStep.name} side={section02_conflictLoop.personBStep.name === canonicalNames[0] ? "a" : "b"} />
+                <NameChip name={section02_conflictLoop.personBStep.name} side={sideFor(section02_conflictLoop.personBStep.name)} />
                 <p className="text-[#5e5b56] leading-relaxed pt-1">{section02_conflictLoop.personBStep.flow}</p>
               </div>
             </div>
@@ -137,7 +146,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[section03_hurtPoint.personA, section03_hurtPoint.personB].map((hurt, idx) => {
-              const side = hurt.personName === canonicalNames[0] ? "a" : "b";
+              const side = sideFor(hurt.personName);
               return (
                 <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -173,7 +182,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[section04_repair.personA, section04_repair.personB].map((repair, idx) => {
-              const side = repair.personName === canonicalNames[0] ? "a" : "b";
+              const side = sideFor(repair.personName);
               return (
                 <div key={idx} className="rounded-lg border border-[#d6e2d8] bg-[#f4f7f4] p-4 space-y-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -217,8 +226,8 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
               section05_expectationsToRelease.expectationAtoB,
               section05_expectationsToRelease.expectationBtoA,
             ].map((exp, idx) => {
-              const sideFrom = exp.fromName === canonicalNames[0] ? "a" : "b";
-              const sideTo = exp.toName === canonicalNames[0] ? "a" : "b";
+              const sideFrom = sideFor(exp.fromName);
+              const sideTo = sideFor(exp.toName);
               return (
                 <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -294,9 +303,9 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
             {/* Action A -> B */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/50 pb-2 flex-wrap">
-                <NameChip name={section07_directionalActions.actionAtoB.actorName} side={section07_directionalActions.actionAtoB.actorName === canonicalNames[0] ? "a" : "b"} />
+                <NameChip name={section07_directionalActions.actionAtoB.actorName} side={sideFor(section07_directionalActions.actionAtoB.actorName)} />
                 <span className="text-xs font-bold text-[#2c2b29]">→</span>
-                <NameChip name={section07_directionalActions.actionAtoB.targetName} side={section07_directionalActions.actionAtoB.targetName === canonicalNames[0] ? "a" : "b"} />
+                <NameChip name={section07_directionalActions.actionAtoB.targetName} side={sideFor(section07_directionalActions.actionAtoB.targetName)} />
                 <span className="text-xs font-bold text-[#2c2b29]">
                   {isEn ? " action guide" : "에게 지켜줘야 할 행동"}
                 </span>
@@ -337,9 +346,9 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
             {/* Action B -> A */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/50 pb-2 flex-wrap">
-                <NameChip name={section07_directionalActions.actionBtoA.actorName} side={section07_directionalActions.actionBtoA.actorName === canonicalNames[0] ? "a" : "b"} />
+                <NameChip name={section07_directionalActions.actionBtoA.actorName} side={sideFor(section07_directionalActions.actionBtoA.actorName)} />
                 <span className="text-xs font-bold text-[#2c2b29]">→</span>
-                <NameChip name={section07_directionalActions.actionBtoA.targetName} side={section07_directionalActions.actionBtoA.targetName === canonicalNames[0] ? "a" : "b"} />
+                <NameChip name={section07_directionalActions.actionBtoA.targetName} side={sideFor(section07_directionalActions.actionBtoA.targetName)} />
                 <span className="text-xs font-bold text-[#2c2b29]">
                   {isEn ? " action guide" : "에게 지켜줘야 할 행동"}
                 </span>

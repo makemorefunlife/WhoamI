@@ -496,6 +496,21 @@ export function buildWorkReportViewModel(
   const synergyPct = snap?.synergy_pct ?? (report.meta?.synergy_pct ?? 75);
   const riskPct = snap?.risk_pct ?? (report.meta?.risk_pct ?? 20);
 
+  // person_core.{psych,saju_chart,work_signals}_a/b are keyed by report SLOT
+  // (a = report_id_a), fixed at generation time -- independent of who's
+  // currently viewing. The bundle builders below are keyed by nameA/nameB =
+  // myName/partnerName (viewer-relative). Passing the raw slot-A/B data
+  // through unswapped silently paired the viewer's own name with the
+  // PARTNER's psych/saju/work-signal data (and vice versa) whenever the
+  // viewer was report slot B. Reorder to viewer-first once, here.
+  const personCore = report.meta?.person_core as any;
+  const viewerPsych = (viewerIsReportA ? personCore?.psych_a : personCore?.psych_b) ?? null;
+  const partnerPsych = (viewerIsReportA ? personCore?.psych_b : personCore?.psych_a) ?? null;
+  const viewerSajuChart = (viewerIsReportA ? personCore?.saju_chart_a : personCore?.saju_chart_b) ?? null;
+  const partnerSajuChart = (viewerIsReportA ? personCore?.saju_chart_b : personCore?.saju_chart_a) ?? null;
+  const viewerWorkSignals = (viewerIsReportA ? personCore?.work_signals_a : personCore?.work_signals_b) ?? null;
+  const partnerWorkSignals = (viewerIsReportA ? personCore?.work_signals_b : personCore?.work_signals_a) ?? null;
+
   const overviewChapterBundle = buildWorkOverviewChapterBundle({
     nameA: myName,
     nameB: partnerName,
@@ -503,31 +518,32 @@ export function buildWorkReportViewModel(
     fitPct,
     synergyPct,
     riskPct,
-    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    psychA: viewerPsych,
+    psychB: partnerPsych,
   });
 
   const individualWorkBundle = buildIndividualWorkChapterBundle({
     nameA: myName,
     nameB: partnerName,
     locale,
-    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+    psychA: viewerPsych,
+    psychB: partnerPsych,
+    sajuChartA: viewerSajuChart,
+    sajuChartB: partnerSajuChart,
     officeReport: report as any,
+    viewerIsReportA,
   });
 
   const communicationChapterBundle = buildWorkCommunicationChapterBundle({
     nameA: myName,
     nameB: partnerName,
     locale,
-    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
-    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
-    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+    psychA: viewerPsych,
+    psychB: partnerPsych,
+    sajuChartA: viewerSajuChart,
+    sajuChartB: partnerSajuChart,
+    workSignalsA: viewerWorkSignals,
+    workSignalsB: partnerWorkSignals,
     officeReport: report as any,
   });
 
@@ -536,12 +552,12 @@ export function buildWorkReportViewModel(
     nameB: partnerName,
     locale,
     individualWorkBundle,
-    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
-    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
-    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+    psychA: viewerPsych,
+    psychB: partnerPsych,
+    sajuChartA: viewerSajuChart,
+    sajuChartB: partnerSajuChart,
+    workSignalsA: viewerWorkSignals,
+    workSignalsB: partnerWorkSignals,
   });
 
   const conflictChapterBundle = buildWorkConflictChapterBundle({
@@ -551,12 +567,12 @@ export function buildWorkReportViewModel(
     individualWorkBundle,
     communicationChapterBundle,
     pressureChapterBundle,
-    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
-    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
-    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+    psychA: viewerPsych,
+    psychB: partnerPsych,
+    sajuChartA: viewerSajuChart,
+    sajuChartB: partnerSajuChart,
+    workSignalsA: viewerWorkSignals,
+    workSignalsB: partnerWorkSignals,
   });
 
   const playbookChapterBundle = buildWorkPlaybookChapterBundle({
@@ -567,12 +583,12 @@ export function buildWorkReportViewModel(
     communicationChapterBundle,
     pressureChapterBundle,
     conflictChapterBundle,
-    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
-    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
-    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+    psychA: viewerPsych,
+    psychB: partnerPsych,
+    sajuChartA: viewerSajuChart,
+    sajuChartB: partnerSajuChart,
+    workSignalsA: viewerWorkSignals,
+    workSignalsB: partnerWorkSignals,
   });
 
   storyPlan = {

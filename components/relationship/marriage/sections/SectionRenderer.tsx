@@ -508,15 +508,19 @@ function CoupleActionPlanBlock({ plan }: { plan: CoupleActionPlanSection }) {
   );
 }
 
-function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; names?: [string, string] }) {
+function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
   const ch05 = section.ch05Intelligence;
   const { locale } = useLocale();
   const isEn = locale === "en-US";
 
   if (!ch05) return null;
 
-  const nameA = names ? names[0] : "Person A";
-  const nameB = names ? names[1] : "Person B";
+  // ch05Intelligence's *A/*B fields are keyed to report slots (section.nameA/B),
+  // not to the viewer -- using the viewer-first `names` prop here used to
+  // label the partner's actual spending/asset data as the viewer's own
+  // whenever the viewer was report slot B.
+  const nameA = section.nameA || "Person A";
+  const nameB = section.nameB || "Person B";
 
   return (
     <div className="space-y-6">
@@ -875,15 +879,25 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
   );
 }
 
-function ParentingCard({ section, names }: { section: ParentingSection; names?: [string, string] }) {
+function ParentingCard({ section, viewerIsReportA }: { section: ParentingSection; viewerIsReportA: boolean }) {
   const ch06 = section.ch06Intelligence;
   const { locale } = useLocale();
   const isEn = locale === "en-US";
 
   if (!ch06) return null;
 
-  const nameA = names ? names[0] : "Person A";
-  const nameB = names ? names[1] : "Person B";
+  // ch06Intelligence's *A/*B fields (reactionA/B below) are keyed to report
+  // slots (section.nameA/B), not to the viewer -- using the viewer-first
+  // `names` prop here used to label the partner's actual reaction as the
+  // viewer's own whenever the viewer was report slot B.
+  const nameA = section.nameA || "Person A";
+  const nameB = section.nameB || "Person B";
+  // profileA/profileB below always refer to report slot A/B and already
+  // carry their own correctly-paired personName -- but the sky-blue "나"
+  // color must track whichever slot the actual viewer occupies, not always
+  // slot A.
+  const colorForSlotA = viewerIsReportA ? "text-v4-a" : "text-v4-b";
+  const colorForSlotB = viewerIsReportA ? "text-v4-b" : "text-v4-a";
 
   return (
     <div className="space-y-6">
@@ -894,7 +908,7 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
           <div className="grid gap-3 text-xs sm:grid-cols-2">
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
               <span className="font-bold block">
-                <span className="text-v4-a">{ch06.coupleBoundary.profileA.personName}</span> | <span className="text-v4-good">{ch06.coupleBoundary.profileA.editorialLabel}</span>
+                <span className={colorForSlotA}>{ch06.coupleBoundary.profileA.personName}</span> | <span className="text-v4-good">{ch06.coupleBoundary.profileA.editorialLabel}</span>
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {ch06.coupleBoundary.profileA.narrative}
@@ -902,7 +916,7 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
             </div>
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
               <span className="font-bold block">
-                <span className="text-v4-b">{ch06.coupleBoundary.profileB.personName}</span> | <span className="text-v4-good">{ch06.coupleBoundary.profileB.editorialLabel}</span>
+                <span className={colorForSlotB}>{ch06.coupleBoundary.profileB.personName}</span> | <span className="text-v4-good">{ch06.coupleBoundary.profileB.editorialLabel}</span>
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {ch06.coupleBoundary.profileB.narrative}
@@ -1079,18 +1093,24 @@ function WeatherForecastCard({ section }: { section: WeatherForecastSection }) {
 
 // ---- Part 5: 부부싸움 해독제 + 실전 처방 -------------------------------------
 
-function PrivacyCard({ section }: { section: PrivacySection }) {
+function PrivacyCard({ section, viewerIsReportA }: { section: PrivacySection; viewerIsReportA: boolean }) {
   const t = useMessages().relationshipDrilldown.cohabitation;
+  // personAPrivateLine/personBPrivateLine are report-slot (A/B) data, not
+  // viewer-relative -- labeling slot A as "My privacy line" unconditionally
+  // showed the partner's own line as if it were the viewer's whenever the
+  // viewer was report slot B.
+  const myLine = viewerIsReportA ? section.personAPrivateLine : section.personBPrivateLine;
+  const partnerLine = viewerIsReportA ? section.personBPrivateLine : section.personAPrivateLine;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
         <div>
           <RelationshipReportLabel>{t.myPrivacyLineLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">{section.personAPrivateLine}</RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-1.5">{myLine}</RelationshipReportParagraph>
         </div>
         <div>
           <RelationshipReportLabel>{t.partnerPrivacyLineLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">{section.personBPrivateLine}</RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-1.5">{partnerLine}</RelationshipReportParagraph>
         </div>
       </RelationshipReportBody>
     </RelationshipReportCard>
@@ -1399,12 +1419,19 @@ function Chapter03SubstantiveCard({
   bundle,
   names,
   isEn,
+  viewerIsReportA,
 }: {
   bundle?: MarriageCanonicalBundle;
   names: [string, string];
   isEn: boolean;
+  viewerIsReportA: boolean;
 }) {
   const ch03 = bundle?.chapter03Intelligence ?? createDefaultMarriageChapter03Intelligence(names[0], names[1], isEn);
+  // names here is vm.canonicalNames -- fixed report-slot A/B, not the
+  // viewer-first pair -- so personARole/personBRole's sky-blue "나" color
+  // must be picked based on viewerIsReportA, never fixed to slot A.
+  const colorForSlotA = viewerIsReportA ? "text-v4-a" : "text-v4-b";
+  const colorForSlotB = viewerIsReportA ? "text-v4-b" : "text-v4-a";
 
   return (
     <div className="space-y-6 mb-6">
@@ -1449,12 +1476,12 @@ function Chapter03SubstantiveCard({
             <p className="text-xs leading-relaxed text-rel-ink font-medium">{ch03.roleLockIn.pairSummary}</p>
             <div className="grid gap-3 sm:grid-cols-2 pt-2 border-t border-rel-line/60">
               <div className="space-y-1 bg-rel-taupe-soft/30 p-3 rounded-lg border border-rel-line">
-                <span className="text-xs font-bold text-v4-a">{ch03.roleLockIn.personARole.personName}: {ch03.roleLockIn.personARole.roleTitle}</span>
+                <span className={`text-xs font-bold ${colorForSlotA}`}>{ch03.roleLockIn.personARole.personName}: {ch03.roleLockIn.personARole.roleTitle}</span>
                 <p className="text-[11px] text-rel-ink-soft">{ch03.roleLockIn.personARole.whyFormed}</p>
                 <p className="text-[11px] text-v4-bad">▫ {ch03.roleLockIn.personARole.riskWhenLocked}</p>
               </div>
               <div className="space-y-1 bg-rel-taupe-soft/30 p-3 rounded-lg border border-rel-line">
-                <span className="text-xs font-bold text-v4-b">{ch03.roleLockIn.personBRole.personName}: {ch03.roleLockIn.personBRole.roleTitle}</span>
+                <span className={`text-xs font-bold ${colorForSlotB}`}>{ch03.roleLockIn.personBRole.personName}: {ch03.roleLockIn.personBRole.roleTitle}</span>
                 <p className="text-[11px] text-rel-ink-soft">{ch03.roleLockIn.personBRole.whyFormed}</p>
                 <p className="text-[11px] text-v4-bad">▫ {ch03.roleLockIn.personBRole.riskWhenLocked}</p>
               </div>
@@ -1500,8 +1527,13 @@ function getLoveTransmissionBadge(matchType: string, isEn: boolean) {
   }
 }
 
-function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
+function Chapter04SubstantiveCard({ bundle, names, isEn, viewerIsReportA }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean; viewerIsReportA: boolean }) {
   const ch04 = bundle?.chapter04Intelligence ?? createDefaultMarriageChapter04Intelligence(names[0], names[1], isEn);
+  // names here is vm.canonicalNames -- fixed report-slot A/B -- so the
+  // sky-blue "나" color must be picked based on viewerIsReportA, never
+  // fixed to slot A.
+  const colorForSlotA = viewerIsReportA ? "text-v4-a" : "text-v4-b";
+  const colorForSlotB = viewerIsReportA ? "text-v4-b" : "text-v4-a";
 
   return (
     <div className="space-y-8">
@@ -1571,12 +1603,12 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.stabilityVsNovelty.description}</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1 border-t border-rel-line/60">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-v4-a block">{isEn ? names[0] : `${names[0]}님`}</span>
+              <span className={`font-bold block ${colorForSlotA}`}>{isEn ? names[0] : `${names[0]}님`}</span>
               <p className="text-[11px] text-rel-taupe">{isEn ? "Naturally comfortable with: " : "본래 편한 방식: "}{ch04.stabilityVsNovelty.personAInnate}</p>
               <p className="text-[11px] text-rel-ink">{isEn ? "Currently wants: " : "현재 바라는 분위기: "}{ch04.stabilityVsNovelty.personACurrent}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-v4-b block">{isEn ? names[1] : `${names[1]}님`}</span>
+              <span className={`font-bold block ${colorForSlotB}`}>{isEn ? names[1] : `${names[1]}님`}</span>
               <p className="text-[11px] text-rel-taupe">{isEn ? "Naturally comfortable with: " : "본래 편한 방식: "}{ch04.stabilityVsNovelty.personBInnate}</p>
               <p className="text-[11px] text-rel-ink">{isEn ? "Currently wants: " : "현재 바라는 분위기: "}{ch04.stabilityVsNovelty.personBCurrent}</p>
             </div>
@@ -1589,11 +1621,11 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
         <SubHeading title={isEn ? "Bedroom Temperature & Activation" : "04. 우리 침실의 온도는 같은 속도로 올라올까"} tag="온도와 속도" tone="coral" />
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset className="space-y-2 border border-rel-line">
-            <p className="text-xs font-bold text-v4-a">{ch04.activationAndRhythm.personAMode.personName}: {ch04.activationAndRhythm.personAMode.modeTitle}</p>
+            <p className={`text-xs font-bold ${colorForSlotA}`}>{ch04.activationAndRhythm.personAMode.personName}: {ch04.activationAndRhythm.personAMode.modeTitle}</p>
             <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.activationAndRhythm.personAMode.description}</p>
           </RelationshipReportInset>
           <RelationshipReportInset className="space-y-2 border border-rel-line">
-            <p className="text-xs font-bold text-v4-b">{ch04.activationAndRhythm.personBMode.personName}: {ch04.activationAndRhythm.personBMode.modeTitle}</p>
+            <p className={`text-xs font-bold ${colorForSlotB}`}>{ch04.activationAndRhythm.personBMode.personName}: {ch04.activationAndRhythm.personBMode.modeTitle}</p>
             <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.activationAndRhythm.personBMode.description}</p>
           </RelationshipReportInset>
         </div>
@@ -1612,11 +1644,11 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.initiationLeadResponse.description}</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1 border-t border-rel-line/60">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-v4-a block mb-1">{isEn ? `How ${names[0]} takes the first step` : `${names[0]}님이 먼저 다가가는 방식`}</span>
+              <span className={`font-bold block mb-1 ${colorForSlotA}`}>{isEn ? `How ${names[0]} takes the first step` : `${names[0]}님이 먼저 다가가는 방식`}</span>
               <p className="text-rel-ink">{ch04.initiationLeadResponse.personAAgency}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-v4-b block mb-1">{isEn ? `How ${names[1]} takes the first step` : `${names[1]}님이 먼저 다가가는 방식`}</span>
+              <span className={`font-bold block mb-1 ${colorForSlotB}`}>{isEn ? `How ${names[1]} takes the first step` : `${names[1]}님이 먼저 다가가는 방식`}</span>
               <p className="text-rel-ink">{ch04.initiationLeadResponse.personBAgency}</p>
             </div>
           </div>
@@ -1628,11 +1660,11 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
         <SubHeading title={isEn ? "Intimate Attunement & Care" : "06. 침실에서 우리는 상대를 어떻게 살필까?"} tag="침실에서의 배려" tone="coral" />
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset className="space-y-1.5 border border-rel-line">
-            <span className="text-[11px] font-bold text-v4-a block">{ch04.intimateAttunement.personAAttunement.personName}: {ch04.intimateAttunement.personAAttunement.styleTitle}</span>
+            <span className={`text-[11px] font-bold block ${colorForSlotA}`}>{ch04.intimateAttunement.personAAttunement.personName}: {ch04.intimateAttunement.personAAttunement.styleTitle}</span>
             <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.intimateAttunement.personAAttunement.description}</p>
           </RelationshipReportInset>
           <RelationshipReportInset className="space-y-1.5 border border-rel-line">
-            <span className="text-[11px] font-bold text-v4-b block">{ch04.intimateAttunement.personBAttunement.personName}: {ch04.intimateAttunement.personBAttunement.styleTitle}</span>
+            <span className={`text-[11px] font-bold block ${colorForSlotB}`}>{ch04.intimateAttunement.personBAttunement.personName}: {ch04.intimateAttunement.personBAttunement.styleTitle}</span>
             <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.intimateAttunement.personBAttunement.description}</p>
           </RelationshipReportInset>
         </div>
@@ -1844,15 +1876,18 @@ type NonSnapshotSection = Exclude<MarriageReportSection, { type: "household_snap
 export function MarriageReportSectionCard({
   section,
   names,
+  canonicalNames,
   viewerIsReportA,
 }: {
   section: NonSnapshotSection;
   names: [string, string];
+  /** Fixed report-slot A/B names -- for directional (A→B/B→A) content that isn't viewer-relative. */
+  canonicalNames: [string, string];
   viewerIsReportA: boolean;
 }): ReactNode {
   switch (section.type) {
     case "origin_story":
-      return <OriginStoryCard section={section} names={names} />;
+      return <OriginStoryCard section={section} names={canonicalNames} />;
     case "daily_life_mirror":
       return <DailyLifeMirrorCard section={section} />;
     case "deep_read":
@@ -1862,19 +1897,19 @@ export function MarriageReportSectionCard({
     case "psych_radar":
       return <PsychRadarCard section={section} names={names} />;
     case "money_chores":
-      return <MoneyChoresCard section={section} names={names} />;
+      return <MoneyChoresCard section={section} />;
     case "bedroom":
       return null;
     case "home_dna":
       return <HomeDnaCard section={section} />;
     case "parenting":
-      return <ParentingCard section={section} names={names} />;
+      return <ParentingCard section={section} viewerIsReportA={viewerIsReportA} />;
     case "family_boundary":
       return <FamilyBoundaryCard section={section} />;
     case "weather_forecast":
       return <WeatherForecastCard section={section} />;
     case "privacy":
-      return <PrivacyCard section={section} />;
+      return <PrivacyCard section={section} viewerIsReportA={viewerIsReportA} />;
     case "upset":
       return <UpsetCard section={section} />;
     case "warning":
@@ -2041,19 +2076,19 @@ export function MarriageReportViewModelView({
                 ) : null}
 
                 {cDef.id === "c7_longterm_compounding" ? (
-                  <Chapter03SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
+                  <Chapter03SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} viewerIsReportA={viewerIsReportA} />
                 ) : null}
 
                 {cDef.id === "c4_intimacy_bedroom" ? (
-                  <Chapter04SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
+                  <Chapter04SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} viewerIsReportA={viewerIsReportA} />
                 ) : null}
 
                 {cDef.id === "c5_conflict_deescalation" ? (
-                  <MarriageChapter07View ch07={vm.chapter07Intelligence} canonicalNames={vm.canonicalNames} isEn={isEn} />
+                  <MarriageChapter07View ch07={vm.chapter07Intelligence} canonicalNames={vm.canonicalNames} isEn={isEn} viewerIsReportA={viewerIsReportA} />
                 ) : null}
 
                 {cDef.id === "c9_next_chapter_rituals" ? (
-                  <MarriageChapter08View ch08={vm.chapter08Intelligence} canonicalNames={vm.canonicalNames} isEn={isEn} />
+                  <MarriageChapter08View ch08={vm.chapter08Intelligence} canonicalNames={vm.canonicalNames} isEn={isEn} viewerIsReportA={viewerIsReportA} />
                 ) : null}
 
                 {/* Map only this chapter's explicitly owned section cards */}
@@ -2064,6 +2099,7 @@ export function MarriageReportViewModelView({
                       key={section.id}
                       section={section}
                       names={vm.opening.names}
+                      canonicalNames={vm.canonicalNames}
                       viewerIsReportA={viewerIsReportA}
                     />
                   ))}
@@ -2087,6 +2123,7 @@ export function MarriageReportViewModelView({
                   key={section.id}
                   section={section}
                   names={vm.opening.names}
+                  canonicalNames={vm.canonicalNames}
                   viewerIsReportA={viewerIsReportA}
                 />
               ))}
@@ -2101,6 +2138,7 @@ export function MarriageReportViewModelView({
               key={section.id}
               section={section}
               names={vm.opening.names}
+              canonicalNames={vm.canonicalNames}
               viewerIsReportA={viewerIsReportA}
             />
           ))}

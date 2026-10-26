@@ -7,6 +7,7 @@ type Props = {
   ch08?: MarriageChapter08Intelligence;
   canonicalNames: [string, string];
   isEn?: boolean;
+  viewerIsReportA: boolean;
 };
 
 const ACCENT = "#1b3b2b";
@@ -28,9 +29,13 @@ function PersonBadge() {
  * DESIGN UNIFICATION: Subtitles render OUTSIDE and ABOVE content blocks.
  * Content renders inside separate dedicated white blocks underneath.
  */
-export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
+export function MarriageChapter08View({ ch08, canonicalNames, isEn, viewerIsReportA }: Props) {
   if (!ch08) return null;
 
+  // canonicalNames is fixed report-slot A/B -- the sky-blue "나" side must
+  // track the actual viewer, not always slot A.
+  const sideA = viewerIsReportA ? "a" : "b";
+  const sideB = viewerIsReportA ? "b" : "a";
   const [nameA, nameB] = canonicalNames;
   const {
     introSentence,
@@ -61,7 +66,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
             {/* Person A */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/40 pb-2">
-                <NameChip name={nameA} side="a" />
+                <NameChip name={nameA} side={sideA} />
               </div>
               <p className="text-xs sm:text-sm font-bold text-[#1b3b2b]">
                 {section01CurrentPeriod.personA.headline}
@@ -74,7 +79,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
             {/* Person B */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/40 pb-2">
-                <NameChip name={nameB} side="b" />
+                <NameChip name={nameB} side={sideB} />
               </div>
               <p className="text-xs sm:text-sm font-bold text-[#1b3b2b]">
                 {section01CurrentPeriod.personB.headline}

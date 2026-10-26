@@ -414,6 +414,8 @@ function buildMoneyChoresSection(
     type: "money_chores",
     partNumber: 2,
     title: t.moneyChoresCardTitle,
+    nameA,
+    nameB,
     cfoNickname: m.cfo_nickname,
     cfoReason: m.cfo_reason,
     choresGuideline: m.chores_guideline,
@@ -499,6 +501,8 @@ function buildParentingSection(
     type: "parenting",
     partNumber: 4,
     title: "06. 둘을 넘어 가족이 되면 어떤 시스템이 되는가?",
+    nameA,
+    nameB,
     combinedAttitude: p?.combined_attitude ?? "",
     personAStyle: p?.person_a_style ?? "",
     personBStyle: p?.person_b_style ?? "",
@@ -899,6 +903,12 @@ export function buildMarriageReportViewModel(
   const { viewerIsReportA, myName, partnerName, locale } = params;
   const names: [string, string] = [myName, partnerName];
   const t = catalog(locale ?? "ko-KR");
+  // Report-slot (A/B) names, independent of viewer -- several canonical
+  // Chapter05/06 intelligence blocks are keyed to report_id_a/b, not to
+  // "me"/"partner", so sections built from them (money_chores, parenting)
+  // must label with these, never with the viewer-first `names` above.
+  const slotNameA = report.household?.section_dna?.person_a?.nickname ?? "A";
+  const slotNameB = report.household?.section_dna?.person_b?.nickname ?? "B";
 
   // 순서 근거: decisions/033_marriage-report-part-reorder.md
   //   헤드라인+트라이스코어 → origin_story → 일상 모습(신규) → deep_read
@@ -923,7 +933,7 @@ export function buildMarriageReportViewModel(
     () => buildHomeDnaSection(report, viewerIsReportA, t),
     () => buildBedroomSection(report, t),
     () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
-    () => buildParentingSection(report, t, names[0], names[1], locale ?? "ko-KR"),
+    () => buildParentingSection(report, t, slotNameA, slotNameB, locale ?? "ko-KR"),
     () => buildFamilyBoundarySection(report, t),
     () => buildWeatherForecastSection(report, t),
   ];

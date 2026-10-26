@@ -81,6 +81,9 @@ export type PsychRadarSection = BaseSection & {
 
 export type MoneyChoresSection = BaseSection & {
   type: "money_chores";
+  /** Report-slot (A/B) names -- ch05Intelligence's *A/*B fields are keyed to these, NOT to the viewer. */
+  nameA: string;
+  nameB: string;
   cfoNickname: string;
   cfoReason: string;
   choresGuideline: string;
@@ -117,6 +120,9 @@ export type HomeDnaSection = BaseSection & {
 
 export type ParentingSection = BaseSection & {
   type: "parenting";
+  /** Report-slot (A/B) names -- ch06Intelligence's *A/*B fields are keyed to these, NOT to the viewer. */
+  nameA: string;
+  nameB: string;
   combinedAttitude: string;
   personAStyle: string;
   personBStyle: string;

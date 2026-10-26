@@ -42,6 +42,14 @@ export type BuildIndividualWorkChapterParams = {
   sajuChartA?: IndividualSajuChart | null;
   sajuChartB?: IndividualSajuChart | null;
   officeReport?: OfficePartnershipReport | null;
+  /**
+   * officeReport.office.section_dna/section_roles are keyed by report SLOT
+   * (person_a = report_id_a), fixed at generation time -- unlike nameA/
+   * psychA/sajuChartA above, which the caller already reorders to be
+   * viewer-first. Defaults to true (slot A = viewer) to match the old
+   * behavior for any caller that hasn't been updated to pass it.
+   */
+  viewerIsReportA?: boolean;
 };
 
 function buildSinglePersonWorkProfile(params: {
@@ -422,7 +430,7 @@ function buildSinglePersonWorkProfile(params: {
 export function buildIndividualWorkChapterBundle(
   params: BuildIndividualWorkChapterParams
 ): IndividualWorkChapterBundle {
-  const { nameA, nameB, psychA, psychB, sajuChartA, sajuChartB, officeReport, locale = LEGACY_FALLBACK_LOCALE } = params;
+  const { nameA, nameB, psychA, psychB, sajuChartA, sajuChartB, officeReport, viewerIsReportA = true, locale = LEGACY_FALLBACK_LOCALE } = params;
 
   const aName = nameA?.trim() || pick(locale, "Person A", "나");
   const bName = nameB?.trim() || pick(locale, "Person B", "상대");
@@ -440,6 +448,12 @@ export function buildIndividualWorkChapterBundle(
 
   const officeDna = officeReport?.office?.section_dna;
   const officeRoles = officeReport?.office?.section_roles;
+  // officeDna/officeRoles are slot-keyed; nameA/aName is already viewer-
+  // first (the caller reorders it), so pick the matching slot node here.
+  const viewerDnaNode = viewerIsReportA ? officeDna?.person_a : officeDna?.person_b;
+  const partnerDnaNode = viewerIsReportA ? officeDna?.person_b : officeDna?.person_a;
+  const viewerRoleNode = viewerIsReportA ? officeRoles?.person_a : officeRoles?.person_b;
+  const partnerRoleNode = viewerIsReportA ? officeRoles?.person_b : officeRoles?.person_a;
 
   const personA = buildSinglePersonWorkProfile({
     name: aName,
@@ -447,8 +461,8 @@ export function buildIndividualWorkChapterBundle(
     isPersonA: true,
     psych: psychA,
     chart: sajuChartA,
-    dnaNode: officeDna?.person_a,
-    roleNode: officeRoles?.person_a,
+    dnaNode: viewerDnaNode,
+    roleNode: viewerRoleNode,
     roleProfile: roleMap.personA,
     locale,
   });
@@ -459,8 +473,8 @@ export function buildIndividualWorkChapterBundle(
     isPersonA: false,
     psych: psychB,
     chart: sajuChartB,
-    dnaNode: officeDna?.person_b,
-    roleNode: officeRoles?.person_b,
+    dnaNode: partnerDnaNode,
+    roleNode: partnerRoleNode,
     roleProfile: roleMap.personB,
     locale,
   });
