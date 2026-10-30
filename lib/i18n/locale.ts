@@ -134,6 +134,33 @@ export function localizedPath(href: string, locale: Locale): string {
   return `${prefix}${path}${query}${hash}`;
 }
 
+/**
+ * True when the browser's top-priority language (by `Accept-Language` q-value,
+ * ties broken by listed order) is Korean. Used by the proxy to auto-route
+ * ko-browser visitors away from the unprefixed (en-US) domain to `/kr` while
+ * the language toggle is hidden (no global PG yet) -- see proxy.ts.
+ */
+export function prefersKoreanFromAcceptLanguage(header: string | null | undefined): boolean {
+  if (!header) return false;
+
+  const top = header
+    .split(",")
+    .map((part, index) => {
+      const [rawTag, ...params] = part.trim().split(";");
+      const qParam = params.find((p) => p.trim().startsWith("q="));
+      const q = qParam ? parseFloat(qParam.trim().slice(2)) : 1;
+      return {
+        tag: (rawTag || "").trim().toLowerCase(),
+        q: Number.isFinite(q) ? q : 1,
+        index,
+      };
+    })
+    .filter((entry) => entry.tag && entry.tag !== "*")
+    .sort((a, b) => b.q - a.q || a.index - b.index)[0];
+
+  return !!top && (top.tag === "ko" || top.tag.startsWith("ko-"));
+}
+
 /** Short code for LLM / meta (`en` | `ko`) — prefer full Locale at boundaries. */
 export function localeToShort(locale: Locale): "en" | "ko" {
   return locale === "ko-KR" ? "ko" : "en";

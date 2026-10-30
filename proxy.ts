@@ -7,6 +7,7 @@ import {
   LOCALE_COOKIE,
   LOCALE_HEADER,
   pathPrefixToLocale,
+  prefersKoreanFromAcceptLanguage,
   stripEnPrefix,
   stripKrPrefix,
   type Locale,
@@ -49,12 +50,22 @@ function applyLocaleCookie(res: NextResponse, locale: Locale): NextResponse {
 
 /**
  * Locale URL policy:
- * - `/` and unprefixed paths → en-US
+ * - `/` and unprefixed paths → en-US (unless ko-browser auto-redirect below fires)
  * - `/kr` and `/kr/...` → rewrite to unprefixed + ko-KR
  * - `/en` and `/en/...` → redirect to unprefixed EN canonical
  * API paths are never rewritten under /kr.
  *
  * Next 16+ uses proxy.ts instead of middleware.ts.
+ *
+ * KO-BROWSER AUTO-REDIRECT (temporary, one-directional):
+ * The global (en-US) site has no PG integration yet, so a Korean-language
+ * browser landing on the unprefixed domain can't pay. Until the global PG
+ * integration ships and the header's language toggle (components/layout/
+ * stitch/LanguageSwitcher.tsx, currently commented out in StitchFixedHeader)
+ * is turned back on, visitors whose browser's top Accept-Language is Korean
+ * are auto-redirected from unprefixed paths to the matching `/kr` path. This
+ * is intentionally one-way (no en-browser → `/` redirect) -- when the toggle
+ * comes back, wire up the mutual redirect here instead of just removing this.
  */
 export const proxy = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
@@ -89,6 +100,12 @@ export const proxy = clerkMiddleware(async (auth, req: NextRequest) => {
   }
 
   const locale = pathPrefixToLocale(pathname);
+
+  if (locale === "en-US" && prefersKoreanFromAcceptLanguage(req.headers.get("accept-language"))) {
+    const url = req.nextUrl.clone();
+    url.pathname = pathname === "/" ? "/kr" : `/kr${pathname}`;
+    return applyLocaleCookie(NextResponse.redirect(url, 307), "ko-KR");
+  }
 
   if (locale === "ko-KR") {
     const url = req.nextUrl.clone();
