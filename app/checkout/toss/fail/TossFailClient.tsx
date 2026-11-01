@@ -18,6 +18,8 @@ function FailContent() {
   const { locale, messages } = useLocale();
   const t = messages.payments;
   const code = params.get("code") ?? "";
+  const message = params.get("message") ?? "";
+  const orderId = params.get("orderId") ?? "";
   const cancelled = code === "PAY_PROCESS_CANCELED" || code === "USER_CANCEL";
 
   return (
@@ -26,7 +28,17 @@ function FailContent() {
       title={cancelled ? t.tossCancelledTitle : t.tossFailedTitle}
       body={cancelled ? t.tossCancelledBody : t.tossFailedBody}
     >
-      {code && !cancelled ? <p className="mb-4 text-xs text-[#4A5C52]/70">{code}</p> : null}
+      {/* Diagnostic detail from Toss's own failUrl redirect -- not ours (we
+          never set `code`). Shown so a failure can be triaged from the
+          screen itself (code, message, orderId to look up in the Toss
+          dashboard / toss_payment_orders) without needing DevTools. */}
+      {code && !cancelled ? (
+        <div className="mb-4 space-y-0.5 text-xs text-[#4A5C52]/70">
+          <p>{code}</p>
+          {message ? <p>{message}</p> : null}
+          {orderId ? <p className="font-mono">{orderId}</p> : null}
+        </div>
+      ) : null}
       <button
         type="button"
         className="stitch-cta-primary w-full"

@@ -114,7 +114,7 @@ export default function PurchaseSelectorContent({
   // this UI. KR plans are on sale (KRW); US plans stay disabled until US
   // payments are ready (NEXT_PUBLIC_US_CHECKOUT_ENABLED + a contract-confirmed
   // TOSS_USD_PAYMENT_METHOD) -- see lib/payment/tossCatalog.ts.
-  const { busy: tossBusy, startTossCheckout } = useTossCheckout();
+  const { busy: tossBusy, startTossCheckout, lastErrorRef: tossLastErrorRef } = useTossCheckout();
   const usCheckoutEnabled = process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true";
   // 2026-10-21: while US checkout stays disabled, Personal/Relationship
   // Premium (the two plans that gate the "Analyze" -> paywall -> unlock
@@ -329,7 +329,7 @@ export default function PurchaseSelectorContent({
           : tossOutcome === "not_configured"
             ? messages.payments.tossNotConfigured
             : tossOutcome === "error"
-              ? messages.payments.tossStartError
+              ? [messages.payments.tossStartError, tossLastErrorRef.current].filter(Boolean).join(" — ")
               : "";
       if (notice) setPlanNotice((prev) => ({ ...prev, [planId]: notice }));
     }
@@ -358,7 +358,7 @@ export default function PurchaseSelectorContent({
           : outcome === "sign_in_required"
             ? messages.payments.signInRequired
             : outcome === "error"
-              ? messages.payments.tossStartError
+              ? [messages.payments.tossStartError, tossLastErrorRef.current].filter(Boolean).join(" — ")
               : "";
     if (notice) setPlanNotice((prev) => ({ ...prev, [planId]: notice }));
   }

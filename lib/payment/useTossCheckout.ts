@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { localizedPath, type Locale } from "@/lib/i18n/locale";
 
 /**
@@ -71,6 +71,16 @@ type OrderResponse = {
 
 export function useTossCheckout() {
   const [busy, setBusy] = useState(false);
+  // Raw diagnostic for the "error" outcome -- the SDK's own code/message when
+  // requestPayment() rejects client-side (never reaches Toss's hosted window,
+  // so it never shows up in the /checkout/toss/fail URL), or a short reason
+  // for the earlier validation failures below. Cleared at the start of each
+  // attempt. A ref, not state: the caller reads it right after `await
+  // startTossCheckout(...)` resolves, in the SAME closure that called it --
+  // a state value captured at that closure's own render would still be the
+  // PREVIOUS attempt's value (this hook's setState hasn't re-rendered the
+  // caller yet), while a ref's `.current` is always the live value.
+  const lastErrorRef = useRef<string | null>(null);
 
   const startTossCheckout = useCallback(
     async (
@@ -85,6 +95,7 @@ export function useTossCheckout() {
       },
     ): Promise<TossCheckoutOutcome> => {
       setBusy(true);
+      lastErrorRef.current = null;
       try {
         const res = await fetch("/api/payments/toss/orders", {
           method: "POST",
@@ -102,13 +113,20 @@ export function useTossCheckout() {
           if (order.code === "toss_not_configured" || order.code === "currency_not_enabled") return "not_configured";
           if (order.code === "sign_in_required") return "sign_in_required";
           if (order.code === "invalid_email" || order.code === "consent_required") return "invalid_email";
+          lastErrorRef.current = `orders:${res.status} ${order.code ?? "unknown"}`;
           return "error";
         }
-        if (!order.orderId || !order.clientKey || !order.amount || !order.currency || !order.method) return "error";
+        if (!order.orderId || !order.clientKey || !order.amount || !order.currency || !order.method) {
+          lastErrorRef.current = "orders:incomplete_response";
+          return "error";
+        }
 
         const TossPayments = await loadTossSdk();
         const customerKey = order.guest ? TossPayments.ANONYMOUS : order.customerKey;
-        if (!customerKey) return "error";
+        if (!customerKey) {
+          lastErrorRef.current = "orders:no_customer_key";
+          return "error";
+        }
         const payment = TossPayments(order.clientKey).payment({ customerKey });
 
         const origin = window.location.origin;
@@ -142,6 +160,7 @@ export function useTossCheckout() {
         const code = errObj?.code;
         if (code !== "USER_CANCEL") {
           console.error("[TossCheckout] requestPayment failed:", errObj?.code || "unknown", errObj?.message || "");
+          lastErrorRef.current = `sdk:${errObj?.code ?? "unknown"} ${errObj?.message ?? ""}`.trim();
         }
         return code === "USER_CANCEL" ? "cancelled" : "error";
       } finally {
@@ -151,5 +170,5 @@ export function useTossCheckout() {
     [],
   );
 
-  return { busy, startTossCheckout };
+  return { busy, startTossCheckout, lastErrorRef };
 }
