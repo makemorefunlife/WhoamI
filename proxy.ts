@@ -50,23 +50,35 @@ function applyLocaleCookie(res: NextResponse, locale: Locale): NextResponse {
 
 /**
  * Locale URL policy:
- * - `/` and unprefixed paths → en-US (unless ko-browser auto-redirect below fires)
+ * - `/` and unprefixed paths → en-US (ko-browser auto-redirect below is OFF by default)
  * - `/kr` and `/kr/...` → rewrite to unprefixed + ko-KR
  * - `/en` and `/en/...` → redirect to unprefixed EN canonical
  * API paths are never rewritten under /kr.
  *
  * Next 16+ uses proxy.ts instead of middleware.ts.
  *
- * KO-BROWSER AUTO-REDIRECT (temporary, one-directional):
+ * KO-BROWSER AUTO-REDIRECT (temporary, one-directional, OFF by default):
  * The global (en-US) site has no PG integration yet, so a Korean-language
- * browser landing on the unprefixed domain can't pay. Until the global PG
- * integration ships and the header's language toggle (components/layout/
+ * browser landing on the unprefixed domain can't pay. The plan was to
+ * auto-redirect visitors whose browser's top Accept-Language is Korean from
+ * unprefixed paths to the matching `/kr` path (one-way only -- no en-browser
+ * → `/` redirect) until the header's language toggle (components/layout/
  * stitch/LanguageSwitcher.tsx, currently commented out in StitchFixedHeader)
- * is turned back on, visitors whose browser's top Accept-Language is Korean
- * are auto-redirected from unprefixed paths to the matching `/kr` path. This
- * is intentionally one-way (no en-browser → `/` redirect) -- when the toggle
- * comes back, wire up the mutual redirect here instead of just removing this.
+ * comes back.
+ *
+ * 2026-11-02: switched OFF (KO_BROWSER_AUTO_REDIRECT_ENABLED = false) -- it
+ * was blocking the Toss merchant review (reviewers in Korea need to reach
+ * the English ahaitsme.com site directly) and testing of the new USD
+ * checkout. Detection is Accept-Language ONLY -- never IP/geo, never a
+ * stored setting -- so with the switch off, `/` and `/kr` are both reachable
+ * directly from any browser; nothing else about locale resolution changes.
+ *
+ * TO RE-ENABLE after the review: flip KO_BROWSER_AUTO_REDIRECT_ENABLED back
+ * to `true` below. Nothing else needs to change -- the rest of this file's
+ * logic is untouched, this is the only toggle.
  */
+const KO_BROWSER_AUTO_REDIRECT_ENABLED = false;
+
 export const proxy = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
@@ -101,7 +113,11 @@ export const proxy = clerkMiddleware(async (auth, req: NextRequest) => {
 
   const locale = pathPrefixToLocale(pathname);
 
-  if (locale === "en-US" && prefersKoreanFromAcceptLanguage(req.headers.get("accept-language"))) {
+  if (
+    KO_BROWSER_AUTO_REDIRECT_ENABLED &&
+    locale === "en-US" &&
+    prefersKoreanFromAcceptLanguage(req.headers.get("accept-language"))
+  ) {
     const url = req.nextUrl.clone();
     url.pathname = pathname === "/" ? "/kr" : `/kr${pathname}`;
     return applyLocaleCookie(NextResponse.redirect(url, 307), "ko-KR");

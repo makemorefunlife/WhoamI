@@ -44,8 +44,16 @@ assert.ok(menu.includes('<LanguageSwitcher variant="menu" />'), "full labels als
 ok("labels are 'English (US) | 한국어 (KR)' in header and side menu");
 
 const proxy = readFileSync(new URL("../../proxy.ts", import.meta.url), "utf8");
-assert.ok(!/accept-language|x-vercel-ip-country|geo/i.test(proxy), "no language/IP/country detection");
+// 2026-11-02: a ko-browser Accept-Language auto-redirect exists (added for
+// the pre-global-PG period) but must stay OFF by default -- it blocked the
+// Toss merchant review and EN-site testing when it was on. IP/geo-based
+// detection is never acceptable here either way.
+assert.ok(!/x-vercel-ip-country|geo\.country/i.test(proxy), "no IP/geo-based language detection");
+assert.ok(
+  /KO_BROWSER_AUTO_REDIRECT_ENABLED\s*=\s*false/.test(proxy),
+  "ko-browser Accept-Language auto-redirect kill switch defaults to OFF (both / and /kr reachable directly)",
+);
 assert.ok(!sw.includes("navigator.language") && !sw.includes("useEffect"), "switcher never redirects on its own");
-ok("no automatic redirect: proxy has no detection; switcher only navigates on click");
+ok("no automatic redirect while the switch is off; switcher only navigates on click");
 
 console.log(`\nlanguage-switcher: ${passed} passed`);
