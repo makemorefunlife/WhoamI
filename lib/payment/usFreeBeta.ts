@@ -21,8 +21,12 @@
  * Toss/Paddle checkout for US plans, and turning the real checkout on later
  * should be a one-line revert in PurchaseSelectorContent.handleCheckout,
  * not a flag flip here.
+ *
+ * 2026-11-01: turned off -- US Personal/Relationship Premium now go through
+ * real Toss USD checkout (see tossCatalog.ts), so the no-payment-window
+ * bypass would only create confusion/duplicate grants alongside it.
  */
-export const US_FREE_BETA_LIVE = true;
+export const US_FREE_BETA_LIVE = false;
 
 export type UsFreeBetaPlanId = "us_personal_premium" | "us_relationship_premium";
 

@@ -21,6 +21,15 @@
  * pri_01m1xm9ycep8n9b5w01dkrh4pz is kept only in the comment below for
  * reconciling legacy subscribers, whose renewals still arrive through the
  * Paddle webhook's renewal branch (looked up by subscription id, not price).
+ *
+ * 2026-11-01: the other four plans (Personal, Relationship, 30-Day Pass,
+ * Additional Relationship) also switched to provider: "toss" -- added to
+ * lib/payment/tossCatalog.ts's TOSS_PLANS for real USD Toss checkout. Their
+ * Paddle sandbox priceId below is kept only for reconciling pre-switch
+ * Paddle sandbox purchases; usPlanHasPriceId gates on provider === "paddle",
+ * so it can no longer match and a stray/replayed Paddle webhook event for
+ * one of these price ids can never grant a second entitlement now that the
+ * same plan is also sold through Toss.
  */
 
 export type UsPlanId =
@@ -59,7 +68,7 @@ export const US_PLANS: Record<UsPlanId, UsPlan> = {
     paddleNickname: "DEEPSELF",
     priceId: "pri_01m1xm9wvkbshger1xywdsd4rc",
     billingType: "one_time",
-    provider: "paddle",
+    provider: "toss",
     priceUsd: 11.99,
     grants: "personal +1 (expires 1 year after purchase)",
     requiresEligibilityCheck: false,
@@ -69,7 +78,7 @@ export const US_PLANS: Record<UsPlanId, UsPlan> = {
     paddleNickname: "RELATIONSHIP_SINGLE",
     priceId: "pri_01m1xm9xyg6yw4bcxz5nq36trt",
     billingType: "one_time",
-    provider: "paddle",
+    provider: "toss",
     priceUsd: 18.99,
     grants: "relationship +1 (expires 1 year after purchase)",
     requiresEligibilityCheck: false,
@@ -79,7 +88,7 @@ export const US_PLANS: Record<UsPlanId, UsPlan> = {
     paddleNickname: "30DAY_PASS",
     priceId: "pri_01m346b8d0hysn7h2m7cd9fjcf",
     billingType: "one_time",
-    provider: "paddle",
+    provider: "toss",
     priceUsd: 28,
     grants: "personal +1, relationship +1 (both expire 30 days after purchase), Decision Journal unlimited for 30 days",
     requiresEligibilityCheck: false,
@@ -104,7 +113,7 @@ export const US_PLANS: Record<UsPlanId, UsPlan> = {
     paddleNickname: "ADDITIONAL_RELATIONSHIP",
     priceId: "pri_01m3469c0zse3kdmd7fkr3s6x4",
     billingType: "one_time",
-    provider: "paddle",
+    provider: "toss",
     priceUsd: 9.99,
     grants: "relationship +1 (expires 1 year after purchase)",
     requiresEligibilityCheck: true,

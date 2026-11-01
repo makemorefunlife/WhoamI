@@ -10,12 +10,13 @@ import { KR_PLANS, type KrPlanId } from "@/lib/payment/krPricing";
  *
  * KRW plans (all four KR products) pay by card (method CARD).
  *
- * USD (the US 12-Month Membership): Toss card payments in USD require Toss's
+ * USD (all five US products): Toss card payments in USD require Toss's
  * foreign-currency contract; USD is otherwise only offered through
  * FOREIGN_EASY_PAY (PayPal). Until the contract is confirmed, USD checkout
  * stays DISABLED: there is no default method and no fallback to KRW or to
  * another method. It opens only when TOSS_USD_PAYMENT_METHOD is set
- * explicitly to a method confirmed on the merchant contract.
+ * explicitly to a method confirmed on the merchant contract (2026-11-01:
+ * sandbox verification uses FOREIGN_EASY_PAY/PayPal ahead of that contract).
  */
 export type TossPaymentMethod = "CARD" | "FOREIGN_EASY_PAY";
 
@@ -43,6 +44,20 @@ function krPlan(planId: KrPlanId, ko: string, en: string): TossPlan {
   };
 }
 
+/**
+ * US (USD) plan, added 2026-11-01 alongside us_annual_membership -- same
+ * shape, English-only product name (the US catalog has no Korean copy).
+ */
+function usPlan(planId: UsPlanId, name: string, guestCheckout: boolean): TossPlan {
+  return {
+    planId,
+    amount: US_PLANS[planId].priceUsd,
+    currency: "USD",
+    orderName: { "en-US": `Aha It's me ${name}`, "ko-KR": `Aha It's me ${name}` },
+    guestCheckout,
+  };
+}
+
 export const TOSS_PLANS: Partial<Record<string, TossPlan>> = {
   us_annual_membership: {
     planId: "us_annual_membership",
@@ -55,6 +70,17 @@ export const TOSS_PLANS: Partial<Record<string, TossPlan>> = {
     // still switched off (NEXT_PUBLIC_US_CHECKOUT_ENABLED / TOSS_USD_PAYMENT_METHOD).
     guestCheckout: true,
   },
+  // 2026-11-01: the other four US products, previously Paddle-only
+  // (lib/payment/usPricing.ts) and unbuyable since Paddle was disconnected
+  // (PADDLE_CHECKOUT_ENABLED unset -> 410 on the checkout routes). guestCheckout
+  // mirrors the equivalent KR plan: Personal is guest-use (GUEST_PERSONAL_PLANS
+  // below), Relationship/Pass are guest-checkout-then-account-link, and
+  // Additional Relationship is sign-in only (gated on an existing active
+  // membership -- never reachable signed out, see PurchaseSelectorContent).
+  us_personal_premium: usPlan("us_personal_premium", "Personal", true),
+  us_relationship_premium: usPlan("us_relationship_premium", "Relationship", true),
+  us_insight_pass_30d: usPlan("us_insight_pass_30d", "30-Day Insight Pass", true),
+  us_additional_relationship: usPlan("us_additional_relationship", "Additional Relationship", false),
   kr_personal_premium: krPlan("kr_personal_premium", "Personal 심화 분석", "Personal deep report"),
   kr_relationship_premium: krPlan("kr_relationship_premium", "Relationship 심화 분석", "Relationship deep report"),
   kr_insight_pass_30d: krPlan("kr_insight_pass_30d", "30일 인사이트 패스", "30-Day Insight Pass"),
