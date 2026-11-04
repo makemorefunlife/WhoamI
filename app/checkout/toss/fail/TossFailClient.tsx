@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
@@ -27,16 +27,22 @@ function FailContent() {
   // page IS the navigation that would otherwise clear a plain console.log)
   // and cleared immediately so a later, unrelated failure never shows stale
   // data. No keys/emails -- only method + foreignEasyPay were ever written.
-  const [lastRequest] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
+  //
+  // MUST start both server and client's first render at the same `null` and
+  // only diverge in an effect, AFTER hydration -- reading sessionStorage in
+  // useState's initializer (what this used to do) makes the client's first
+  // render already carry the real value while the server's had none, which
+  // is exactly a hydration mismatch (React error #418, reported in prod).
+  const [lastRequest, setLastRequest] = useState<string | null>(null);
+  useEffect(() => {
     try {
       const raw = sessionStorage.getItem("aha_toss_last_request");
       sessionStorage.removeItem("aha_toss_last_request");
-      return raw;
+      if (raw) setLastRequest(raw);
     } catch {
-      return null;
+      // Storage unavailable -- nothing to show, not an error.
     }
-  });
+  }, []);
 
   return (
     <TossResultShell
