@@ -147,14 +147,16 @@ export function useTossCheckout() {
         };
         if (order.customerEmail) params.customerEmail = order.customerEmail;
         if (order.method === "FOREIGN_EASY_PAY") {
-          // Per Toss's own SDK v2 reference (docs.tosspayments.com/sdk/v2/js/
-          // payment-window -> requestPayment -> foreignEasyPay), the object
-          // is { country, products?, shipping?, paymentMethodOptions? } --
-          // there is no documented `provider` key (the old value here was
-          // never a real parameter; Toss likely just ignored it). `products`
-          // is listed as needed for PayPal seller protection, so it's
-          // included even though the field itself isn't marked required.
+          // `provider` was briefly dropped as "undocumented" based on a
+          // doc page that turned out to not list it -- the ACTUAL loaded
+          // SDK (js.tosspayments.com/v2/standard) rejects the request
+          // client-side without it ("INVALID_PARAMETERS: provider 필수
+          // 파라미터가 누락되었습니다"), so the SDK's own runtime validation is
+          // the authoritative source here, not that page. Restored.
+          // `products` (one entry per purchased item, needed for PayPal
+          // seller protection per the SDK v2 foreignEasyPay reference) stays.
           params.foreignEasyPay = {
+            provider: "PAYPAL",
             country: "US",
             products: [
               {
