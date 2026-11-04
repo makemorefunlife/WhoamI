@@ -49,6 +49,10 @@ export async function POST(req: Request) {
       logServerError("payments/toss/orders", null, "toss_not_configured");
       return NextResponse.json({ error: messages.errors.generic, code: "toss_not_configured" }, { status: 503 });
     }
+    // KRW always uses the general key pair above, unchanged. USD (foreign-
+    // easy-pay) uses a SEPARATE key pair for the specifically-contracted
+    // MID -- never silently falls back to the general key (see
+    // lib/payment/tossServer.ts's secretKeyFor).
 
     if (!userId) {
       const limited = await enforceRateLimit("guest_checkout", clientIpKey(req));
@@ -66,12 +70,17 @@ export async function POST(req: Request) {
 
     const usEnabled = process.env.NEXT_PUBLIC_US_CHECKOUT_ENABLED === "true";
     const method = resolveTossPaymentMethod(plan.currency, process.env.TOSS_USD_PAYMENT_METHOD);
-    if (!method || (plan.currency === "USD" && !usEnabled)) {
+    const usdClientKey = process.env.TOSS_USD_CLIENT_KEY?.trim();
+    const usdKeyConfigured = Boolean(usdClientKey) && tossSecretConfigured("USD");
+    if (!method || (plan.currency === "USD" && (!usEnabled || !usdKeyConfigured))) {
       return NextResponse.json(
         { error: messages.payments.tossNotConfigured, code: "currency_not_enabled" },
         { status: 503 },
       );
     }
+    // Resolved AFTER the check above, so a USD plan can never fall through
+    // to the general (KRW) clientKey if its own key pair isn't configured.
+    const orderClientKey = plan.currency === "USD" ? (usdClientKey as string) : clientKey;
 
     let guestEmail: string | null = null;
     if (!userId) {
@@ -116,7 +125,7 @@ export async function POST(req: Request) {
       claim_token_nonce: guestEmail ? newClaimNonce() : null,
       claim_token_expires_at: guestEmail ? claimTokenExpiry() : null,
       locale,
-      is_test: tossKeyIsTest(),
+      is_test: tossKeyIsTest(plan.currency),
       plan_id: plan.planId,
       amount: plan.amount,
       currency: plan.currency,
@@ -150,7 +159,7 @@ export async function POST(req: Request) {
       // uses TossPayments.ANONYMOUS.
       customerKey: userId ? `aha_${createHash("sha256").update(userId).digest("hex").slice(0, 40)}` : null,
       customerEmail: guestEmail,
-      clientKey,
+      clientKey: orderClientKey,
     });
     // Guest single Personal: remember that THIS browser created the order, so
     // the buyer can start right after paying without re-verifying (see

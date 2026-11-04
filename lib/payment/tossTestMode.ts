@@ -17,8 +17,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Live keys (live_sk_) are never affected.
  */
 
-export function tossKeyIsTest(): boolean {
-  return (process.env.TOSS_SECRET_KEY ?? "").trim().startsWith("test_");
+export function tossKeyIsTest(currency: string = "KRW"): boolean {
+  const key = currency === "USD" ? process.env.TOSS_USD_SECRET_KEY : process.env.TOSS_SECRET_KEY;
+  return (key ?? "").trim().startsWith("test_");
 }
 
 export function isPublicDeployment(): boolean {

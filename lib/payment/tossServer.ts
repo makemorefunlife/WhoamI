@@ -47,13 +47,27 @@ export type TossResult =
   | { kind: "rejected"; httpStatus: number; code: string; message: string }
   | { kind: "unknown"; reason: string };
 
-export function tossSecretConfigured(): boolean {
-  return Boolean(process.env.TOSS_SECRET_KEY?.trim());
+/**
+ * 2026-11-04: USD (foreign-easy-pay/PayPal) orders use a SEPARATE key pair
+ * (TOSS_USD_CLIENT_KEY / TOSS_USD_SECRET_KEY) issued by Toss for the
+ * specifically-contracted foreign-easy-pay MID -- not the general
+ * TOSS_SECRET_KEY, which KR (KRW) keeps using exactly as before. Deliberately
+ * NO fallback to the general key for USD: if the USD-specific key isn't
+ * configured, USD calls must fail closed (tossSecretConfigured(currency)
+ * reports false) rather than silently hit the wrong MID again, which is
+ * exactly the bug this split fixes.
+ */
+function secretKeyFor(currency: string): string {
+  if (currency === "USD") return process.env.TOSS_USD_SECRET_KEY?.trim() ?? "";
+  return process.env.TOSS_SECRET_KEY?.trim() ?? "";
 }
 
-function authHeader(): string {
-  const key = process.env.TOSS_SECRET_KEY?.trim() ?? "";
-  return `Basic ${Buffer.from(`${key}:`).toString("base64")}`;
+export function tossSecretConfigured(currency: string = "KRW"): boolean {
+  return Boolean(secretKeyFor(currency));
+}
+
+function authHeader(currency: string): string {
+  return `Basic ${Buffer.from(`${secretKeyFor(currency)}:`).toString("base64")}`;
 }
 
 function parsePayment(body: unknown): TossPayment | null {
@@ -91,12 +105,13 @@ function parsePayment(body: unknown): TossPayment | null {
 async function call(
   path: string,
   init: { method: "GET" | "POST"; body?: unknown; idempotencyKey?: string },
+  currency: string = "KRW",
 ): Promise<TossResult> {
-  if (!tossSecretConfigured()) return { kind: "unknown", reason: "toss_secret_not_configured" };
+  if (!tossSecretConfigured(currency)) return { kind: "unknown", reason: "toss_secret_not_configured" };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const headers: Record<string, string> = { Authorization: authHeader() };
+    const headers: Record<string, string> = { Authorization: authHeader(currency) };
     if (init.body !== undefined) headers["Content-Type"] = "application/json";
     if (init.idempotencyKey) headers["Idempotency-Key"] = init.idempotencyKey;
     const res = await fetch(`${TOSS_API_BASE}${path}`, {
@@ -128,21 +143,33 @@ async function call(
   }
 }
 
-/** Approves a payment the buyer authorized in the payment window. Idempotency-Key = orderId. */
-export function confirmTossPayment(params: {
-  paymentKey: string;
-  orderId: string;
-  amount: number;
-}): Promise<TossResult> {
-  return call("/v1/payments/confirm", {
-    method: "POST",
-    body: { paymentKey: params.paymentKey, orderId: params.orderId, amount: params.amount },
-    idempotencyKey: `confirm-${params.orderId}`,
-  });
+/**
+ * Approves a payment the buyer authorized in the payment window.
+ * Idempotency-Key = orderId. `currency` (default "KRW") picks the key pair
+ * -- always pass the order's own currency so a USD order is confirmed
+ * against the foreign-easy-pay key, never the general one.
+ */
+export function confirmTossPayment(
+  params: {
+    paymentKey: string;
+    orderId: string;
+    amount: number;
+  },
+  currency: string = "KRW",
+): Promise<TossResult> {
+  return call(
+    "/v1/payments/confirm",
+    {
+      method: "POST",
+      body: { paymentKey: params.paymentKey, orderId: params.orderId, amount: params.amount },
+      idempotencyKey: `confirm-${params.orderId}`,
+    },
+    currency,
+  );
 }
 
-export function getTossPayment(paymentKey: string): Promise<TossResult> {
-  return call(`/v1/payments/${encodeURIComponent(paymentKey)}`, { method: "GET" });
+export function getTossPayment(paymentKey: string, currency: string = "KRW"): Promise<TossResult> {
+  return call(`/v1/payments/${encodeURIComponent(paymentKey)}`, { method: "GET" }, currency);
 }
 
 export type TossOrderDiagnostic =
@@ -170,14 +197,17 @@ export type TossOrderDiagnostic =
  * isn't meant to represent. Never called from the money-moving paths --
  * only from the operator-only lookup route for triaging a stuck checkout.
  */
-export async function lookupTossOrderDiagnostic(orderId: string): Promise<TossOrderDiagnostic> {
-  if (!tossSecretConfigured()) return { kind: "unknown", reason: "toss_secret_not_configured" };
+export async function lookupTossOrderDiagnostic(
+  orderId: string,
+  currency: string = "KRW",
+): Promise<TossOrderDiagnostic> {
+  if (!tossSecretConfigured(currency)) return { kind: "unknown", reason: "toss_secret_not_configured" };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     const res = await fetch(`${TOSS_API_BASE}/v1/payments/orders/${encodeURIComponent(orderId)}`, {
       method: "GET",
-      headers: { Authorization: authHeader() },
+      headers: { Authorization: authHeader(currency) },
       signal: controller.signal,
       cache: "no-store",
     });
@@ -223,19 +253,26 @@ export async function lookupTossOrderDiagnostic(orderId: string): Promise<TossOr
  * must be reused for every retry of the same logical refund -- Toss then
  * returns the original result for 15 days instead of cancelling again.
  */
-export function cancelTossPayment(params: {
-  paymentKey: string;
-  cancelReason: string;
-  cancelAmount?: number;
-  idempotencyKey: string;
-}): Promise<TossResult> {
+export function cancelTossPayment(
+  params: {
+    paymentKey: string;
+    cancelReason: string;
+    cancelAmount?: number;
+    idempotencyKey: string;
+  },
+  currency: string = "KRW",
+): Promise<TossResult> {
   const body: Record<string, unknown> = { cancelReason: params.cancelReason.slice(0, 200) };
   if (params.cancelAmount !== undefined) body.cancelAmount = params.cancelAmount;
-  return call(`/v1/payments/${encodeURIComponent(params.paymentKey)}/cancel`, {
-    method: "POST",
-    body,
-    idempotencyKey: params.idempotencyKey,
-  });
+  return call(
+    `/v1/payments/${encodeURIComponent(params.paymentKey)}/cancel`,
+    {
+      method: "POST",
+      body,
+      idempotencyKey: params.idempotencyKey,
+    },
+    currency,
+  );
 }
 
 /** Finds a cancel we issued, identified by the unique tag in its cancelReason. */

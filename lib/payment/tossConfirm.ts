@@ -6,7 +6,7 @@ import {
   type TossPayment,
   type TossResult,
 } from "@/lib/payment/tossServer";
-import { sameAmount } from "@/lib/payment/tossCatalog";
+import { resolveTossPlan, sameAmount } from "@/lib/payment/tossCatalog";
 import { getActiveMembershipRow, membershipBlocksNewPurchase } from "@/lib/payment/membershipStatus";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 import { decideTestGrant, guestTestBuyerAllowed, testAllowlistRequired, testOrderRestricted, tossKeyIsTest, type TestGrantDecision } from "@/lib/payment/tossTestMode";
@@ -244,19 +244,22 @@ export async function completeTossOrder(
     }
   }
 
-  let result: TossResult = await deps.confirm({
-    paymentKey: input.paymentKey,
-    orderId: input.orderId,
-    amount: order.amount,
-  });
+  let result: TossResult = await deps.confirm(
+    {
+      paymentKey: input.paymentKey,
+      orderId: input.orderId,
+      amount: order.amount,
+    },
+    order.currency,
+  );
 
   if (result.kind === "rejected" && result.code === "ALREADY_PROCESSED_PAYMENT") {
-    result = await deps.get(input.paymentKey);
+    result = await deps.get(input.paymentKey, order.currency);
   }
 
   if (result.kind === "unknown") {
     // Outcome unknown (timeout / 5xx). Try to read the real state once.
-    const lookup = await deps.get(input.paymentKey);
+    const lookup = await deps.get(input.paymentKey, order.currency);
     if (lookup.kind === "ok" && lookup.payment.status === "DONE") {
       result = lookup;
     } else {
@@ -278,11 +281,14 @@ export async function completeTossOrder(
   if (!paymentMatchesOrder(result.payment, order)) {
     // Approved something we did not order -- cancel it rather than grant.
     logServerError("toss.confirm", null, "approved_payment_mismatch");
-    const cancel = await deps.cancel({
-      paymentKey: input.paymentKey,
-      cancelReason: `order_mismatch:${input.orderId}`,
-      idempotencyKey: `mismatch-cancel-${input.orderId}`,
-    });
+    const cancel = await deps.cancel(
+      {
+        paymentKey: input.paymentKey,
+        cancelReason: `order_mismatch:${input.orderId}`,
+        idempotencyKey: `mismatch-cancel-${input.orderId}`,
+      },
+      order.currency,
+    );
     await supabase.rpc("mark_toss_order_failed", { p_order_id: input.orderId, p_error: "approved_payment_mismatch" });
     if (cancel.kind === "ok") return { status: "refunded_automatically", reason: "payment_mismatch" };
     await flagForOperator(supabase, { paymentKey: input.paymentKey, orderId: input.orderId, planId, reason: "payment_mismatch_cancel_failed" });
@@ -451,11 +457,14 @@ export async function claimGuestTossOrders(
       // Guest-bought membership, but this account already has an active one:
       // refund the new purchase in full instead of a second membership.
       const cancel = meta?.payment_key
-        ? await deps.cancel({
-            paymentKey: meta.payment_key,
-            cancelReason: `already_member:${orderId}`,
-            idempotencyKey: `already-member-cancel-${orderId}`,
-          })
+        ? await deps.cancel(
+            {
+              paymentKey: meta.payment_key,
+              cancelReason: `already_member:${orderId}`,
+              idempotencyKey: `already-member-cancel-${orderId}`,
+            },
+            resolveTossPlan(meta?.plan_id ?? "")?.currency ?? "KRW",
+          )
         : ({ kind: "unknown", reason: "no_payment_key" } as const);
       if (cancel.kind === "ok") {
         await supabase.rpc("mark_toss_order_canceled", { p_order_id: orderId, p_error: "active_membership_exists" });
@@ -495,11 +504,14 @@ async function grant(
   }
 
   // Raced into a second membership after confirm: refund in full.
-  const cancel = await deps.cancel({
-    paymentKey: input.paymentKey,
-    cancelReason: `already_member:${input.orderId}`,
-    idempotencyKey: `already-member-cancel-${input.orderId}`,
-  });
+  const cancel = await deps.cancel(
+    {
+      paymentKey: input.paymentKey,
+      cancelReason: `already_member:${input.orderId}`,
+      idempotencyKey: `already-member-cancel-${input.orderId}`,
+    },
+    resolveTossPlan(planId)?.currency ?? "KRW",
+  );
   if (cancel.kind === "ok") {
     await supabase.rpc("mark_toss_order_canceled", { p_order_id: input.orderId, p_error: "active_membership_exists" });
     return { status: "refunded_automatically", reason: "already_member" };
@@ -551,7 +563,7 @@ async function reopenBlockedTestOrder(
   if (error || !o || o.is_test !== true || o.status !== "test_completed") return false;
   if (!RECOVERABLE_TEST_BLOCKS.includes(o.test_grant_blocked_reason ?? "")) return false;
   if (!o.payment_key || o.payment_key !== paymentKey) return false;
-  const lookup = await deps.get(o.payment_key);
+  const lookup = await deps.get(o.payment_key, o.currency);
   const order = { orderId: o.order_id, amount: Number(o.amount), currency: o.currency };
   if (lookup.kind !== "ok" || !paymentMatchesOrder(lookup.payment, order)) return false; // cancelled / unknown: stays closed
   const isGuest = o.clerk_user_id === null;

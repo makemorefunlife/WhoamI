@@ -58,17 +58,21 @@ export async function executeMembershipRefundAttempt(
   const tag = refundTag(requestId);
   const amount = Number(claim.refund_amount);
 
-  let result: TossResult = await deps.cancel({
-    paymentKey: claim.payment_key,
-    cancelReason: `${tag} (12-Month Membership early cancellation)`,
-    cancelAmount: amount,
-    idempotencyKey: `membership-refund-${requestId}`,
-  });
+  // The 12-Month Membership is always USD -- the foreign-easy-pay key pair, never the general one.
+  let result: TossResult = await deps.cancel(
+    {
+      paymentKey: claim.payment_key,
+      cancelReason: `${tag} (12-Month Membership early cancellation)`,
+      cancelAmount: amount,
+      idempotencyKey: `membership-refund-${requestId}`,
+    },
+    "USD",
+  );
 
   // Ambiguous answer (timeout / 5xx / "already canceled"-type rejection):
   // look the payment up and decide from the actual cancel history.
   if (result.kind !== "ok") {
-    const lookup = await deps.get(claim.payment_key);
+    const lookup = await deps.get(claim.payment_key, "USD");
     if (lookup.kind === "ok" && findCancelByTag(lookup.payment, tag)) {
       result = lookup;
     }

@@ -76,6 +76,9 @@ function TossResult({ result }: { result: Extract<OrderDiagnosticActionResult, {
 
 function DiagnosticForm() {
   const [orderId, setOrderId] = useState("");
+  // USD default: that's the currency actually under triage right now. KRW
+  // stays selectable for any future KR order lookup through this same tool.
+  const [currency, setCurrency] = useState<"KRW" | "USD">("USD");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<OrderDiagnosticActionResult | null>(null);
 
@@ -85,7 +88,7 @@ function DiagnosticForm() {
     setBusy(true);
     setResult(null);
     try {
-      const r = await lookupOrderDiagnosticAction(orderId);
+      const r = await lookupOrderDiagnosticAction(orderId, currency);
       setResult(r);
     } finally {
       setBusy(false);
@@ -110,6 +113,24 @@ function DiagnosticForm() {
             className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
           />
         </label>
+        <div className="block text-xs font-semibold uppercase tracking-wide text-[#4A5C52]">
+          통화 (어느 키 쌍으로 조회할지)
+          <div className="mt-1 flex gap-2">
+            {(["USD", "KRW"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCurrency(c)}
+                className={[
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold normal-case",
+                  currency === c ? "border-[#3A8F6E] bg-[#3A8F6E] text-white" : "border-[#D4CFC4] bg-white text-[#4A5C52]",
+                ].join(" ")}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
         <button
           type="submit"
           disabled={busy || !orderId.trim()}

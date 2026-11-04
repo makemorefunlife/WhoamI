@@ -26,7 +26,10 @@ export type OrderDiagnosticActionResult =
       toss: TossOrderDiagnostic;
     };
 
-export async function lookupOrderDiagnosticAction(orderId: string): Promise<OrderDiagnosticActionResult> {
+export async function lookupOrderDiagnosticAction(
+  orderId: string,
+  currency: "KRW" | "USD" = "USD",
+): Promise<OrderDiagnosticActionResult> {
   const trimmedOrderId = orderId.trim();
   if (!/^aha_[a-f0-9]{32}$/.test(trimmedOrderId)) {
     return { ok: false, reason: "invalid_order_id" };
@@ -37,7 +40,7 @@ export async function lookupOrderDiagnosticAction(orderId: string): Promise<Orde
     return { ok: false, reason: "operator_auth_failed", status: auth.status };
   }
 
-  const keyMode = !tossSecretConfigured() ? "not_configured" : tossKeyIsTest() ? "test" : "live";
-  const toss = await lookupTossOrderDiagnostic(trimmedOrderId);
+  const keyMode = !tossSecretConfigured(currency) ? "not_configured" : tossKeyIsTest(currency) ? "test" : "live";
+  const toss = await lookupTossOrderDiagnostic(trimmedOrderId, currency);
   return { ok: true, operatorId: auth.operatorId, keyMode, toss };
 }
