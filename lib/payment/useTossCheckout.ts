@@ -173,12 +173,20 @@ export function useTossCheckout() {
         }
 
         // Diagnostic only -- method/foreignEasyPay shape, never keys, emails,
-        // or anything else in `params`. Open DevTools console right before
-        // clicking Pay to see exactly what's about to be sent.
-        console.log("[TossCheckout] requestPayment params:", {
-          method: params.method,
-          foreignEasyPay: params.foreignEasyPay,
-        });
+        // or anything else in `params`. console.log alone isn't enough here:
+        // Toss's hosted window causes a full top-level navigation (to
+        // successUrl/failUrl), which clears the console unless DevTools'
+        // own "preserve log" is on in the Console panel specifically (the
+        // Network panel's own toggle doesn't cover it). sessionStorage
+        // survives that navigation, so /checkout/toss/fail can show this on
+        // screen with no DevTools timing involved -- see TossFailClient.
+        const diagnostic = { method: params.method, foreignEasyPay: params.foreignEasyPay };
+        console.log("[TossCheckout] requestPayment params:", diagnostic);
+        try {
+          sessionStorage.setItem("aha_toss_last_request", JSON.stringify(diagnostic));
+        } catch {
+          // Storage unavailable (blocked/private mode) -- console.log above is the fallback.
+        }
 
         await payment.requestPayment(params);
         return "redirecting";

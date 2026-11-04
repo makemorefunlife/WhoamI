@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { localizedPath } from "@/lib/i18n/locale";
@@ -22,6 +22,22 @@ function FailContent() {
   const orderId = params.get("orderId") ?? "";
   const cancelled = code === "PAY_PROCESS_CANCELED" || code === "USER_CANCEL";
 
+  // What useTossCheckout actually sent to requestPayment() right before this
+  // page's own navigation -- read once (sessionStorage, not console: this
+  // page IS the navigation that would otherwise clear a plain console.log)
+  // and cleared immediately so a later, unrelated failure never shows stale
+  // data. No keys/emails -- only method + foreignEasyPay were ever written.
+  const [lastRequest] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = sessionStorage.getItem("aha_toss_last_request");
+      sessionStorage.removeItem("aha_toss_last_request");
+      return raw;
+    } catch {
+      return null;
+    }
+  });
+
   return (
     <TossResultShell
       tone={cancelled ? "warning" : "error"}
@@ -38,6 +54,11 @@ function FailContent() {
           {message ? <p>{message}</p> : null}
           {orderId ? <p className="font-mono">{orderId}</p> : null}
         </div>
+      ) : null}
+      {lastRequest && !cancelled ? (
+        <pre className="mb-4 max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded-lg bg-[#F5F0E8] p-2.5 text-left text-[10px] leading-relaxed text-[#4A5C52]/80">
+          {lastRequest}
+        </pre>
       ) : null}
       <button
         type="button"
