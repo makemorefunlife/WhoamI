@@ -6,12 +6,13 @@ import { lookupOrderDiagnosticAction, type OrderDiagnosticActionResult } from ".
 
 /**
  * Operator tool: look up Toss's own GET /v1/payments/orders/{orderId}
- * record for one order, without anyone pasting the operator secret into
- * DevTools or it ever appearing in client code. The secret is typed into a
- * password field fresh on every lookup and goes straight to the Server
- * Action (lib/security/operatorAuth.verifyOperatorCredentials) -- same
- * two-factor check (Clerk allowlist + OPERATOR_API_SECRET) as the existing
- * admin API routes, never weakened, never embedded in this file.
+ * record for one order. 2026-11-04: gated on Clerk identity alone
+ * (lib/security/operatorAuth.verifyOperatorClerkIdentity -- must be signed
+ * in AND listed in OPERATOR_CLERK_USER_IDS) rather than the full two-factor
+ * check the mutating admin routes (refunds etc.) still use -- this page
+ * only reads Toss's record, nothing financial, and the site has no other
+ * admin allowlist to reuse. An ordinary signed-in user who isn't on that
+ * allowlist is still refused.
  *
  * Built while triaging a COMMON_ERROR on US PayPal checkout -- remove (or
  * leave, it's harmless/read-only) once that's resolved.
@@ -75,7 +76,6 @@ function TossResult({ result }: { result: Extract<OrderDiagnosticActionResult, {
 
 function DiagnosticForm() {
   const [orderId, setOrderId] = useState("");
-  const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<OrderDiagnosticActionResult | null>(null);
 
@@ -85,7 +85,7 @@ function DiagnosticForm() {
     setBusy(true);
     setResult(null);
     try {
-      const r = await lookupOrderDiagnosticAction(orderId, secret);
+      const r = await lookupOrderDiagnosticAction(orderId);
       setResult(r);
     } finally {
       setBusy(false);
@@ -110,22 +110,9 @@ function DiagnosticForm() {
             className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
           />
         </label>
-        <label className="block text-xs font-semibold uppercase tracking-wide text-[#4A5C52]">
-          운영자 비밀값 (OPERATOR_API_SECRET)
-          <input
-            type="password"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            autoComplete="off"
-            className="mt-1 w-full rounded-xl border border-[#D4CFC4] bg-white px-3 py-2.5 text-sm text-[#1A3328]"
-          />
-          <span className="mt-1 block text-[11px] font-normal normal-case text-[#4A5C52]">
-            저장되지 않습니다 — 매 조회마다 새로 입력합니다. 서버에서만 검증되고, 코드 어디에도 들어있지 않습니다.
-          </span>
-        </label>
         <button
           type="submit"
-          disabled={busy || !orderId.trim() || !secret.trim()}
+          disabled={busy || !orderId.trim()}
           className="w-full rounded-full bg-[#3A8F6E] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "조회 중…" : "조회"}
@@ -144,8 +131,8 @@ function DiagnosticForm() {
           </p>
           <p className="mt-1 text-xs text-rose-700">
             {result.status === 403
-              ? "Clerk 계정이 OPERATOR_CLERK_USER_IDS에 없거나, OPERATOR_API_SECRET/OPERATOR_CLERK_USER_IDS가 이 환경에 설정돼 있지 않습니다."
-              : "비밀값이 틀렸습니다."}
+              ? "이 Clerk 계정이 OPERATOR_CLERK_USER_IDS에 없거나, 그 환경변수가 이 환경에 설정돼 있지 않습니다."
+              : "로그인 상태를 확인할 수 없습니다 — 다시 로그인해주세요."}
           </p>
         </div>
       ) : null}
