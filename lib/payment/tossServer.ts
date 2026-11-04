@@ -145,6 +145,79 @@ export function getTossPayment(paymentKey: string): Promise<TossResult> {
   return call(`/v1/payments/${encodeURIComponent(paymentKey)}`, { method: "GET" });
 }
 
+export type TossOrderDiagnostic =
+  | {
+      kind: "found";
+      mId: string | null;
+      status: string | null;
+      method: string | null;
+      currency: string | null;
+      totalAmount: number | null;
+      requestedAt: string | null;
+      approvedAt: string | null;
+      /** Toss's own failure detail -- usually more specific than the generic failUrl code/message. */
+      failure: { code: string; message: string } | null;
+    }
+  | { kind: "not_found" }
+  | { kind: "error"; httpStatus: number; code: string; message: string }
+  | { kind: "unknown"; reason: string };
+
+/**
+ * One-off diagnostic lookup, separate from the confirm/cancel machinery
+ * above on purpose: GET /v1/payments/orders/{orderId} can return a record
+ * for an order that never reached DONE (status ABORTED/EXPIRED with a
+ * `failure` object), which parsePayment()'s strict required-paymentKey shape
+ * isn't meant to represent. Never called from the money-moving paths --
+ * only from the operator-only lookup route for triaging a stuck checkout.
+ */
+export async function lookupTossOrderDiagnostic(orderId: string): Promise<TossOrderDiagnostic> {
+  if (!tossSecretConfigured()) return { kind: "unknown", reason: "toss_secret_not_configured" };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${TOSS_API_BASE}/v1/payments/orders/${encodeURIComponent(orderId)}`, {
+      method: "GET",
+      headers: { Authorization: authHeader() },
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    const json = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+    if (res.status === 404) return { kind: "not_found" };
+    if (!res.ok) {
+      return {
+        kind: "error",
+        httpStatus: res.status,
+        code: typeof json?.code === "string" ? json.code : `HTTP_${res.status}`,
+        message: typeof json?.message === "string" ? json.message : "",
+      };
+    }
+    if (!json) return { kind: "unknown", reason: "unparseable_response" };
+    const failure =
+      json.failure && typeof json.failure === "object"
+        ? {
+            code: String((json.failure as Record<string, unknown>).code ?? ""),
+            message: String((json.failure as Record<string, unknown>).message ?? ""),
+          }
+        : null;
+    return {
+      kind: "found",
+      mId: typeof json.mId === "string" ? json.mId : null,
+      status: typeof json.status === "string" ? json.status : null,
+      method: typeof json.method === "string" ? json.method : null,
+      currency: typeof json.currency === "string" ? json.currency : null,
+      totalAmount: typeof json.totalAmount === "number" ? json.totalAmount : null,
+      requestedAt: typeof json.requestedAt === "string" ? json.requestedAt : null,
+      approvedAt: typeof json.approvedAt === "string" ? json.approvedAt : null,
+      failure,
+    };
+  } catch (e) {
+    logServerError("toss.orderDiagnostic", e, "request_failed");
+    return { kind: "unknown", reason: controller.signal.aborted ? "timeout" : "network_error" };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Full (cancelAmount omitted) or partial cancel. The same idempotencyKey
  * must be reused for every retry of the same logical refund -- Toss then
