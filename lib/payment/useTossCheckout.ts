@@ -147,7 +147,25 @@ export function useTossCheckout() {
         };
         if (order.customerEmail) params.customerEmail = order.customerEmail;
         if (order.method === "FOREIGN_EASY_PAY") {
-          params.foreignEasyPay = { provider: "PAYPAL", country: "US" };
+          // Per Toss's own SDK v2 reference (docs.tosspayments.com/sdk/v2/js/
+          // payment-window -> requestPayment -> foreignEasyPay), the object
+          // is { country, products?, shipping?, paymentMethodOptions? } --
+          // there is no documented `provider` key (the old value here was
+          // never a real parameter; Toss likely just ignored it). `products`
+          // is listed as needed for PayPal seller protection, so it's
+          // included even though the field itself isn't marked required.
+          params.foreignEasyPay = {
+            country: "US",
+            products: [
+              {
+                name: order.orderName,
+                quantity: 1,
+                unitAmount: order.amount,
+                currency: order.currency,
+                description: order.orderName,
+              },
+            ],
+          };
         } else {
           params.card = { flowMode: "DEFAULT", useEscrow: false, useCardPoint: false, useAppCardOnly: false };
         }
