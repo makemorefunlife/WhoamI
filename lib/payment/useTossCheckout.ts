@@ -172,6 +172,14 @@ export function useTossCheckout() {
           params.card = { flowMode: "DEFAULT", useEscrow: false, useCardPoint: false, useAppCardOnly: false };
         }
 
+        // Diagnostic only -- method/foreignEasyPay shape, never keys, emails,
+        // or anything else in `params`. Open DevTools console right before
+        // clicking Pay to see exactly what's about to be sent.
+        console.log("[TossCheckout] requestPayment params:", {
+          method: params.method,
+          foreignEasyPay: params.foreignEasyPay,
+        });
+
         await payment.requestPayment(params);
         return "redirecting";
       } catch (e) {
