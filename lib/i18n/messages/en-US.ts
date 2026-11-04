@@ -1438,7 +1438,8 @@ export const messagesEnUS = {
     business: {
       companyLabel: "Company",
       // 2026-10-12 owner request: US footer business block.
-      companyName: "아하잇츠미 (Aha It's me)",
+      // 2026-11-04 owner request: English-only, matches business registration name.
+      companyName: "Aha Its me",
       ceoLabel: "CEO",
       ceoName: "Sunghyun Hong",
       bizNumberLabel: "Business Registration",

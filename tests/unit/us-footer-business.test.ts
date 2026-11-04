@@ -8,7 +8,7 @@ import { messagesEnUS as en } from "../../lib/i18n/messages/en-US";
 import { messagesKoKR as ko } from "../../lib/i18n/messages/ko-KR";
 
 const b = en.footer.business;
-assert.equal(`${b.companyLabel}: ${b.companyName} | ${b.ceoLabel}: ${b.ceoName}`, "Company: 아하잇츠미 (Aha It's me) | CEO: Sunghyun Hong");
+assert.equal(`${b.companyLabel}: ${b.companyName} | ${b.ceoLabel}: ${b.ceoName}`, "Company: Aha Its me | CEO: Sunghyun Hong");
 assert.equal(`${b.bizNumberLabel}: ${b.bizNumber}`, "Business Registration: 387-06-03769");
 assert.equal(`${b.addressLabel}: ${b.address}`, "Address: 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea");
 assert.equal(`${b.supportLabel}: ${b.phone} / ${b.email}`, "Customer Support: +82-70-4571-9748 / contact@ahaitsme.com");
