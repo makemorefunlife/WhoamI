@@ -748,7 +748,7 @@ export const messagesEnUS = {
     regionalHeroTitleLine1: "Choose how you want to use it",
     regionalHeroTitleLine2: "Pick what fits how you use Aha It's me!",
     regionalHeroBody:
-      "Individual reports, a 30-Day Insight Pass, or a 12-Month Membership — every plan is a one-time purchase with no auto-renewal. Checkout is in test mode during the Beta, so nothing is charged yet.",
+      "Individual reports, a 30-Day Insight Pass, or a 12-Month Membership — every plan is a one-time purchase with no auto-renewal.",
     regionalOneTimeBadge: "One-time purchase · no auto-renewal",
     regionalAutoRenewBadge: "12-month access · no auto-renewal",
     selectorTitlePersonal: "Unlock your deep report",
