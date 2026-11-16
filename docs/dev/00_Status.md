@@ -1,11 +1,12 @@
 # 개발 진행 트래커
 
-**마지막 업데이트:** 2026-08-25
+**마지막 업데이트:** 2026-10-21
 
 ---
 
 ## ✅ 최근 완료 (이번 주)
 
+- [x] EN 사이트 Personal/Relationship Premium "Checkout Coming Soon" 문제 해결 — 결제창 없는 무료 베타 지급 플로우(`US_FREE_BETA_LIVE` 코드 스위치, `source='promo'`/`en-US` 스코프, 중복클릭 방지) 운영 배포·검증 완료, KR 무영향 확인 (`docs/dev/daily/2026-10-21.md`)
 - [x] Marriage Premium Report Chapter 08 Full Implementation: Shared Saju Timing Core + Psych 11 Response + Couple Timing Model + 5-Section Timing & 3-Year Relationship Forecast
 - [x] Marriage Premium Report Chapter 05 Full Rebuild: Household Operating System (Money, Economic Crisis Resilience, Investment Workflow)
 - [x] Marriage Premium Report Chapter 06 Full Rebuild: Family System (Couple Boundary, Origin Family Dynamics, Parenting DNA, Parenting Difference, Pair Parenting System, Family Load Redistribution, Family Identity)
