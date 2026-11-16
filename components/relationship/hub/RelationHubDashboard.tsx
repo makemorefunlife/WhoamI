@@ -342,13 +342,27 @@ export default function RelationHubDashboard() {
     });
   }, [reportIdReady, recovering, hubReportId, urlMyReportHint, router, localize]);
 
+  // ?section=add opens the add-friend sheet exactly once per arrival. The
+  // effect below re-runs whenever `loading` flips (every load("full"), e.g.
+  // right after a manual add), so without this guard the sheet re-opened
+  // behind the success modal and showed up again on "맵에서 보기".
+  const sectionAddConsumedRef = useRef(false);
   useEffect(() => {
-    if (!hubSection || loading || readiness.status === "loading") return;
+    if (hubSection !== "add") {
+      sectionAddConsumedRef.current = false;
+      return;
+    }
+    if (sectionAddConsumedRef.current || loading || readiness.status === "loading") return;
     const t = window.setTimeout(() => {
-      if (hubSection === "add") requestAddFriend();
+      sectionAddConsumedRef.current = true;
+      requestAddFriend();
+      // Drop the one-shot param so a refresh/back doesn't re-open the sheet.
+      const q = new URLSearchParams(window.location.search);
+      q.delete("section");
+      const qs = q.toString();
+      router.replace(`${window.location.pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
     }, 280);
     return () => window.clearTimeout(t);
-    // Once per arrival with ?section=add (readiness settles once).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hubSection, loading, readiness.status]);
 
@@ -616,6 +630,13 @@ export default function RelationHubDashboard() {
         alert(messages.hub.ownBirthDateCollisionWarning);
       }
       setConnectedFriendName(payload.partnerName);
+      // The map fetches on its own (RelationshipMapSection) and only refetches
+      // when refreshKey changes -- bump it, and focus the new friend so
+      // "맵에서 보기" lands on them.
+      if (typeof data?.relationship_report_id === "string") {
+        setDiscoveryFocusOverride(data.relationship_report_id);
+      }
+      setMapRefreshKey((k) => k + 1);
       await load("full", reportIdForCreate);
     } catch {
       alert(messages.hub.relationshipCreateNetworkError);
@@ -1016,6 +1037,7 @@ export default function RelationHubDashboard() {
         primaryLabel={messages.connect.connectedSharerPrimaryCta}
         onPrimary={() => {
           setConnectedFriendName(null);
+          setAddFriendOpen(false);
           mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         }}
         secondaryLabel={messages.connect.connectedSharerSecondaryCta}

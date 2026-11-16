@@ -99,7 +99,7 @@ export default function RelationshipMapSection({
       if (!selectedRoleId || !viewerReportId) return;
       try {
         const res = await fetch(
-          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}&roleId=${encodeURIComponent(selectedRoleId)}`,
+          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}&roleId=${encodeURIComponent(selectedRoleId)}${refreshKey > 0 ? "&fresh=1" : ""}`,
         );
         const data = await res.json().catch(() => null);
         if (epoch !== roleEpochRef.current) return; // a newer role selection superseded this one
@@ -110,7 +110,7 @@ export default function RelationshipMapSection({
         if (epoch === roleEpochRef.current) setRolePeople([]);
       }
     })();
-  }, [selectedRoleId, viewerReportId]);
+  }, [selectedRoleId, viewerReportId, refreshKey]);
 
   useEffect(() => {
     if (!viewerReportId) return;
@@ -118,7 +118,7 @@ export default function RelationshipMapSection({
     void (async () => {
       try {
         const res = await fetch(
-          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}`,
+          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}${refreshKey > 0 ? "&fresh=1" : ""}`,
         );
         const data = await res.json().catch(() => null);
         if (cancelled || !res.ok || !data) return;
@@ -141,7 +141,7 @@ export default function RelationshipMapSection({
     void (async () => {
       try {
         const res = await fetch(
-          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}&focusRelationshipReportId=${encodeURIComponent(focusId)}`,
+          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}&focusRelationshipReportId=${encodeURIComponent(focusId)}&fresh=1`,
         );
         const data = await res.json().catch(() => null);
         if (cancelled || !res.ok || !data?.focusPerson) return;

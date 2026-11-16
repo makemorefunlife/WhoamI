@@ -6,7 +6,7 @@ import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { relationshipFallbackNames } from "@/lib/relationship/relationshipPersonNames";
 import { logServerError } from "@/lib/security/safeLog";
-import { computeRelationshipMap } from "@/lib/relationship/map/computeRelationshipMap";
+import { computeRelationshipMap, invalidateRelationshipMapCache } from "@/lib/relationship/map/computeRelationshipMap";
 import { RELATIONSHIP_ROLES, isRelationshipRoleId, type RelationshipRoleId } from "@/lib/relationship/map/relationshipRoleSsot";
 import { selectDisplayedPeople } from "@/lib/relationship/map/selectDisplayedPeople";
 import { paginateRoleDirectory } from "@/lib/relationship/map/paginateRoleDirectory";
@@ -65,6 +65,11 @@ export async function GET(req: Request) {
     const access = await assertOwnedReportAccess(supabase, reportId, userId, locale);
     if (access.error) return access.error;
 
+    // `fresh=1`: the client just changed this viewer's connections (manual
+    // add, accept) or is looking up a just-formed connection. The 20s memo
+    // is per server instance, so the writer's invalidation can't be relied
+    // on to reach this one -- skip it.
+    if (sp.get("fresh") === "1") invalidateRelationshipMapCache(reportId);
     const result = await computeRelationshipMap(supabase, reportId);
 
     const roles = RELATIONSHIP_ROLES.map((r) => ({
